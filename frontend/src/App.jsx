@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Login from './pages/Login';
+import LandingPage from './pages/LandingPage';
 import AdminDashboard from './pages/AdminDashboard';
 import StudentDashboard from './pages/StudentDashboard';
 import TeacherDashboard from './pages/TeacherDashboard';
@@ -63,11 +64,7 @@ function App() {
                 </ProtectedRoute>
               } />
 
-              <Route path="/" element={
-                <ProtectedRoute>
-                  <StudentDashboard />
-                </ProtectedRoute>
-              } />
+              <Route path="/" element={<LandingPage />} />
             </Routes>
           </main>
         </div>
