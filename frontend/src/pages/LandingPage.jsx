@@ -414,7 +414,7 @@ const LandingPage = () => {
                 </div>
 
                 <div className="footer-bottom">
-                    <p>&copy; 2025 LMS Pro. All rights reserved.</p>
+                    <p>&copy; 2025 CourseZ. All rights reserved.</p>
                     <div className="footer-social">
                         <a href="#" className="social-link"><Facebook size={18} /></a>
                         <a href="#" className="social-link"><Twitter size={18} /></a>
