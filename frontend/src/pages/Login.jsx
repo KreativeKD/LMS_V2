@@ -33,92 +33,256 @@ const Login = () => {
         }
     };
 
+    // Shared styles for inputs
+    const inputStyle = {
+        width: '100%',
+        padding: '0.85rem 1rem',
+        border: '1px solid #e2e8f0',
+        borderRadius: '8px',
+        fontSize: '0.95rem',
+        outline: 'none',
+        transition: 'all 0.2s',
+        boxSizing: 'border-box',
+    };
+
     return (
-        <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '100vh'
-        }}>
-            <div className="card animate-fade-in" style={{ width: '450px', textAlign: 'center' }}>
-                <h1 className="gradient-text" style={{ marginBottom: '2rem' }}>
-                    {isRegister ? 'Student Registration' : 'LMS Login'}
-                </h1>
+        <>
+            {/* Responsive CSS */}
+            <style>
+                {`
+                    @media (max-width: 900px) {
+                        .split-container {
+                            flex-direction: column;
+                        }
+                        .hero-section {
+                            display: none;
+                        }
+                        .form-section {
+                            width: 100% !important;
+                            padding: 2rem !important;
+                        }
+                    }
+                `}
+            </style>
 
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                    {isRegister ? (
-                        <>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', textAlign: 'left' }}>
-                                <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Your Name</label>
-                                <input
-                                    type="text"
-                                    placeholder="e.g. John Doe"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    required
-                                />
-                                <p style={{ fontSize: '0.75rem', color: 'var(--accent)', marginTop: '0.25rem' }}>
-                                    Your username will be: <strong>{name || 'name'}@student</strong>
-                                </p>
+            <div className="split-container" style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f8fafc', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+                
+                {/* LEFT SIDE: Professional Landing / Hero Section */}
+                <div className="hero-section" style={{
+                    flex: '1.2',
+                    background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+                    color: 'white',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    padding: '4rem',
+                    position: 'relative',
+                    overflow: 'hidden'
+                }}>
+                    {/* Decorative Circle */}
+                    <div style={{
+                        position: 'absolute', top: '-10%', right: '-10%', width: '400px', height: '400px',
+                        background: 'rgba(255,255,255,0.05)', borderRadius: '50%'
+                    }}></div>
+
+                    <div style={{ position: 'relative', zIndex: 2 }}>
+                        <h1 style={{ fontSize: '3rem', fontWeight: '700', lineHeight: '1.2', marginBottom: '1.5rem' }}>
+                            Empowering the <br/>
+                            <span style={{ color: '#60a5fa' }}>Next Generation</span>
+                        </h1>
+                        <p style={{ fontSize: '1.1rem', lineHeight: '1.6', color: '#94a3b8', maxWidth: '500px', marginBottom: '2.5rem' }}>
+                            A secure, reliable, and intuitive learning management system designed for educators and students to achieve excellence.
+                        </p>
+
+                        {/* Trust Indicators */}
+                        <div style={{ display: 'flex', gap: '2rem', marginTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2rem' }}>
+                            <div>
+                                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>10k+</div>
+                                <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Active Students</div>
                             </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', textAlign: 'left' }}>
-                                <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Password</label>
-                                <input
-                                    type="password"
-                                    placeholder="Create a password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                />
+                            <div>
+                                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>99.9%</div>
+                                <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Uptime</div>
                             </div>
-                        </>
-                    ) : (
-                        <>
-                            <input
-                                type="text"
-                                placeholder="username@role"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                required
-                            />
-                            <input
-                                type="password"
-                                placeholder="Password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                            />
-                        </>
-                    )}
-
-                    {error && <p style={{ color: '#ff4d4d', fontSize: '0.9rem' }}>{error}</p>}
-
-                    <button type="submit" className="btn-primary" style={{ padding: '1rem' }}>
-                        {isRegister ? 'Create Account' : 'Sign In'}
-                    </button>
-                </form>
-
-                <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)' }}>
-                    <button
-                        onClick={() => {
-                            setIsRegister(!isRegister);
-                            setError('');
-                            setName('');
-                            setUsername('');
-                            setPassword('');
-                        }}
-                        style={{ background: 'transparent', color: 'var(--primary)', textDecoration: 'underline', fontSize: '0.9rem' }}
-                    >
-                        {isRegister ? 'Already have an account? Sign In' : 'New student? Create an account'}
-                    </button>
-                    {!isRegister && (
-                        <div style={{ marginTop: '1rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                            Format: name@admin | name@teacher | name@student
+                            <div>
+                                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>Secure</div>
+                                <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Encrypted Data</div>
+                            </div>
                         </div>
-                    )}
+                    </div>
+                </div>
+
+                {/* RIGHT SIDE: Form Section */}
+                <div className="form-section" style={{
+                    flex: '1',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: '2rem',
+                    backgroundColor: '#ffffff'
+                }}>
+                    <div style={{ width: '100%', maxWidth: '420px' }}>
+                        
+                        {/* Header */}
+                        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+                            <h2 style={{ fontSize: '1.75rem', fontWeight: '700', color: '#1e293b', marginBottom: '0.5rem' }}>
+                                {isRegister ? 'Join the Classroom' : 'Welcome Back'}
+                            </h2>
+                            <p style={{ color: '#64748b', fontSize: '0.95rem' }}>
+                                {isRegister ? 'Create your student account to get started.' : 'Enter your credentials to access your portal.'}
+                            </p>
+                        </div>
+
+                        {/* Form Card */}
+                        <div style={{ 
+                            background: '#fff', 
+                            // border: '1px solid #e2e8f0', 
+                            borderRadius: '12px',
+                        }}>
+                            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                                
+                                {isRegister ? (
+                                    <>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', textAlign: 'left' }}>
+                                            <label style={{ fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>Full Name</label>
+                                            <input
+                                                style={inputStyle}
+                                                type="text"
+                                                placeholder="e.g. John Doe"
+                                                value={name}
+                                                onChange={(e) => setName(e.target.value)}
+                                                required
+                                            />
+                                        </div>
+                                        
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', textAlign: 'left' }}>
+                                            <label style={{ fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>Password</label>
+                                            <input
+                                                style={inputStyle}
+                                                type="password"
+                                                placeholder="Create a strong password"
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                                required
+                                            />
+                                        </div>
+
+                                        <div style={{
+                                            background: '#f0f9ff', 
+                                            border: '1px solid #bae6fd', 
+                                            padding: '0.75rem', 
+                                            borderRadius: '6px',
+                                            fontSize: '0.8rem',
+                                            color: '#0369a1'
+                                        }}>
+                                            Your assigned username will be: <strong>{name.trim().toLowerCase().replace(/\s+/g, '') || 'name'}@student</strong>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', textAlign: 'left' }}>
+                                            <label style={{ fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>Username</label>
+                                            <input
+                                                style={inputStyle}
+                                                type="text"
+                                                placeholder="username@role"
+                                                value={username}
+                                                onChange={(e) => setUsername(e.target.value)}
+                                                required
+                                            />
+                                        </div>
+
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', textAlign: 'left' }}>
+                                            <label style={{ fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>Password</label>
+                                            <input
+                                                style={inputStyle}
+                                                type="password"
+                                                placeholder="••••••••"
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                                required
+                                            />
+                                        </div>
+                                    </>
+                                )}
+
+                                {error && (
+                                    <div style={{ 
+                                        color: '#dc2626', 
+                                        fontSize: '0.85rem', 
+                                        background: '#fef2f2', 
+                                        padding: '0.75rem', 
+                                        borderRadius: '6px', 
+                                        border: '1px solid #fecaca',
+                                        marginTop: '-0.5rem'
+                                    }}>
+                                        {error}
+                                    </div>
+                                )}
+
+                                <button 
+                                    type="submit" 
+                                    style={{
+                                        background: 'var(--primary)', // Or #2563eb
+                                        color: 'white',
+                                        border: 'none',
+                                        padding: '0.9rem',
+                                        borderRadius: '8px',
+                                        fontSize: '1rem',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        transition: 'background 0.2s',
+                                        marginTop: '0.5rem'
+                                    }}
+                                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#1d4ed8'}
+                                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'var(--primary)'}
+                                >
+                                    {isRegister ? 'Create Account' : 'Sign In Securely'}
+                                </button>
+                            </form>
+
+                            {/* Toggle Switch */}
+                            <div style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.9rem', color: '#64748b' }}>
+                                {isRegister ? 'Already have an account?' : 'New student?'}{' '}
+                                <button
+                                    onClick={() => {
+                                        setIsRegister(!isRegister);
+                                        setError('');
+                                        setName('');
+                                        setUsername('');
+                                        setPassword('');
+                                    }}
+                                    style={{ 
+                                        background: 'transparent', 
+                                        border: 'none', 
+                                        color: '#2563eb', 
+                                        fontWeight: '600', 
+                                        cursor: 'pointer',
+                                        textDecoration: 'none'
+                                    }}
+                                >
+                                    {isRegister ? 'Sign In' : 'Create an account'}
+                                </button>
+                            </div>
+                            
+                            {!isRegister && (
+                                <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.75rem', color: '#94a3b8' }}>
+                                    <p>Format: <span style={{ fontFamily: 'monospace', background: '#f1f5f9', padding: '2px 4px', borderRadius: '4px' }}>name@admin</span> | <span style={{ fontFamily: 'monospace', background: '#f1f5f9', padding: '2px 4px', borderRadius: '4px' }}>name@teacher</span> | <span style={{ fontFamily: 'monospace', background: '#f1f5f9', padding: '2px 4px', borderRadius: '4px' }}>name@student</span></p>
+                                </div>
+                            )}
+                        </div>
+                        
+                        {/* Trust Badge */}
+                        <div style={{ marginTop: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.75rem', color: '#94a3b8' }}>
+                            <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
+                            </svg>
+                            Secured by 256-bit SSL Encryption
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 
