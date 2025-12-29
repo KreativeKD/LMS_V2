@@ -224,3 +224,86 @@ export const fetchCourse = async (courseId) => {
     if (!response.ok) throw new Error('Failed to fetch course');
     return response.json();
 };
+
+export const requestAccess = async (firstName, lastName) => {
+    const response = await fetch(`${API_URL}/auth/request-access`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firstName, lastName })
+    });
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Request failed');
+    }
+    return response.json();
+};
+
+export const checkStatus = async (firstName, lastName) => {
+    const response = await fetch(`${API_URL}/auth/check-status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firstName, lastName })
+    });
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Check status failed');
+    }
+    return response.json();
+};
+
+export const completeRegistration = async (data) => {
+    const response = await fetch(`${API_URL}/auth/complete-registration`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Registration failed');
+    }
+    return response.json();
+};
+
+export const fetchRegistrationRequests = async () => {
+    const response = await fetch(`${API_URL}/auth/admin/registration-requests`, {
+        headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to fetch requests');
+    return response.json();
+};
+
+export const approveRequest = async (id) => {
+    const response = await fetch(`${API_URL}/auth/admin/approve-request/${id}`, {
+        method: 'POST',
+        headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to approve request');
+    return response.json();
+};
+
+export const fetchSettings = async () => {
+    const response = await fetch(`${API_URL}/auth/admin/settings`, {
+        headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to fetch settings');
+    return response.json();
+};
+
+export const updateSettings = async (settings) => {
+    const response = await fetch(`${API_URL}/auth/admin/settings`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(settings)
+    });
+    if (!response.ok) throw new Error('Failed to update settings');
+    return response.json();
+};
+
+export const unfreezeStudent = async (id) => {
+    const response = await fetch(`${API_URL}/auth/admin/unfreeze-student/${id}`, {
+        method: 'POST',
+        headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to unfreeze student');
+    return response.json();
+};

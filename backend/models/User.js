@@ -20,7 +20,18 @@ const userSchema = new mongoose.Schema({
     enrolledCourses: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Course'
-    }]
+    }],
+    isFrozen: {
+        type: Boolean,
+        default: false
+    },
+    unfrozenByAdmin: {
+        type: Boolean,
+        default: false
+    },
+    lastLogin: {
+        type: Date
+    }
 }, { timestamps: true });
 
 userSchema.pre('save', async function () {

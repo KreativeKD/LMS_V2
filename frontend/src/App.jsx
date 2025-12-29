@@ -10,6 +10,8 @@ import TeacherDashboard from './pages/TeacherDashboard';
 import CourseEditor from './pages/CourseEditor';
 import QuizView from './pages/QuizView';
 import StudentCourseView from './pages/StudentCourseView';
+import RequestAccess from './pages/RequestAccess';
+import CompleteSetup from './pages/CompleteSetup';
 
 const ProtectedRoute = ({ children, roles }) => {
   const { user } = useAuth();
@@ -27,6 +29,8 @@ function App() {
           <main style={{ padding: '2rem' }}>
             <Routes>
               <Route path="/login" element={<Login />} />
+              <Route path="/request-access" element={<RequestAccess />} />
+              <Route path="/complete-setup" element={<CompleteSetup />} />
 
               <Route path="/admin" element={
                 <ProtectedRoute roles={['admin']}>
