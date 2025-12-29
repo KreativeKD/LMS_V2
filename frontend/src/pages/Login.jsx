@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { loginUser, registerStudent } from '../api/api';
 import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 
 const Login = () => {
     const [isRegister, setIsRegister] = useState(false);
@@ -118,8 +119,43 @@ const Login = () => {
                     justifyContent: 'center',
                     alignItems: 'center',
                     padding: '2rem',
-                    backgroundColor: '#ffffff'
+                    backgroundColor: '#ffffff',
+                    position: 'relative'
                 }}>
+                    {/* Back Button */}
+                    <button
+                        onClick={() => navigate('/')}
+                        style={{
+                            position: 'absolute',
+                            top: '2rem',
+                            left: '2rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            background: 'transparent',
+                            border: 'none',
+                            color: '#64748b',
+                            fontSize: '0.9rem',
+                            fontWeight: '500',
+                            cursor: 'pointer',
+                            padding: '0.5rem',
+                            borderRadius: '8px',
+                            transition: 'all 0.2s',
+                            zIndex: 10
+                        }}
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.background = '#f1f5f9';
+                            e.currentTarget.style.color = '#1e293b';
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.background = 'transparent';
+                            e.currentTarget.style.color = '#64748b';
+                        }}
+                    >
+                        <ArrowLeft size={18} />
+                        Back to Home
+                    </button>
+
                     <div style={{ width: '100%', maxWidth: '420px' }}>
 
                         {/* Header */}
