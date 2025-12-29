@@ -29,7 +29,7 @@ const Navbar = () => {
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <h2 className="gradient-text" style={{ cursor: 'pointer' }} onClick={() => navigate('/')}>
-                    LMS
+                    CourseZ
                 </h2>
             </div>
 
