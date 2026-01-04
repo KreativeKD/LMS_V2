@@ -282,7 +282,7 @@ export const approveRequest = async (id) => {
 };
 
 export const fetchSettings = async () => {
-    const response = await fetch(`${API_URL}/auth/admin/settings`, {
+    const response = await fetch(`${API_URL}/auth/settings`, {
         headers: getHeaders()
     });
     if (!response.ok) throw new Error('Failed to fetch settings');
@@ -305,5 +305,14 @@ export const unfreezeStudent = async (id) => {
         headers: getHeaders()
     });
     if (!response.ok) throw new Error('Failed to unfreeze student');
+    return response.json();
+};
+
+export const freezeStudent = async (id) => {
+    const response = await fetch(`${API_URL}/auth/admin/freeze-student/${id}`, {
+        method: 'POST',
+        headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to freeze student');
     return response.json();
 };

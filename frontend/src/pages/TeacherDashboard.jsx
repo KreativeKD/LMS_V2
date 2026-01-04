@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Book, ChevronRight, Layout, Users, X } from 'lucide-react';
-import { fetchCourses, createCourse, fetchEnrolledStudents } from '../api/api';
+import { Plus, Book, ChevronRight, Layout, Users, X, Calendar } from 'lucide-react';
+import { fetchCourses, createCourse, fetchEnrolledStudents, fetchSettings } from '../api/api';
 import { useAuth } from '../context/AuthContext';
 
 const TeacherDashboard = () => {
@@ -13,15 +13,28 @@ const TeacherDashboard = () => {
     const [courseTitle, setCourseTitle] = useState('');
     const [showStudentsModal, setShowStudentsModal] = useState(false);
     const [enrolledStudents, setEnrolledStudents] = useState([]);
+    const [completionDate, setCompletionDate] = useState(null);
 
     useEffect(() => {
         loadCourses();
+        loadSettings();
     }, []);
 
     const loadCourses = async () => {
         try {
             const data = await fetchCourses();
             setCourses(data || []);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const loadSettings = async () => {
+        try {
+            const data = await fetchSettings();
+            if (data?.semesterCompletionDate) {
+                setCompletionDate(new Date(data.semesterCompletionDate).toLocaleDateString());
+            }
         } catch (err) {
             console.error(err);
         }
@@ -55,6 +68,16 @@ const TeacherDashboard = () => {
                     <Plus size={18} /> New Course
                 </button>
             </header>
+
+            {completionDate && (
+                <div className="card" style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem', borderLeft: '4px solid var(--secondary)' }}>
+                    <Calendar size={24} color="var(--secondary)" />
+                    <div>
+                        <h4 style={{ margin: 0, color: 'var(--secondary)' }}>Semester Schedule</h4>
+                        <p style={{ margin: 0, color: 'var(--text-muted)' }}>Students must complete courses by <strong>{completionDate}</strong>.</p>
+                    </div>
+                </div>
+            )}
 
             {showCourseForm && (
                 <div className="card" style={{ marginBottom: '2rem' }}>

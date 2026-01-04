@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Users, Book, Trash2, Edit, X, Layout, User, Eye, CheckCircle, Settings, Calendar } from 'lucide-react';
-import { fetchCourses, createCourse, deleteCourse, addTeacher, fetchTeachers, deleteTeacher, updateCourse, fetchEnrolledStudents, fetchStudents, deleteStudent, fetchRegistrationRequests, approveRequest, fetchSettings, updateSettings, unfreezeStudent } from '../api/api';
+import { fetchCourses, createCourse, deleteCourse, addTeacher, fetchTeachers, deleteTeacher, updateCourse, fetchEnrolledStudents, fetchStudents, deleteStudent, fetchRegistrationRequests, approveRequest, fetchSettings, updateSettings, unfreezeStudent, freezeStudent } from '../api/api';
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
@@ -170,6 +170,18 @@ const AdminDashboard = () => {
                 await unfreezeStudent(id);
                 loadStudents();
                 alert('Student unfrozen successfully');
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+    };
+
+    const handleFreeze = async (id) => {
+        if (window.confirm('Freeze this student account? They will no longer be able to login.')) {
+            try {
+                await freezeStudent(id);
+                loadStudents();
+                alert('Student frozen successfully');
             } catch (err) {
                 alert(err.message);
             }
@@ -402,37 +414,68 @@ const AdminDashboard = () => {
                 </div>
             ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1.5rem' }}>
-                    {students.map(student => (
-                        <div key={student._id} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                <div style={{ background: 'var(--glass)', padding: '1rem', borderRadius: '50%' }}>
-                                    <User size={24} color="var(--accent)" />
+                    {students.sort((a, b) => (a.isFrozen === b.isFrozen) ? 0 : a.isFrozen ? -1 : 1).map(student => {
+                        // Calculate Effective Freeze State
+                        const isManualFrozen = student.isFrozen;
+                        let isDateFrozen = false;
+                        if (semesterDate && !student.unfrozenByAdmin) {
+                            const completionDate = new Date(semesterDate);
+                            isDateFrozen = new Date() > completionDate;
+                        }
+                        const isEffectiveFrozen = isManualFrozen || isDateFrozen;
+
+                        return (
+                            <div key={student._id} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                    <div style={{ background: 'var(--glass)', padding: '1rem', borderRadius: '50%' }}>
+                                        <User size={24} color="var(--accent)" />
+                                    </div>
+                                    <div>
+                                        <h3 style={{ fontSize: '1.1rem' }}>{student.username?.split('@')[0] || 'Student'}</h3>
+                                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{student.username}</p>
+
+                                        {isEffectiveFrozen && (
+                                            <span style={{ color: '#ef4444', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                                [FROZEN {isManualFrozen ? '(ADMIN)' : '(DATE)'}]
+                                            </span>
+                                        )}
+                                        {student.unfrozenByAdmin && !isManualFrozen && (
+                                            <span style={{ color: '#22c55e', fontSize: '0.8rem', fontWeight: 'bold', marginLeft: '0.5rem' }}>
+                                                [Active (Immune)]
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 style={{ fontSize: '1.1rem' }}>{student.username?.split('@')[0] || 'Student'}</h3>
-                                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{student.username}</p>
-                                    {student.isFrozen && <span style={{ color: '#ef4444', fontSize: '0.8rem', fontWeight: 'bold' }}>[FROZEN]</span>}
-                                    {student.unfrozenByAdmin && <span style={{ color: '#22c55e', fontSize: '0.8rem', fontWeight: 'bold' }}>[UNFROZEN BY ADMIN]</span>}
+                                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                                    {isEffectiveFrozen ? (
+                                        <button
+                                            onClick={() => handleUnfreeze(student._id)}
+                                            style={{ background: '#333', color: '#60a5fa', padding: '8px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}
+                                            title="Unfreeze Account"
+                                        >
+                                            Unfreeze
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => handleFreeze(student._id)}
+                                            style={{ background: '#333', color: '#fbbf24', padding: '8px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}
+                                            title="Freeze Account"
+                                        >
+                                            Freeze
+                                        </button>
+                                    )}
+
+                                    <button
+                                        onClick={() => handleDeleteStudent(student._id)}
+                                        style={{ background: '#333', color: '#ff4d4d', padding: '8px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}
+                                        title="Delete student"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
                                 </div>
                             </div>
-                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                                <button
-                                    onClick={() => handleUnfreeze(student._id)}
-                                    style={{ background: '#333', color: '#60a5fa', padding: '8px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}
-                                    title="Unfreeze Account"
-                                >
-                                    Unfreeze
-                                </button>
-                                <button
-                                    onClick={() => handleDeleteStudent(student._id)}
-                                    style={{ background: '#333', color: '#ff4d4d', padding: '8px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}
-                                    title="Delete student"
-                                >
-                                    <Trash2 size={16} />
-                                </button>
-                            </div>
-                        </div>
-                    ))}
+                        )
+                    })}
                     {students.length === 0 && (
                         <div className="card" style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem' }}>
                             <Users size={48} color="var(--accent)" style={{ marginBottom: '1rem' }} />
@@ -443,118 +486,123 @@ const AdminDashboard = () => {
                         </div>
                     )}
                 </div>
-            )}
+            )
+            }
 
-            {showModal && (
-                <div className="modal-overlay">
-                    <div className="modal-content animate-fade-in" style={{ maxWidth: '450px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
-                            <h2 className="gradient-text">
-                                {modalType === 'course' ? (editingCourse ? 'Edit Course' : 'Create New Course') : 'Add Teacher Account'}
-                            </h2>
-                            <button onClick={() => { setShowModal(false); setEditingCourse(null); setCourseForm({ title: '', description: '' }); }} style={{ background: 'transparent', color: 'white' }}>
-                                <X size={24} />
-                            </button>
+            {
+                showModal && (
+                    <div className="modal-overlay">
+                        <div className="modal-content animate-fade-in" style={{ maxWidth: '450px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
+                                <h2 className="gradient-text">
+                                    {modalType === 'course' ? (editingCourse ? 'Edit Course' : 'Create New Course') : 'Add Teacher Account'}
+                                </h2>
+                                <button onClick={() => { setShowModal(false); setEditingCourse(null); setCourseForm({ title: '', description: '' }); }} style={{ background: 'transparent', color: 'white' }}>
+                                    <X size={24} />
+                                </button>
+                            </div>
+
+                            <form onSubmit={modalType === 'course' ? (editingCourse ? handleUpdateCourse : handleCreateCourse) : handleAddTeacher} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                {modalType === 'course' ? (
+                                    <>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                            <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Course Title</label>
+                                            <input
+                                                placeholder="e.g. Modern Web Development"
+                                                value={courseForm.title}
+                                                onChange={e => setCourseForm({ ...courseForm, title: e.target.value })}
+                                                required
+                                            />
+                                        </div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                            <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Description</label>
+                                            <textarea
+                                                placeholder="What will students learn?"
+                                                style={{ background: '#18181b', color: 'white', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px', minHeight: '120px', outline: 'none' }}
+                                                value={courseForm.description}
+                                                onChange={e => setCourseForm({ ...courseForm, description: e.target.value })}
+                                                required
+                                            />
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                            <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Full Name</label>
+                                            <input
+                                                placeholder="e.g. Sarah Johnson"
+                                                value={teacherForm.name}
+                                                onChange={e => setTeacherForm({ ...teacherForm, name: e.target.value })}
+                                                required
+                                            />
+                                        </div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                            <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Password</label>
+                                            <input
+                                                type="password"
+                                                placeholder="Set a secure password"
+                                                value={teacherForm.password}
+                                                onChange={e => setTeacherForm({ ...teacherForm, password: e.target.value })}
+                                                required
+                                            />
+                                            <p style={{ fontSize: '0.8rem', color: 'var(--accent)', marginTop: '0.5rem' }}>
+                                                Teacher can login using: <strong>{teacherForm.name || 'name'}@teacher</strong>
+                                            </p>
+                                        </div>
+                                    </>
+                                )}
+                                <button className="btn-primary" style={{ padding: '1rem', marginTop: '1rem' }} disabled={loading}>
+                                    {loading ? 'Processing...' : (modalType === 'course' && editingCourse ? 'Update Course' : 'Save Changes')}
+                                </button>
+                            </form>
                         </div>
+                    </div>
+                )
+            }
 
-                        <form onSubmit={modalType === 'course' ? (editingCourse ? handleUpdateCourse : handleCreateCourse) : handleAddTeacher} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                            {modalType === 'course' ? (
-                                <>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                        <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Course Title</label>
-                                        <input
-                                            placeholder="e.g. Modern Web Development"
-                                            value={courseForm.title}
-                                            onChange={e => setCourseForm({ ...courseForm, title: e.target.value })}
-                                            required
-                                        />
-                                    </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                        <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Description</label>
-                                        <textarea
-                                            placeholder="What will students learn?"
-                                            style={{ background: '#18181b', color: 'white', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px', minHeight: '120px', outline: 'none' }}
-                                            value={courseForm.description}
-                                            onChange={e => setCourseForm({ ...courseForm, description: e.target.value })}
-                                            required
-                                        />
-                                    </div>
-                                </>
+            {
+                showStudentsModal && (
+                    <div className="modal-overlay">
+                        <div className="modal-content animate-fade-in" style={{ maxWidth: '500px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                                <h2 className="gradient-text">Enrolled Students</h2>
+                                <button onClick={() => setShowStudentsModal(false)} style={{ background: 'transparent', color: 'white' }}>
+                                    <X size={24} />
+                                </button>
+                            </div>
+
+                            {enrolledStudents.length > 0 ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                    {enrolledStudents.map(student => (
+                                        <div key={student._id} style={{
+                                            padding: '1rem',
+                                            background: '#252525',
+                                            borderRadius: '8px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '1rem'
+                                        }}>
+                                            <div style={{ background: 'var(--glass)', padding: '0.8rem', borderRadius: '50%' }}>
+                                                <Users size={20} color="var(--primary)" />
+                                            </div>
+                                            <div>
+                                                <h4 style={{ margin: 0 }}>{student.username.split('@')[0]}</h4>
+                                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{student.username}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             ) : (
-                                <>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                        <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Full Name</label>
-                                        <input
-                                            placeholder="e.g. Sarah Johnson"
-                                            value={teacherForm.name}
-                                            onChange={e => setTeacherForm({ ...teacherForm, name: e.target.value })}
-                                            required
-                                        />
-                                    </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                        <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Password</label>
-                                        <input
-                                            type="password"
-                                            placeholder="Set a secure password"
-                                            value={teacherForm.password}
-                                            onChange={e => setTeacherForm({ ...teacherForm, password: e.target.value })}
-                                            required
-                                        />
-                                        <p style={{ fontSize: '0.8rem', color: 'var(--accent)', marginTop: '0.5rem' }}>
-                                            Teacher can login using: <strong>{teacherForm.name || 'name'}@teacher</strong>
-                                        </p>
-                                    </div>
-                                </>
+                                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+                                    <Users size={48} style={{ marginBottom: '1rem', opacity: 0.5 }} />
+                                    <p>No students enrolled yet.</p>
+                                </div>
                             )}
-                            <button className="btn-primary" style={{ padding: '1rem', marginTop: '1rem' }} disabled={loading}>
-                                {loading ? 'Processing...' : (modalType === 'course' && editingCourse ? 'Update Course' : 'Save Changes')}
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {showStudentsModal && (
-                <div className="modal-overlay">
-                    <div className="modal-content animate-fade-in" style={{ maxWidth: '500px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-                            <h2 className="gradient-text">Enrolled Students</h2>
-                            <button onClick={() => setShowStudentsModal(false)} style={{ background: 'transparent', color: 'white' }}>
-                                <X size={24} />
-                            </button>
                         </div>
-
-                        {enrolledStudents.length > 0 ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                {enrolledStudents.map(student => (
-                                    <div key={student._id} style={{
-                                        padding: '1rem',
-                                        background: '#252525',
-                                        borderRadius: '8px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '1rem'
-                                    }}>
-                                        <div style={{ background: 'var(--glass)', padding: '0.8rem', borderRadius: '50%' }}>
-                                            <Users size={20} color="var(--primary)" />
-                                        </div>
-                                        <div>
-                                            <h4 style={{ margin: 0 }}>{student.username.split('@')[0]}</h4>
-                                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{student.username}</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
-                                <Users size={48} style={{ marginBottom: '1rem', opacity: 0.5 }} />
-                                <p>No students enrolled yet.</p>
-                            </div>
-                        )}
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 };
 

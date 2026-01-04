@@ -27,6 +27,11 @@ router.post('/login', async (req, res) => {
             return res.status(400).send({ error: 'Invalid login credentials' });
         }
 
+        // Check for Manual Freeze (Admin imposed)
+        if (user.isFrozen) {
+            return res.status(403).send({ error: 'Account is frozen by admin. Contact support.' });
+        }
+
         const isMatch = await user.comparePassword(password);
         if (!isMatch) {
             console.log(`Password mismatch for: ${username}`);
@@ -139,8 +144,8 @@ router.post('/complete-registration', async (req, res) => {
     }
 });
 
-// Admin: Get Settings
-router.get('/admin/settings', auth, authorize('admin'), async (req, res) => {
+// Public (Authenticated): Get Settings
+router.get('/settings', auth, async (req, res) => {
     try {
         const setting = await SystemSetting.findOne({ key: 'semesterCompletionDate' });
         res.send({ semesterCompletionDate: setting ? setting.value : null });
@@ -154,10 +159,13 @@ router.post('/admin/settings', auth, authorize('admin'), async (req, res) => {
     try {
         const { semesterCompletionDate } = req.body;
         await SystemSetting.findOneAndUpdate(
-            { key: 'semesterCompletionDate' },
             { value: semesterCompletionDate },
             { upsert: true, new: true }
         );
+
+        // RESET IMMUNITY: Ensure new date applies to ALL students
+        await User.updateMany({ role: 'student' }, { $set: { unfrozenByAdmin: false } });
+
         res.send({ message: 'Settings updated' });
     } catch (e) {
         res.status(500).send(e.message);
@@ -195,10 +203,25 @@ router.post('/admin/unfreeze-student/:id', auth, authorize('admin'), async (req,
         const user = await User.findById(req.params.id);
         if (!user) return res.status(404).send({ error: 'User not found' });
 
-        user.unfrozenByAdmin = true;
-        // Also ensure isFrozen is false if you were using that, but logic relies on date check vs unfrozen flag
+        user.unfrozenByAdmin = true; // Grant immunity so they can login despite date
+        user.isFrozen = false;
         await user.save();
         res.send({ message: 'Student account unfrozen' });
+    } catch (e) {
+        res.status(500).send(e.message);
+    }
+});
+
+// Admin: Freeze Student
+router.post('/admin/freeze-student/:id', auth, authorize('admin'), async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).send({ error: 'User not found' });
+
+        user.isFrozen = true;
+        user.unfrozenByAdmin = false; // Reset this if manually frozen
+        await user.save();
+        res.send({ message: 'Student account frozen' });
     } catch (e) {
         res.status(500).send(e.message);
     }

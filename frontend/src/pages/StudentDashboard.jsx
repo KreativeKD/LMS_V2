@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { fetchCourses, enrollInCourse } from '../api/api';
-import { PlayCircle, CheckCircle, BookOpen, Video, FileText, HelpCircle, ArrowLeft, ExternalLink, FileType } from 'lucide-react';
+import { fetchCourses, enrollInCourse, fetchSettings } from '../api/api';
+import { PlayCircle, CheckCircle, BookOpen, Video, FileText, HelpCircle, ArrowLeft, ExternalLink, FileType, Calendar } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,15 +11,28 @@ const StudentDashboard = () => {
     const [loading, setLoading] = useState(false);
     const [selectedCourse, setSelectedCourse] = useState(null);
     const [expandedUnits, setExpandedUnits] = useState({});
+    const [completionDate, setCompletionDate] = useState(null);
 
     useEffect(() => {
         loadCourses();
+        loadSettings();
     }, []);
 
     const loadCourses = async () => {
         try {
             const data = await fetchCourses();
             setCourses(data || []);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const loadSettings = async () => {
+        try {
+            const data = await fetchSettings();
+            if (data?.semesterCompletionDate) {
+                setCompletionDate(new Date(data.semesterCompletionDate).toLocaleDateString());
+            }
         } catch (err) {
             console.error(err);
         }
@@ -166,6 +179,16 @@ const StudentDashboard = () => {
             <h1 className="gradient-text" style={{ marginBottom: '2rem' }}>
                 {user.role === 'student' ? 'My Learning Journey' : 'Course Catalog'}
             </h1>
+
+            {completionDate && (
+                <div className="card" style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem', borderLeft: '4px solid var(--accent)' }}>
+                    <Calendar size={24} color="var(--accent)" />
+                    <div>
+                        <h4 style={{ margin: 0, color: 'var(--accent)' }}>Course Completion Deadline</h4>
+                        <p style={{ margin: 0, color: 'var(--text-muted)' }}>All coursework must be completed by <strong>{completionDate}</strong>. Accounts will be frozen after this date.</p>
+                    </div>
+                </div>
+            )}
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '2rem' }}>
                 {courses.map(course => {
