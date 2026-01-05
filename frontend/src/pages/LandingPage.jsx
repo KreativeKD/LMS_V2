@@ -407,6 +407,101 @@ const LandingPage = () => {
                 </div>
             </section>
 
+            {/* Impact & Recognition Section */}
+            <section className="impact-section">
+                <div className="impact-container">
+                    <div className="section-header">
+                        <div className="section-badge">
+                            <Trophy size={16} />
+                            <span>Measurable Impact</span>
+                        </div>
+                        <h2 className="section-title">Making a Real Difference</h2>
+                        <p className="section-subtitle">Numbers that showcase commitment to education and innovation</p>
+                    </div>
+
+                    <div className="impact-stats-grid">
+                        <div className="impact-stat-card">
+                            <div className="impact-icon">
+                                <Users size={32} />
+                            </div>
+                            <div className="impact-number">5000+</div>
+                            <div className="impact-label">Students Mentored</div>
+                            <p className="impact-desc">Across 33+ years of teaching</p>
+                        </div>
+
+                        <div className="impact-stat-card">
+                            <div className="impact-icon">
+                                <Award size={32} />
+                            </div>
+                            <div className="impact-number">85+</div>
+                            <div className="impact-label">Research Papers</div>
+                            <p className="impact-desc">Published in top conferences</p>
+                        </div>
+
+                        <div className="impact-stat-card">
+                            <div className="impact-icon">
+                                <Lightbulb size={32} />
+                            </div>
+                            <div className="impact-number">22</div>
+                            <div className="impact-label">Patents Filed</div>
+                            <p className="impact-desc">Including granted patents</p>
+                        </div>
+
+                        <div className="impact-stat-card">
+                            <div className="impact-icon">
+                                <Building size={32} />
+                            </div>
+                            <div className="impact-number">3</div>
+                            <div className="impact-label">Startups Founded</div>
+                            <p className="impact-desc">Driving innovation & impact</p>
+                        </div>
+                    </div>
+
+                    {/* Recognition Badges */}
+                    <div className="recognition-section">
+                        <h3 className="recognition-title">Recognized By</h3>
+                        <div className="recognition-grid">
+                            <div className="recognition-badge">
+                                <div className="recognition-logo">
+                                    <Building size={28} />
+                                </div>
+                                <div className="recognition-text">
+                                    <strong>SPIT Mumbai</strong>
+                                    <p>Premier Institute</p>
+                                </div>
+                            </div>
+                            <div className="recognition-badge">
+                                <div className="recognition-logo">
+                                    <Award size={28} />
+                                </div>
+                                <div className="recognition-text">
+                                    <strong>IEEE</strong>
+                                    <p>Bombay Section</p>
+                                </div>
+                            </div>
+                            <div className="recognition-badge">
+                                <div className="recognition-logo">
+                                    <Rocket size={28} />
+                                </div>
+                                <div className="recognition-text">
+                                    <strong>SP-TBI</strong>
+                                    <p>Govt. of India Funded</p>
+                                </div>
+                            </div>
+                            <div className="recognition-badge">
+                                <div className="recognition-logo">
+                                    <Globe size={28} />
+                                </div>
+                                <div className="recognition-text">
+                                    <strong>UK Patent Office</strong>
+                                    <p>Design Patent 2025</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* How It Works Section */}
             <section className="how-it-works-section">
                 <div className="section-header">
@@ -723,6 +818,98 @@ const LandingPage = () => {
                 <div className="guarantee-badge">
                     <Shield size={20} />
                     <span>30-day money-back guarantee • Cancel anytime</span>
+                </div>
+            </section>
+
+            {/* FAQ Section */}
+            <section className="faq-section">
+                <div className="faq-container">
+                    <div className="section-header">
+                        <h2 className="section-title">Frequently Asked Questions</h2>
+                        <p className="section-subtitle">Everything you need to know about CourseZ</p>
+                    </div>
+
+                    <div className="faq-grid">
+                        <div className="faq-item">
+                            <div className="faq-question">
+                                <MessageCircle size={24} className="faq-icon" />
+                                <h4>Who is this platform for?</h4>
+                            </div>
+                            <p className="faq-answer">
+                                CourseZ is designed for SPIT students, engineering students, and professionals looking to 
+                                enhance their skills in Electronics, Signal Processing, Machine Learning, and related fields. 
+                                Whether you're a beginner or advanced learner, our curriculum adapts to your level.
+                            </p>
+                        </div>
+
+                        <div className="faq-item">
+                            <div className="faq-question">
+                                <Award size={24} className="faq-icon" />
+                                <h4>Are the certificates recognized?</h4>
+                            </div>
+                            <p className="faq-answer">
+                                Yes! All certificates are signed by Dr. Kiran Talele and include verification codes. 
+                                They are recognized by employers and can be added to your LinkedIn profile and resume. 
+                                Pro members receive additional verified digital credentials.
+                            </p>
+                        </div>
+
+                        <div className="faq-item">
+                            <div className="faq-question">
+                                <Clock size={24} className="faq-icon" />
+                                <h4>How much time do I need to invest?</h4>
+                            </div>
+                            <p className="faq-answer">
+                                Courses are self-paced! Most students spend 3-5 hours per week. Complete courses at your 
+                                own speed, with lifetime access to all materials. Our mobile app lets you learn on the go, 
+                                making it easy to fit learning into your schedule.
+                            </p>
+                        </div>
+
+                        <div className="faq-item">
+                            <div className="faq-question">
+                                <Users size={24} className="faq-icon" />
+                                <h4>Can I interact with Dr. Talele?</h4>
+                            </div>
+                            <p className="faq-answer">
+                                Pro members get access to monthly live Q&A sessions, discussion forums moderated by Dr. Talele, 
+                                and can book 1-on-1 mentorship sessions. Free members can participate in community discussions 
+                                and attend select webinars.
+                            </p>
+                        </div>
+
+                        <div className="faq-item">
+                            <div className="faq-question">
+                                <Shield size={24} className="faq-icon" />
+                                <h4>What if I'm not satisfied?</h4>
+                            </div>
+                            <p className="faq-answer">
+                                We offer a 30-day money-back guarantee for Pro subscriptions. If you're not completely 
+                                satisfied with the quality and value, contact us within 30 days for a full refund. 
+                                No questions asked!
+                            </p>
+                        </div>
+
+                        <div className="faq-item">
+                            <div className="faq-question">
+                                <Rocket size={24} className="faq-icon" />
+                                <h4>How often is content updated?</h4>
+                            </div>
+                            <p className="faq-answer">
+                                Courses are regularly updated to reflect the latest industry trends and technologies. 
+                                Dr. Talele adds new modules quarterly, and Pro members get immediate access to all new 
+                                content and updates at no additional cost.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="faq-cta">
+                        <p>Still have questions?</p>
+                        <button className="btn-primary" onClick={() => window.location.href = 'mailto:talelesir@gmail.com'}>
+                            <Mail size={18} />
+                            <span>Contact Dr. Talele</span>
+                        </button>
+                    </div>
                 </div>
             </section>
 
