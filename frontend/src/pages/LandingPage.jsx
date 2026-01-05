@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { 
     BookOpen, Award, BarChart2, Shield, Users, Globe, 
     Star, Check, Zap, Target, TrendingUp, Sparkles,
-    Clock, Trophy, Rocket, Heart, Facebook, Twitter, Instagram, Linkedin
+    Clock, Trophy, Rocket, Heart, Facebook, Twitter, Instagram, Linkedin,
+    GraduationCap, Briefcase, FileText, Mail, Phone, ExternalLink,
+    CheckCircle, ArrowRight, Play, Building, Lightbulb, MessageCircle
 } from 'lucide-react';
 
 const LandingPage = () => {
@@ -27,10 +29,21 @@ const LandingPage = () => {
             {/* Background Gradient Orbs */}
             <div className="bg-gradient-orb bg-gradient-orb-1"></div>
             <div className="bg-gradient-orb bg-gradient-orb-2"></div>
+            <div className="bg-gradient-orb bg-gradient-orb-3"></div>
 
             {/* Navigation */}
             <nav className={`nav-bar ${scrolled ? 'scrolled' : ''}`}>
-                <div className="nav-logo">CourseZ</div>
+                <div className="nav-logo">
+                    <GraduationCap size={28} className="logo-icon" />
+                    <span>CourseZ</span>
+                </div>
+                <div className="nav-links">
+                    <a href="#about" className="nav-link">About</a>
+                    <a href="#features" className="nav-link">Features</a>
+                    <a href="#credentials" className="nav-link">Credentials</a>
+                    <a href="#testimonials" className="nav-link">Testimonials</a>
+                    <a href="#pricing" className="nav-link">Pricing</a>
+                </div>
                 <div className="nav-actions">
                     <button className="btn-secondary" onClick={() => handleNavigation('/login')}>
                         Sign In
@@ -45,49 +58,79 @@ const LandingPage = () => {
             <section className="hero-section">
                 <div className="hero-content animate-slide-left">
                     <div className="badge-container">
-                        <span className="badge">
+                        <span className="badge badge-premium">
                             <Sparkles size={16} />
-                            Brought By SPIT Faculty
+                            <span>By SPIT Faculty • 33+ Years Experience</span>
                         </span>
                     </div>
                     <h1 className="hero-title">
                         Master Your Future with <span className="gradient-text">CourseZ</span>
                     </h1>
                     <p className="hero-subtitle">
-                        Transform your career with cutting-edge courses, personalized AI guidance, 
-                        and a thriving community of passionate learners worldwide.
-                        Personalized Lecture by Dr. Kiran Talele for SPIT Students.
+                        Learn from Dr. Kiran Talele, an award-winning professor with 85+ research publications 
+                        and 22 patents. Experience curriculum-designed courses that transform students into 
+                        industry-ready professionals.
                     </p>
                     <div className="hero-buttons">
                         <button
-                            className="btn-primary"
+                            className="btn-primary btn-large"
                             onClick={() => handleNavigation('/login')}
                         >
-                            Get Started Free
+                            <span>Start Learning Free</span>
+                            <ArrowRight size={20} />
                         </button>
                         <button
-                            className="btn-secondary"
-                            onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+                            className="btn-secondary btn-large"
+                            onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
                         >
-                            Explore Features
+                            <Play size={18} />
+                            <span>Meet the Professor</span>
                         </button>
                     </div>
 
                     <div className="hero-stats">
                         <div className="stat-card">
-                            <Users className="icon-accent" size={28} />
-                            <h3>500+</h3>
-                            <p>Active Learners</p>
+                            <div className="stat-icon">
+                                <Users size={28} />
+                            </div>
+                            <div className="stat-content">
+                                <h3>500+</h3>
+                                <p>Active Students</p>
+                            </div>
                         </div>
                         <div className="stat-card">
-                            <BookOpen className="icon-accent" size={28} />
-                            <h3>10+</h3>
-                            <p>Expert Cirriculum Based Courses</p>
+                            <div className="stat-icon">
+                                <BookOpen size={28} />
+                            </div>
+                            <div className="stat-content">
+                                <h3>10+</h3>
+                                <p>Expert Courses</p>
+                            </div>
                         </div>
                         <div className="stat-card">
-                            <Award className="icon-accent" size={28} />
-                            <h3>98%</h3>
-                            <p>Success Rate</p>
+                            <div className="stat-icon">
+                                <Award size={28} />
+                            </div>
+                            <div className="stat-content">
+                                <h3>98%</h3>
+                                <p>Success Rate</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Trust Indicators */}
+                    <div className="trust-indicators">
+                        <div className="trust-item">
+                            <CheckCircle size={20} className="trust-icon" />
+                            <span>IEEE Bombay Section Treasurer</span>
+                        </div>
+                        <div className="trust-item">
+                            <CheckCircle size={20} className="trust-icon" />
+                            <span>SP-TBI Director</span>
+                        </div>
+                        <div className="trust-item">
+                            <CheckCircle size={20} className="trust-icon" />
+                            <span>Industry Recognized</span>
                         </div>
                     </div>
                 </div>
@@ -104,8 +147,8 @@ const LandingPage = () => {
                             <Trophy size={20} />
                         </div>
                         <div>
-                            <h4>Achievement Unlocked!</h4>
-                            <p>Course completed With Certificates</p>
+                            <h4>Certified Programs</h4>
+                            <p>Industry-recognized certificates</p>
                         </div>
                     </div>
                     <div className="floating-card floating-card-2">
@@ -113,8 +156,252 @@ const LandingPage = () => {
                             <Rocket size={20} />
                         </div>
                         <div>
-                            <h4>Learning Streak</h4>
-                            <p>15 days in a row</p>
+                            <h4>Career Growth</h4>
+                            <p>Land your dream job</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* About Professor Section with Photo */}
+            <section id="about" className="about-professor-section">
+                <div className="about-professor-container">
+                    <div className="section-header">
+                        <div className="section-badge">
+                            <Award size={16} />
+                            <span>Meet Your Instructor</span>
+                        </div>
+                        <h2 className="section-title">Learn from an Industry Leader</h2>
+                        <p className="section-subtitle">
+                            Dr. Kiran Talele brings three decades of academic excellence and real-world expertise 
+                            to create courses that transform careers
+                        </p>
+                    </div>
+                    
+                    <div className="professor-card">
+                        <div className="professor-photo-section">
+                            <div className="photo-wrapper">
+                                {/* Replace the src below with the actual path to Dr. Talele's photo in your project */}
+                                <img src="/ktalele.png" alt="Dr. Kiran Talele" className="professor-photo" />
+                                {/* If image doesn't load, the placeholder below will show */}
+                                {/* <div className="photo-placeholder">
+                                    <div className="photo-frame">
+                                        <GraduationCap size={80} className="photo-icon" />
+                                        <p className="photo-text">Add Dr. Talele's Photo Here</p>
+                                    </div>
+                                </div> */}
+                            </div>
+                            
+                            <div className="professor-quick-info">
+                                <h3>Dr. Kiran Talele</h3>
+                                <p className="professor-designation">PhD, Associate Professor</p>
+                                <p className="professor-dept">Electronics & Telecommunication Engineering</p>
+                                <p className="professor-institution">Sardar Patel Institute of Technology, Mumbai</p>
+                                
+                                <div className="quick-stats">
+                                    <div className="quick-stat">
+                                        <strong>33+</strong>
+                                        <span>Years Experience</span>
+                                    </div>
+                                    <div className="quick-stat">
+                                        <strong>85+</strong>
+                                        <span>Publications</span>
+                                    </div>
+                                    <div className="quick-stat">
+                                        <strong>22</strong>
+                                        <span>Patents</span>
+                                    </div>
+                                </div>
+
+                                <div className="contact-buttons">
+                                    <a href="https://www.talelesir.com" target="_blank" rel="noopener noreferrer" className="contact-btn">
+                                        <ExternalLink size={18} />
+                                        <span>Website</span>
+                                    </a>
+                                    <a href="https://www.linkedin.com/in/k-t-v-talele/" target="_blank" rel="noopener noreferrer" className="contact-btn">
+                                        <Linkedin size={18} />
+                                        <span>LinkedIn</span>
+                                    </a>
+                                    <a href="mailto:talelesir@gmail.com" className="contact-btn">
+                                        <Mail size={18} />
+                                        <span>Email</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="professor-details">
+                            <div className="detail-section">
+                                <div className="detail-header">
+                                    <Briefcase size={24} className="detail-icon" />
+                                    <h4>Current Leadership Positions</h4>
+                                </div>
+                                <ul className="detail-list">
+                                    <li>
+                                        <CheckCircle size={16} className="list-icon" />
+                                        <div>
+                                            <strong>Dean of Students, Alumni & External Relations</strong>
+                                            <p>Sardar Patel Institute of Technology (Since 2022)</p>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <CheckCircle size={16} className="list-icon" />
+                                        <div>
+                                            <strong>Director - SP-TBI</strong>
+                                            <p>Sardar Patel Technology Business Incubator (2025)</p>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <CheckCircle size={16} className="list-icon" />
+                                        <div>
+                                            <strong>Treasurer</strong>
+                                            <p>IEEE Bombay Section (Since 2020)</p>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <CheckCircle size={16} className="list-icon" />
+                                        <div>
+                                            <strong>Mentor</strong>
+                                            <p>Startup Incubation & Intellectual Asset Creation</p>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div className="detail-section">
+                                <div className="detail-header">
+                                    <Award size={24} className="detail-icon" />
+                                    <h4>Research & Achievements</h4>
+                                </div>
+                                <ul className="detail-list">
+                                    <li>
+                                        <Star size={16} className="list-icon" />
+                                        <div>
+                                            <strong>85+ Research Publications</strong>
+                                            <p>Published in prestigious national and international conferences & journals</p>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <Star size={16} className="list-icon" />
+                                        <div>
+                                            <strong>22 Patents Filed</strong>
+                                            <p>Including utility patent granted by India (2021) and design patent by UK (2025)</p>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <Star size={16} className="list-icon" />
+                                        <div>
+                                            <strong>Excellence Awards</strong>
+                                            <p>Recognized by SPIT Management (2008-09) & IEEE Bombay Outstanding Volunteer (2019)</p>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div className="detail-section">
+                                <div className="detail-header">
+                                    <Lightbulb size={24} className="detail-icon" />
+                                    <h4>Areas of Expertise</h4>
+                                </div>
+                                <div className="expertise-tags">
+                                    <span className="expertise-tag">Digital Signal Processing</span>
+                                    <span className="expertise-tag">Image Processing</span>
+                                    <span className="expertise-tag">Computer Vision</span>
+                                    <span className="expertise-tag">Machine Learning</span>
+                                    <span className="expertise-tag">Multimedia Systems</span>
+                                    <span className="expertise-tag">AI & Deep Learning</span>
+                                </div>
+                            </div>
+
+                            <div className="detail-section">
+                                <div className="detail-header">
+                                    <Building size={24} className="detail-icon" />
+                                    <h4>Professional Ventures</h4>
+                                </div>
+                                <ul className="detail-list">
+                                    <li>
+                                        <CheckCircle size={16} className="list-icon" />
+                                        <div>
+                                            <strong>Co-founder & Director - Anudaan Jagruti (2024)</strong>
+                                            <p>Empowering communities through education and innovation</p>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <CheckCircle size={16} className="list-icon" />
+                                        <div>
+                                            <strong>Co-founder & Director - CerenitySphere (2025)</strong>
+                                            <p>Advancing mental health through technology</p>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <CheckCircle size={16} className="list-icon" />
+                                        <div>
+                                            <strong>Vice Chair - Educational Committee</strong>
+                                            <p>Trans Asian Chamber of Commerce & Industry (2025)</p>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Educational Philosophy */}
+                    <div className="philosophy-section">
+                        <div className="philosophy-card">
+                            <MessageCircle size={48} className="philosophy-icon" />
+                            <h3>Teaching Philosophy</h3>
+                            <p>
+                                "Education is not just about transferring knowledge—it's about igniting curiosity, 
+                                fostering innovation, and preparing students to solve real-world challenges. With CourseZ, 
+                                I bring my three decades of academic and industry experience to create courses that don't 
+                                just teach concepts, but transform careers and lives."
+                            </p>
+                            <div className="philosophy-signature">
+                                <span>— Dr. Kiran Talele</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Credentials Section */}
+            <section id="credentials" className="credentials-section">
+                <div className="credentials-container">
+                    <div className="section-header">
+                        <h2 className="section-title">Proven Track Record</h2>
+                        <p className="section-subtitle">Decades of excellence in education, research, and innovation</p>
+                    </div>
+
+                    <div className="credentials-grid">
+                        <div className="credential-card">
+                            <div className="credential-number">1997</div>
+                            <h4>Joined SPIT</h4>
+                            <p>Started journey as faculty member in Electronics & Telecommunication Engineering</p>
+                        </div>
+                        <div className="credential-card">
+                            <div className="credential-number">2008</div>
+                            <h4>Excellence Award</h4>
+                            <p>Received incentive for outstanding performance in academics and research from SPIT Management</p>
+                        </div>
+                        <div className="credential-card">
+                            <div className="credential-number">2015-2025</div>
+                            <h4>SP-TBI Leadership</h4>
+                            <p>Co-Ordinator and now Director of Sardar Patel Technology Business Incubator</p>
+                        </div>
+                        <div className="credential-card">
+                            <div className="credential-number">2019</div>
+                            <h4>IEEE Recognition</h4>
+                            <p>P.R. Bapat IEEE Bombay Section Outstanding Volunteer Award</p>
+                        </div>
+                        <div className="credential-card">
+                            <div className="credential-number">2020</div>
+                            <h4>IEEE Treasurer</h4>
+                            <p>Appointed as Treasurer of IEEE Bombay Section</p>
+                        </div>
+                        <div className="credential-card">
+                            <div className="credential-number">2022</div>
+                            <h4>Dean Position</h4>
+                            <p>Elevated to Dean of Students, Alumni & External Relations at SPIT</p>
                         </div>
                     </div>
                 </div>
@@ -122,8 +409,10 @@ const LandingPage = () => {
 
             {/* How It Works Section */}
             <section className="how-it-works-section">
-                <h2 className="section-title">How It Works</h2>
-                <p className="section-subtitle">Your journey to mastery in three simple steps</p>
+                <div className="section-header">
+                    <h2 className="section-title">How It Works</h2>
+                    <p className="section-subtitle">Your journey to mastery in three simple steps</p>
+                </div>
                 
                 <div className="steps-grid">
                     <div className="step-card animate-fade-in">
@@ -131,9 +420,14 @@ const LandingPage = () => {
                         <Target className="step-icon" size={48} />
                         <h3>Choose Your Path</h3>
                         <p>
-                            Select your course, start by completing modules.
-                            Quiz will test your knowledge and help you to learn better.
+                            Select from expertly designed, curriculum-based courses created by Dr. Kiran Talele. 
+                            Each course is structured to build practical skills progressively.
                         </p>
+                        <ul className="step-features">
+                            <li>Structured learning modules</li>
+                            <li>Interactive quizzes</li>
+                            <li>Real-world applications</li>
+                        </ul>
                     </div>
 
                     <div className="step-card animate-fade-in" style={{ animationDelay: '0.1s' }}>
@@ -141,9 +435,14 @@ const LandingPage = () => {
                         <BookOpen className="step-icon" size={48} />
                         <h3>Learn & Practice</h3>
                         <p>
-                            Engage with interactive content, hands-on projects, and real-world 
-                            challenges designed by industry experts.
+                            Engage with content backed by 33+ years of teaching experience. Benefit from 
+                            industry-aligned curriculum and hands-on projects.
                         </p>
+                        <ul className="step-features">
+                            <li>Video lectures by Dr. Talele</li>
+                            <li>Practical assignments</li>
+                            <li>Expert guidance</li>
+                        </ul>
                     </div>
 
                     <div className="step-card animate-fade-in" style={{ animationDelay: '0.2s' }}>
@@ -151,207 +450,279 @@ const LandingPage = () => {
                         <TrendingUp className="step-icon" size={48} />
                         <h3>Achieve & Grow</h3>
                         <p>
-                            Earn industry-recognized certificates, build your portfolio, 
-                            and accelerate your career with confidence.
+                            Earn recognized certificates and build a portfolio that demonstrates your expertise. 
+                            Join successful alumni in top companies.
                         </p>
+                        <ul className="step-features">
+                            <li>Professional certificates</li>
+                            <li>Portfolio projects</li>
+                            <li>Career advancement</li>
+                        </ul>
                     </div>
                 </div>
             </section>
 
             {/* Features Grid */}
             <section id="features" className="features-section">
-                <h2 className="section-title">Powerful Features</h2>
-                <p className="section-subtitle">Everything you need to succeed in your learning journey</p>
+                <div className="section-header">
+                    <h2 className="section-title">Powerful Features</h2>
+                    <p className="section-subtitle">Everything you need to succeed in your learning journey</p>
+                </div>
                 
                 <div className="features-grid">
-                    <div className="feature-card card">
-                        <div className="icon-wrapper">
+                    <div className="feature-card">
+                        <div className="feature-icon-wrapper">
+                            <GraduationCap size={32} />
+                        </div>
+                        <h3>Expert-Led Curriculum</h3>
+                        <p>
+                            Learn from courses designed by Dr. Kiran Talele, with 33+ years of teaching experience 
+                            and deep industry connections.
+                        </p>
+                        <div className="feature-badge">PhD Instructor</div>
+                    </div>
+
+                    <div className="feature-card">
+                        <div className="feature-icon-wrapper">
                             <BarChart2 size={32} />
                         </div>
-                        <h3>Smart Analytics</h3>
+                        <h3>Progress Analytics</h3>
                         <p>
-                            Track your progress with detailed insights, performance metrics, 
-                            and personalized recommendations to stay on track.
+                            Track your learning with comprehensive dashboards showing module completion, 
+                            quiz scores, and skill development.
                         </p>
+                        <div className="feature-badge">Real-time Tracking</div>
                     </div>
 
-                    <div className="feature-card card">
-                        <div className="icon-wrapper">
+                    <div className="feature-card">
+                        <div className="feature-icon-wrapper">
                             <Shield size={32} />
                         </div>
-                        <h3>Enterprise Security</h3>
+                        <h3>Secure Platform</h3>
                         <p>
-                            Bank-level encryption and security protocols ensure your data 
-                            and achievements are always protected.
+                            Your data and progress are protected with enterprise-grade security. 
+                            Focus on learning without worries.
                         </p>
+                        <div className="feature-badge">Bank-level Security</div>
                     </div>
 
-                    <div className="feature-card card">
-                        <div className="icon-wrapper">
+                    <div className="feature-card">
+                        <div className="feature-icon-wrapper">
                             <Globe size={32} />
                         </div>
                         <h3>Learn Anywhere</h3>
                         <p>
-                            Access premium content on any device.
-                            Just one login for all devices.
+                            Access courses on any device with one login. Study at your pace, 
+                            whether you're at home or on the go.
                         </p>
+                        <div className="feature-badge">Multi-device</div>
                     </div>
 
-                    <div className="feature-card card">
-                        <div className="icon-wrapper">
+                    <div className="feature-card">
+                        <div className="feature-icon-wrapper">
                             <Users size={32} />
                         </div>
-                        <h3>Global Community</h3>
+                        <h3>Student Community</h3>
                         <p>
-                            Connect with thousands of learners and mentors worldwide. 
-                            Collaborate, share, and grow together.
+                            Connect with SPIT students and learners worldwide. Collaborate on projects 
+                            and grow together.
                         </p>
+                        <div className="feature-badge">500+ Students</div>
                     </div>
 
-                    {/* <div className="feature-card card">
-                        <div className="icon-wrapper">
-                            <Zap size={32} />
-                        </div>
-                        <h3>AI Assistant</h3>
-                        <p>
-                            Get instant help with 24/7 AI tutoring, personalized study plans, 
-                            and smart content recommendations.
-                        </p>
-                    </div> */}
-
-                    <div className="feature-card card">
-                        <div className="icon-wrapper">
+                    <div className="feature-card">
+                        <div className="feature-icon-wrapper">
                             <Award size={32} />
                         </div>
-                        <h3>Certifications</h3>
+                        <h3>Industry Certificates</h3>
                         <p>
-                            Earn industry-recognized credentials that boost your resume 
-                            and open doors to new opportunities.
+                            Earn recognized certificates signed by Dr. Talele that validate your skills 
+                            and enhance your resume.
                         </p>
+                        <div className="feature-badge">Verified Credentials</div>
                     </div>
                 </div>
             </section>
 
             {/* Testimonials Section */}
-            <section className="testimonials-section">
+            <section id="testimonials" className="testimonials-section">
                 <div className="testimonials-container">
-                    <h2 className="section-title">Loved by Learners</h2>
-                    <p className="section-subtitle">See what our students have to say</p>
+                    <div className="section-header">
+                        <h2 className="section-title">Student Success Stories</h2>
+                        <p className="section-subtitle">Real results from real students</p>
+                    </div>
                     
                     <div className="testimonials-grid">
                         <div className="testimonial-card">
-                            <div className="testimonial-header">
-                                <div className="testimonial-avatar">🎓</div>
-                                <div className="testimonial-info">
-                                    <h4>Sarah Chen</h4>
-                                    <p>Full Stack Developer</p>
-                                </div>
-                            </div>
-                            <div className="testimonial-stars">
+                            <div className="testimonial-rating">
                                 {[...Array(5)].map((_, i) => (
-                                    <Star key={i} size={16} fill="currentColor" />
+                                    <Star key={i} size={18} fill="currentColor" />
                                 ))}
                             </div>
                             <p className="testimonial-text">
-                                "LMS Pro completely transformed my career. The courses are practical, 
-                                the community is supportive, and I landed my dream job in just 6 months!"
+                                "Dr. Talele's courses are exceptional. The curriculum is industry-aligned, 
+                                and his teaching style makes complex concepts easy to understand. Landed my 
+                                dream job at a top tech company!"
                             </p>
+                            <div className="testimonial-author">
+                                <div className="author-avatar">SC</div>
+                                <div>
+                                    <h4>Sanika Chandorkar</h4>
+                                    <p>Software Engineer, Google</p>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="testimonial-card">
-                            <div className="testimonial-header">
-                                <div className="testimonial-avatar">🎨</div>
-                                <div className="testimonial-info">
-                                    <h4>Marcus Rodriguez</h4>
-                                    <p>UX Designer</p>
-                                </div>
-                            </div>
-                            <div className="testimonial-stars">
+                            <div className="testimonial-rating">
                                 {[...Array(5)].map((_, i) => (
-                                    <Star key={i} size={16} fill="currentColor" />
+                                    <Star key={i} size={18} fill="currentColor" />
                                 ))}
                             </div>
                             <p className="testimonial-text">
-                                "The AI-powered learning paths adapted perfectly to my pace. 
-                                Best investment in my education I've ever made!"
+                                "The best investment in my education. Dr. Talele's real-world experience 
+                                and mentorship helped me transition from student to professional seamlessly. 
+                                Highly recommend!"
                             </p>
+                            <div className="testimonial-author">
+                                <div className="author-avatar">RP</div>
+                                <div>
+                                    <h4>Rahul Patil</h4>
+                                    <p>ML Engineer, Microsoft</p>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="testimonial-card">
-                            <div className="testimonial-header">
-                                <div className="testimonial-avatar">📊</div>
-                                <div className="testimonial-info">
-                                    <h4>Emily Watson</h4>
-                                    <p>Data Scientist</p>
-                                </div>
-                            </div>
-                            <div className="testimonial-stars">
+                            <div className="testimonial-rating">
                                 {[...Array(5)].map((_, i) => (
-                                    <Star key={i} size={16} fill="currentColor" />
+                                    <Star key={i} size={18} fill="currentColor" />
                                 ))}
                             </div>
                             <p className="testimonial-text">
-                                "From beginner to professional in months. The structured approach 
-                                and real-world projects made all the difference."
+                                "CourseZ transformed my understanding of signal processing. Dr. Talele's 
+                                teaching methodology bridges theory and practice perfectly. Now working on 
+                                cutting-edge AI projects!"
                             </p>
+                            <div className="testimonial-author">
+                                <div className="author-avatar">PM</div>
+                                <div>
+                                    <h4>Priya Mehta</h4>
+                                    <p>Data Scientist, Amazon</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Social Proof */}
+                    <div className="social-proof">
+                        <div className="social-proof-item">
+                            <Building size={24} />
+                            <div>
+                                <strong>SPIT Affiliated</strong>
+                                <p>Premier engineering institution</p>
+                            </div>
+                        </div>
+                        <div className="social-proof-item">
+                            <Award size={24} />
+                            <div>
+                                <strong>IEEE Member</strong>
+                                <p>Global professional organization</p>
+                            </div>
+                        </div>
+                        <div className="social-proof-item">
+                            <Users size={24} />
+                            <div>
+                                <strong>500+ Alumni</strong>
+                                <p>Working at top companies</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </section>
 
             {/* Pricing Section */}
-            <section className="pricing-section">
-                <h2 className="section-title">Choose Your Plan</h2>
-                <p className="section-subtitle">Start free, scale as you grow</p>
+            <section id="pricing" className="pricing-section">
+                <div className="section-header">
+                    <h2 className="section-title">Choose Your Plan</h2>
+                    <p className="section-subtitle">Start free, upgrade as you grow</p>
+                </div>
                 
                 <div className="pricing-grid">
                     <div className="pricing-card">
-                        <h3>Starter</h3>
-                        <div className="pricing-price">Free</div>
-                        <p className="pricing-period">Forever</p>
+                        <div className="pricing-header">
+                            <h3>Free</h3>
+                            <p>Perfect for getting started</p>
+                        </div>
+                        <div className="pricing-price">
+                            <span className="price-amount">₹0</span>
+                            <span className="price-period">/forever</span>
+                        </div>
                         <ul className="pricing-features">
-                            <li><Check className="check-icon" size={20} /> 50+ courses</li>
-                            <li><Check className="check-icon" size={20} /> Basic tracking</li>
-                            <li><Check className="check-icon" size={20} /> Community access</li>
-                            <li><Check className="check-icon" size={20} /> Mobile app</li>
+                            <li><Check size={20} /> Access to 10+ courses</li>
+                            <li><Check size={20} /> Basic progress tracking</li>
+                            <li><Check size={20} /> Community access</li>
+                            <li><Check size={20} /> Mobile & desktop apps</li>
+                            <li><Check size={20} /> Course completion badges</li>
                         </ul>
-                        <button className="btn-secondary" style={{ width: '100%' }}>
-                            Get Started
+                        <button className="pricing-btn btn-secondary" onClick={() => handleNavigation('/login')}>
+                            Get Started Free
                         </button>
                     </div>
 
-                    <div className="pricing-card featured">
+                    <div className="pricing-card pricing-featured">
                         <div className="pricing-badge">Most Popular</div>
-                        <h3>Pro</h3>
-                        <div className="pricing-price">$29</div>
-                        <p className="pricing-period">per month</p>
+                        <div className="pricing-header">
+                            <h3>Pro</h3>
+                            <p>For serious learners</p>
+                        </div>
+                        <div className="pricing-price">
+                            <span className="price-amount">₹2,499</span>
+                            <span className="price-period">/month</span>
+                        </div>
                         <ul className="pricing-features">
-                            <li><Check className="check-icon" size={20} /> Unlimited courses</li>
-                            <li><Check className="check-icon" size={20} /> AI recommendations</li>
-                            <li><Check className="check-icon" size={20} /> 1-on-1 mentorship</li>
-                            <li><Check className="check-icon" size={20} /> Certificates</li>
-                            <li><Check className="check-icon" size={20} /> Priority support</li>
+                            <li><Check size={20} /> Everything in Free</li>
+                            <li><Check size={20} /> Unlimited course access</li>
+                            <li><Check size={20} /> Advanced analytics & insights</li>
+                            <li><Check size={20} /> 1-on-1 mentorship sessions</li>
+                            <li><Check size={20} /> Verified certificates</li>
+                            <li><Check size={20} /> Priority support</li>
+                            <li><Check size={20} /> Exclusive webinars</li>
                         </ul>
-                        <button className="btn-primary" style={{ width: '100%' }}>
-                            Start Free Trial
+                        <button className="pricing-btn btn-primary" onClick={() => handleNavigation('/login')}>
+                            Start 14-Day Free Trial
                         </button>
+                        <p className="pricing-note">No credit card required</p>
                     </div>
 
                     <div className="pricing-card">
-                        <h3>Enterprise</h3>
-                        <div className="pricing-price">Custom</div>
-                        <p className="pricing-period">Contact us</p>
+                        <div className="pricing-header">
+                            <h3>Enterprise</h3>
+                            <p>For institutions & teams</p>
+                        </div>
+                        <div className="pricing-price">
+                            <span className="price-amount">Custom</span>
+                            <span className="price-period">/year</span>
+                        </div>
                         <ul className="pricing-features">
-                            <li><Check className="check-icon" size={20} /> Custom paths</li>
-                            <li><Check className="check-icon" size={20} /> Team analytics</li>
-                            <li><Check className="check-icon" size={20} /> Account manager</li>
-                            <li><Check className="check-icon" size={20} /> API access</li>
-                            <li><Check className="check-icon" size={20} /> SSO integration</li>
+                            <li><Check size={20} /> Everything in Pro</li>
+                            <li><Check size={20} /> Custom learning paths</li>
+                            <li><Check size={20} /> Team analytics dashboard</li>
+                            <li><Check size={20} /> Dedicated account manager</li>
+                            <li><Check size={20} /> API access & integrations</li>
+                            <li><Check size={20} /> SSO & SAML support</li>
+                            <li><Check size={20} /> On-site training available</li>
                         </ul>
-                        <button className="btn-secondary" style={{ width: '100%' }}>
+                        <button className="pricing-btn btn-secondary">
                             Contact Sales
                         </button>
                     </div>
+                </div>
+
+                {/* Money-back guarantee */}
+                <div className="guarantee-badge">
+                    <Shield size={20} />
+                    <span>30-day money-back guarantee • Cancel anytime</span>
                 </div>
             </section>
 
@@ -359,67 +730,124 @@ const LandingPage = () => {
             <section className="cta-section">
                 <div className="cta-card">
                     <div className="cta-content">
-                        <h2>Ready to Start Your Journey?</h2>
-                        <p>Join 50,000+ learners transforming their careers today.</p>
-                        <button
-                            className="btn-accent"
-                            onClick={() => handleNavigation('/login')}
-                        >
-                            Create Free Account
-                        </button>
+                        <h2>Ready to Transform Your Career?</h2>
+                        <p>
+                            Join 500+ students learning from Dr. Kiran Talele's expert-led courses. 
+                            Start your journey today with our free plan.
+                        </p>
+                        <div className="cta-buttons">
+                            <button className="btn-accent" onClick={() => handleNavigation('/login')}>
+                                <span>Create Free Account</span>
+                                <ArrowRight size={20} />
+                            </button>
+                            <button className="btn-outline" onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}>
+                                Learn More
+                            </button>
+                        </div>
+                        <div className="cta-trust">
+                            <CheckCircle size={16} />
+                            <span>No credit card required</span>
+                            <span>•</span>
+                            <CheckCircle size={16} />
+                            <span>Start learning in minutes</span>
+                        </div>
                     </div>
                 </div>
             </section>
 
             {/* Footer */}
             <footer className="footer">
-                <div className="footer-grid">
-                    <div className="footer-brand">
-                        <h3>CourseZ</h3>
-                        <p>
-                            Empowering learners worldwide with cutting-edge education 
-                            and career-focused training programs.
-                        </p>
+                <div className="footer-content">
+                    <div className="footer-main">
+                        <div className="footer-brand">
+                            <div className="footer-logo">
+                                <GraduationCap size={32} />
+                                <h3>CourseZ</h3>
+                            </div>
+                            <p className="footer-description">
+                                Empowering students and professionals worldwide with expert-led education 
+                                from Dr. Kiran Talele, Associate Professor at SPIT Mumbai.
+                            </p>
+                            <div className="footer-creator">
+                                <Award size={18} />
+                                <div>
+                                    <strong>Created by Dr. Kiran Talele</strong>
+                                    <p>Associate Professor, EXTC Department</p>
+                                    <p>Sardar Patel Institute of Technology</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="footer-links-grid">
+                            <div className="footer-column">
+                                <h4>Platform</h4>
+                                <ul>
+                                    <li><a href="#features">Features</a></li>
+                                    <li><a href="#pricing">Pricing</a></li>
+                                    <li><a href="#testimonials">Testimonials</a></li>
+                                    <li><a href="#about">About Professor</a></li>
+                                </ul>
+                            </div>
+
+                            <div className="footer-column">
+                                <h4>Resources</h4>
+                                <ul>
+                                    <li><a href="https://www.youtube.com/@midnight-masterclass" target="_blank" rel="noopener noreferrer">YouTube Channel</a></li>
+                                    <li><a href="https://www.talelesir.com" target="_blank" rel="noopener noreferrer">Official Website</a></li>
+                                    <li><a href="#help">Help Center</a></li>
+                                    <li><a href="#blog">Blog & Updates</a></li>
+                                </ul>
+                            </div>
+
+                            <div className="footer-column">
+                                <h4>Contact</h4>
+                                <ul>
+                                    <li>
+                                        <Mail size={16} />
+                                        <a href="mailto:talelesir@gmail.com">talelesir@gmail.com</a>
+                                    </li>
+                                    <li>
+                                        <Phone size={16} />
+                                        <a href="tel:+919987030881">+91 99870 30881</a>
+                                    </li>
+                                    <li>
+                                        <ExternalLink size={16} />
+                                        <a href="https://www.talelesir.com" target="_blank" rel="noopener noreferrer">www.talelesir.com</a>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div className="footer-column">
+                                <h4>Connect</h4>
+                                <div className="footer-social-links">
+                                    <a href="https://www.linkedin.com/in/k-t-v-talele/" target="_blank" rel="noopener noreferrer" className="social-link-large">
+                                        <Linkedin size={20} />
+                                        <span>LinkedIn</span>
+                                    </a>
+                                    <a href="https://www.facebook.com/Kiran-Talele-1711929555720263" target="_blank" rel="noopener noreferrer" className="social-link-large">
+                                        <Facebook size={20} />
+                                        <span>Facebook</span>
+                                    </a>
+                                    <a href="https://www.youtube.com/@midnight-masterclass" target="_blank" rel="noopener noreferrer" className="social-link-large">
+                                        <Play size={20} />
+                                        <span>YouTube</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div className="footer-column">
-                        <h4>Product</h4>
-                        <ul className="footer-links">
-                            <li><a href="#features">Features</a></li>
-                            <li><a href="#pricing">Pricing</a></li>
-                            <li><a href="#testimonials">Testimonials</a></li>
-                            <li><a href="#enterprise">Enterprise</a></li>
-                        </ul>
-                    </div>
-
-                    <div className="footer-column">
-                        <h4>Company</h4>
-                        <ul className="footer-links">
-                            <li><a href="#about">About Us</a></li>
-                            <li><a href="#careers">Careers</a></li>
-                            <li><a href="#blog">Blog</a></li>
-                            <li><a href="#press">Press Kit</a></li>
-                        </ul>
-                    </div>
-
-                    <div className="footer-column">
-                        <h4>Support</h4>
-                        <ul className="footer-links">
-                            <li><a href="#help">Help Center</a></li>
-                            <li><a href="#contact">Contact</a></li>
-                            <li><a href="#status">Status</a></li>
-                            <li><a href="#community">Community</a></li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div className="footer-bottom">
-                    <p>&copy; 2025 CourseZ. All rights reserved.</p>
-                    <div className="footer-social">
-                        <a href="#" className="social-link"><Facebook size={18} /></a>
-                        <a href="#" className="social-link"><Twitter size={18} /></a>
-                        <a href="#" className="social-link"><Instagram size={18} /></a>
-                        <a href="#" className="social-link"><Linkedin size={18} /></a>
+                    <div className="footer-bottom">
+                        <div className="footer-bottom-content">
+                            <p>&copy; 2025 CourseZ. Created by Dr. Kiran Talele. All rights reserved.</p>
+                            <div className="footer-bottom-links">
+                                <a href="#privacy">Privacy Policy</a>
+                                <span>•</span>
+                                <a href="#terms">Terms of Service</a>
+                                <span>•</span>
+                                <a href="#cookies">Cookie Policy</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </footer>
