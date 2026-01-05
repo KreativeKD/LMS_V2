@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Book, ChevronRight, Layout, Users, X, Calendar } from 'lucide-react';
-import { fetchCourses, createCourse, fetchEnrolledStudents, fetchSettings } from '../api/api';
+import { fetchCourses, createCourse, fetchEnrolledStudents, fetchSettings, fetchEnrollmentRequests, approveEnrollment } from '../api/api';
 import { useAuth } from '../context/AuthContext';
 
 const TeacherDashboard = () => {
@@ -14,16 +14,27 @@ const TeacherDashboard = () => {
     const [showStudentsModal, setShowStudentsModal] = useState(false);
     const [enrolledStudents, setEnrolledStudents] = useState([]);
     const [completionDate, setCompletionDate] = useState(null);
+    const [showRequestsModal, setShowRequestsModal] = useState(false);
+    const [requests, setRequests] = useState([]);
 
     useEffect(() => {
-        loadCourses();
+        if (user) {
+            loadCourses();
+        }
         loadSettings();
-    }, []);
+    }, [user]);
 
     const loadCourses = async () => {
         try {
             const data = await fetchCourses();
-            setCourses(data || []);
+            // Filter courses: Instructor OR Assigned Teacher
+            if (user && data) {
+                const myCourses = data.filter(c =>
+                    (c.instructor && String(c.instructor._id) === String(user._id)) ||
+                    (c.assignedTeachers && c.assignedTeachers.some(t => String(t._id) === String(user._id)))
+                );
+                setCourses(myCourses);
+            }
         } catch (err) {
             console.error(err);
         }
@@ -55,6 +66,29 @@ const TeacherDashboard = () => {
             const students = await fetchEnrolledStudents(courseId);
             setEnrolledStudents(students);
             setShowStudentsModal(true);
+        } catch (err) {
+            alert(err.message);
+        }
+    };
+
+    const handleViewRequests = async (courseId) => {
+        try {
+            const reqs = await fetchEnrollmentRequests(courseId);
+            setRequests(reqs);
+            setShowRequestsModal(true);
+        } catch (err) {
+            alert(err.message);
+        }
+    };
+
+    const handleApproveRequest = async (studentId, action) => {
+        try {
+            await approveEnrollment(selectedCourse._id, studentId, action);
+            // Refresh requests
+            const reqs = await fetchEnrollmentRequests(selectedCourse._id);
+            setRequests(reqs);
+            // Refresh course details (student count might change)
+            loadCourses();
         } catch (err) {
             alert(err.message);
         }
@@ -115,7 +149,15 @@ const TeacherDashboard = () => {
                                     border: selectedCourse?._id === course._id ? '1px solid var(--primary)' : '1px solid transparent'
                                 }}
                             >
-                                <span>{course.title}</span>
+                                <div>
+                                    <span>{course.title}</span>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                        Teachers: {[
+                                            course.instructor?.username?.split('@')[0],
+                                            ...(course.assignedTeachers?.map(t => t.username?.split('@')[0]) || [])
+                                        ].filter(Boolean).join(', ')}
+                                    </div>
+                                </div>
                                 <ChevronRight size={16} />
                             </div>
                         ))}
@@ -151,6 +193,13 @@ const TeacherDashboard = () => {
                                             style={{ marginLeft: '1rem', padding: '4px 8px', fontSize: '0.8rem' }}
                                         >
                                             VIEW STUDENTS
+                                        </button>
+                                        <button
+                                            className="btn-primary"
+                                            onClick={() => handleViewRequests(selectedCourse._id)}
+                                            style={{ marginLeft: '1rem', padding: '4px 8px', fontSize: '0.8rem' }}
+                                        >
+                                            REQUESTS
                                         </button>
                                     </div>
                                 </div>
@@ -205,7 +254,67 @@ const TeacherDashboard = () => {
                     </div>
                 </div>
             )}
-        </div>
+
+            {showRequestsModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content animate-fade-in" style={{ maxWidth: '600px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                            <h2 className="gradient-text">Enrollment Requests</h2>
+                            <button onClick={() => setShowRequestsModal(false)} style={{ background: 'transparent', color: 'white' }}>
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        {requests.length > 0 ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                {requests.map(student => (
+                                    <div key={student._id} style={{
+                                        padding: '1rem',
+                                        background: '#252525',
+                                        borderRadius: '8px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        gap: '1rem'
+                                    }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                            <div style={{ background: 'var(--glass)', padding: '0.8rem', borderRadius: '50%' }}>
+                                                <Users size={20} color="var(--primary)" />
+                                            </div>
+                                            <div>
+                                                <h4 style={{ margin: 0 }}>{student.username.split('@')[0]}</h4>
+                                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{student.username}</span>
+                                            </div>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            <button
+                                                className="btn-primary"
+                                                onClick={() => handleApproveRequest(student._id, 'approve')}
+                                                style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }}
+                                            >
+                                                Approve
+                                            </button>
+                                            <button
+                                                className="btn-secondary"
+                                                onClick={() => handleApproveRequest(student._id, 'reject')}
+                                                style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', borderColor: 'red', color: 'red' }}
+                                            >
+                                                Reject
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+                                <p>No pending requests.</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )
+            }
+        </div >
     );
 };
 

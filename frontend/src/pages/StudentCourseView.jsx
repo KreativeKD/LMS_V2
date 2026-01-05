@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { fetchCourse } from '../api/api';
 import { ArrowLeft, PlayCircle, FileText, FileType, HelpCircle, ChevronRight, Menu } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const StudentCourseView = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [course, setCourse] = useState(null);
     const [selectedUnit, setSelectedUnit] = useState(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -18,6 +20,18 @@ const StudentCourseView = () => {
         try {
             const data = await fetchCourse(id);
             setCourse(data);
+
+            // Access Control
+            const isEnrolled = data.students?.some(s => String(s) === String(user?._id));
+            const isAdmin = user?.role === 'admin';
+            const isInstructor = user?.role === 'teacher' && (data.instructor?._id === user?._id || data.assignedTeachers?.includes(user?._id));
+
+            if (!isEnrolled && !isAdmin && !isInstructor) {
+                alert('You must be enrolled and approved to view this course content.');
+                navigate('/student');
+                return;
+            }
+
             // Select first unit of first chapter by default
             if (data.chapters?.[0]?.units?.[0]) {
                 setSelectedUnit(data.chapters[0].units[0]);
@@ -49,6 +63,16 @@ const StudentCourseView = () => {
             }}>
                 <div style={{ padding: '1.5rem', borderBottom: '1px solid #333' }}>
                     <h3 className="gradient-text" style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>{course.title}</h3>
+
+                    {/* Teacher Visibility */}
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
+                        <strong>Teachers: </strong>
+                        {[
+                            course.instructor?.username?.split('@')[0],
+                            ...(course.assignedTeachers?.map(t => t.username?.split('@')[0]) || [])
+                        ].filter(Boolean).join(', ')}
+                    </div>
+
                     <button
                         onClick={() => navigate('/student')}
                         style={{ background: 'transparent', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', padding: 0 }}

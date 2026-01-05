@@ -316,3 +316,42 @@ export const freezeStudent = async (id) => {
     if (!response.ok) throw new Error('Failed to freeze student');
     return response.json();
 };
+
+export const fetchEnrollmentRequests = async (courseId) => {
+    const response = await fetch(`${API_URL}/courses/${courseId}/requests`, {
+        headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to fetch enrollment requests');
+    return response.json();
+};
+
+export const approveEnrollment = async (courseId, studentId, action) => {
+    const response = await fetch(`${API_URL}/courses/${courseId}/approve-enrollment`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ studentId, action })
+    });
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update enrollment');
+    }
+    return response.json();
+};
+
+export const assignTeacher = async (courseId, teacherId) => {
+    const response = await fetch(`${API_URL}/courses/${courseId}/assign-teacher`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ teacherId })
+    });
+    if (!response.ok) throw new Error('Failed to assign teacher');
+    return response.json();
+};
+
+export const fetchCurrentUser = async () => {
+    const response = await fetch(`${API_URL}/auth/me`, {
+        headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to fetch user');
+    return response.json();
+};

@@ -64,6 +64,16 @@ router.post('/login', async (req, res) => {
     }
 });
 
+// Get Current User Profile
+router.get('/me', auth, async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id).populate('enrolledCourses.course');
+        res.send(user);
+    } catch (e) {
+        res.status(500).send(e.message);
+    }
+});
+
 // NEW: Request Access (Step 1)
 router.post('/request-access', async (req, res) => {
     try {

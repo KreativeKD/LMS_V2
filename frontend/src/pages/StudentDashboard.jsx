@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchCourses, enrollInCourse, fetchSettings } from '../api/api';
+import { fetchCourses, enrollInCourse, fetchSettings, fetchCurrentUser } from '../api/api';
 import { PlayCircle, CheckCircle, BookOpen, Video, FileText, HelpCircle, ArrowLeft, ExternalLink, FileType, Calendar } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -12,11 +12,22 @@ const StudentDashboard = () => {
     const [selectedCourse, setSelectedCourse] = useState(null);
     const [expandedUnits, setExpandedUnits] = useState({});
     const [completionDate, setCompletionDate] = useState(null);
+    const [userData, setUserData] = useState(null);
 
     useEffect(() => {
         loadCourses();
         loadSettings();
+        loadUser();
     }, []);
+
+    const loadUser = async () => {
+        try {
+            const data = await fetchCurrentUser();
+            setUserData(data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
 
     const loadCourses = async () => {
         try {
@@ -46,8 +57,9 @@ const StudentDashboard = () => {
         setLoading(true);
         try {
             await enrollInCourse(courseId);
-            alert('Successfully enrolled!');
+            alert('Enrollment request sent! Please wait for approval.');
             loadCourses();
+            loadUser();
         } catch (err) {
             alert(err.message);
         } finally {
@@ -213,6 +225,13 @@ const StudentDashboard = () => {
                                 <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                                     <span>{course.chapters?.length || 0} chapters</span>
                                 </div>
+                                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+                                    <strong>Teachers: </strong>
+                                    {[
+                                        course.instructor?.username?.split('@')[0],
+                                        ...(course.assignedTeachers?.map(t => t.username?.split('@')[0]) || [])
+                                    ].filter(Boolean).join(', ')}
+                                </div>
                             </div>
 
                             <div style={{ padding: '1rem', borderTop: '1px solid #333', marginTop: 'auto' }}>
@@ -225,14 +244,24 @@ const StudentDashboard = () => {
                                         <PlayCircle size={18} /> View Content
                                     </button>
                                 ) : user.role === 'student' ? (
-                                    <button
-                                        onClick={() => handleEnroll(course._id)}
-                                        disabled={loading}
-                                        className="btn-accent"
-                                        style={{ width: '100%' }}
-                                    >
-                                        {loading ? 'Enrolling...' : 'Enroll Now'}
-                                    </button>
+                                    (() => {
+                                        const enrollment = userData?.enrolledCourses?.find(e => {
+                                            const enrolledId = e.course?._id || e.course;
+                                            return String(enrolledId) === String(course._id);
+                                        });
+                                        const isPending = enrollment?.status === 'pending';
+
+                                        return (
+                                            <button
+                                                onClick={() => !isPending && handleEnroll(course._id)}
+                                                disabled={loading || isPending}
+                                                className={isPending ? "btn-secondary" : "btn-accent"}
+                                                style={{ width: '100%', opacity: isPending ? 0.7 : 1 }}
+                                            >
+                                                {loading ? 'Processing...' : isPending ? 'Request Pending' : 'Request Access'}
+                                            </button>
+                                        );
+                                    })()
                                 ) : (
                                     <button
                                         onClick={() => setSelectedCourse(course)}

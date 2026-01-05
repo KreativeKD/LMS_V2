@@ -18,8 +18,9 @@ const userSchema = new mongoose.Schema({
         required: true
     },
     enrolledCourses: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Course'
+        course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
+        status: { type: String, enum: ['pending', 'approved'], default: 'pending' },
+        enrolledAt: { type: Date, default: Date.now }
     }],
     isFrozen: {
         type: Boolean,

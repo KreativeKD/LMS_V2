@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Users, Book, Trash2, Edit, X, Layout, User, Eye, CheckCircle, Settings, Calendar } from 'lucide-react';
-import { fetchCourses, createCourse, deleteCourse, addTeacher, fetchTeachers, deleteTeacher, updateCourse, fetchEnrolledStudents, fetchStudents, deleteStudent, fetchRegistrationRequests, approveRequest, fetchSettings, updateSettings, unfreezeStudent, freezeStudent } from '../api/api';
+import { fetchCourses, createCourse, deleteCourse, addTeacher, fetchTeachers, deleteTeacher, updateCourse, fetchEnrolledStudents, fetchStudents, deleteStudent, fetchRegistrationRequests, approveRequest, fetchSettings, updateSettings, unfreezeStudent, freezeStudent, assignTeacher, fetchEnrollmentRequests, approveEnrollment } from '../api/api';
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
@@ -19,6 +19,10 @@ const AdminDashboard = () => {
     const [editingCourse, setEditingCourse] = useState(null);
     const [showStudentsModal, setShowStudentsModal] = useState(false);
     const [enrolledStudents, setEnrolledStudents] = useState([]);
+    const [showCourseRequestsModal, setShowCourseRequestsModal] = useState(false);
+    const [courseRequests, setCourseRequests] = useState([]);
+    const [showAssignTeacherModal, setShowAssignTeacherModal] = useState(false);
+    const [selectedTeacherId, setSelectedTeacherId] = useState('');
 
     // New States
     const [requests, setRequests] = useState([]);
@@ -221,6 +225,45 @@ const AdminDashboard = () => {
         }
     };
 
+    const handleViewCourseRequests = async (course) => {
+        try {
+            setEditingCourse(course);
+            const reqs = await fetchEnrollmentRequests(course._id);
+            setCourseRequests(reqs);
+            setShowCourseRequestsModal(true);
+        } catch (err) {
+            alert(err.message);
+        }
+    };
+
+    const handleApproveEnrollment = async (studentId, action) => {
+        try {
+            await approveEnrollment(editingCourse._id, studentId, action);
+            const reqs = await fetchEnrollmentRequests(editingCourse._id);
+            setCourseRequests(reqs);
+            loadCourses();
+        } catch (err) {
+            alert(err.message);
+        }
+    };
+
+    const handleOpenAssignTeacher = (course) => {
+        setEditingCourse(course);
+        setShowAssignTeacherModal(true);
+    };
+
+    const handleAssignTeacher = async (e) => {
+        e.preventDefault();
+        try {
+            await assignTeacher(editingCourse._id, selectedTeacherId);
+            alert('Teacher assigned successfully');
+            setShowAssignTeacherModal(false);
+            loadCourses();
+        } catch (err) {
+            alert(err.message);
+        }
+    };
+
     return (
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
@@ -290,6 +333,13 @@ const AdminDashboard = () => {
                                 <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1rem' }}>
                                     {course.description}
                                 </p>
+                                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1rem', background: '#252525', padding: '0.5rem', borderRadius: '4px' }}>
+                                    <strong>Teachers: </strong>
+                                    {[
+                                        course.instructor?.username?.split('@')[0],
+                                        ...(course.assignedTeachers?.map(t => t.username?.split('@')[0]) || [])
+                                    ].filter(Boolean).join(', ')}
+                                </div>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', flexWrap: 'wrap' }}>
                                 <button
@@ -325,6 +375,20 @@ const AdminDashboard = () => {
                                     style={{ background: '#333', color: '#ff4d4d', padding: '8px' }}
                                 >
                                     <Trash2 size={16} />
+                                </button>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '0.5rem' }}>
+                                <button
+                                    onClick={() => handleOpenAssignTeacher(course)}
+                                    style={{ background: '#333', color: 'var(--accent)', padding: '8px', fontSize: '0.8rem' }}
+                                >
+                                    Assign Teacher
+                                </button>
+                                <button
+                                    onClick={() => handleViewCourseRequests(course)}
+                                    style={{ background: '#333', color: 'var(--primary)', padding: '8px', fontSize: '0.8rem' }}
+                                >
+                                    Enrollments
                                 </button>
                             </div>
                         </div>
@@ -489,6 +553,7 @@ const AdminDashboard = () => {
             )
             }
 
+
             {
                 showModal && (
                     <div className="modal-overlay">
@@ -557,51 +622,102 @@ const AdminDashboard = () => {
                             </form>
                         </div>
                     </div>
-                )
-            }
-
-            {
-                showStudentsModal && (
-                    <div className="modal-overlay">
-                        <div className="modal-content animate-fade-in" style={{ maxWidth: '500px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-                                <h2 className="gradient-text">Enrolled Students</h2>
-                                <button onClick={() => setShowStudentsModal(false)} style={{ background: 'transparent', color: 'white' }}>
-                                    <X size={24} />
-                                </button>
-                            </div>
-
-                            {enrolledStudents.length > 0 ? (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                    {enrolledStudents.map(student => (
-                                        <div key={student._id} style={{
-                                            padding: '1rem',
-                                            background: '#252525',
-                                            borderRadius: '8px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '1rem'
-                                        }}>
-                                            <div style={{ background: 'var(--glass)', padding: '0.8rem', borderRadius: '50%' }}>
-                                                <Users size={20} color="var(--primary)" />
-                                            </div>
-                                            <div>
-                                                <h4 style={{ margin: 0 }}>{student.username.split('@')[0]}</h4>
-                                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{student.username}</span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
-                                    <Users size={48} style={{ marginBottom: '1rem', opacity: 0.5 }} />
-                                    <p>No students enrolled yet.</p>
-                                </div>
-                            )}
+                )}
+            {showStudentsModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content animate-fade-in" style={{ maxWidth: '500px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                            <h2 className="gradient-text">Enrolled Students</h2>
+                            <button onClick={() => setShowStudentsModal(false)} style={{ background: 'transparent', color: 'white' }}>
+                                <X size={24} />
+                            </button>
                         </div>
+
+                        {enrolledStudents.length > 0 ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                {enrolledStudents.map(student => (
+                                    <div key={student._id} style={{
+                                        padding: '1rem',
+                                        background: '#252525',
+                                        borderRadius: '8px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '1rem'
+                                    }}>
+                                        <div style={{ background: 'var(--glass)', padding: '0.8rem', borderRadius: '50%' }}>
+                                            <Users size={20} color="var(--primary)" />
+                                        </div>
+                                        <div>
+                                            <h4 style={{ margin: 0 }}>{student.username.split('@')[0]}</h4>
+                                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{student.username}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+                                <Users size={48} style={{ marginBottom: '1rem', opacity: 0.5 }} />
+                                <p>No students enrolled yet.</p>
+                            </div>
+                        )}
                     </div>
-                )
-            }
+                </div>
+            )}
+            {showCourseRequestsModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content animate-fade-in" style={{ maxWidth: '600px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                            <h2 className="gradient-text">Course Enrollment Requests</h2>
+                            <button onClick={() => setShowCourseRequestsModal(false)} style={{ background: 'transparent', color: 'white' }}>
+                                <X size={24} />
+                            </button>
+                        </div>
+                        {courseRequests.length > 0 ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                {courseRequests.map(student => (
+                                    <div key={student._id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span>{student.username}</span>
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            <button onClick={() => handleApproveEnrollment(student._id, 'approve')} className="btn-primary" style={{ padding: '0.5rem' }}>Approve</button>
+                                            <button onClick={() => handleApproveEnrollment(student._id, 'reject')} className="btn-secondary" style={{ padding: '0.5rem', color: 'red', borderColor: 'red' }}>Reject</button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : <p>No pending requests.</p>}
+                    </div>
+                </div>
+            )}
+
+            {showAssignTeacherModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content animate-fade-in" style={{ maxWidth: '400px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                            <h2 className="gradient-text">Assign Teacher</h2>
+                            <button onClick={() => setShowAssignTeacherModal(false)} style={{ background: 'transparent', color: 'white' }}>
+                                <X size={24} />
+                            </button>
+                        </div>
+                        <form onSubmit={handleAssignTeacher}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <label>Select Teacher</label>
+                                <select
+                                    value={selectedTeacherId}
+                                    onChange={e => setSelectedTeacherId(e.target.value)}
+                                    style={{ padding: '0.8rem', borderRadius: '8px', background: '#333', color: 'white' }}
+                                    required
+                                >
+                                    <option value="">-- Select --</option>
+                                    {teachers.map(t => (
+                                        <option key={t._id} value={t._id}>{t.username}</option>
+                                    ))}
+                                </select>
+                                <button className="btn-primary">Assign</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div >
     );
 };
