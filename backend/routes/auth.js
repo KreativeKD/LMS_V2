@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const RegistrationRequest = require('../models/RegistrationRequest');
 const SystemSetting = require('../models/SystemSetting');
+const Course = require('../models/Course');
 const { auth, authorize } = require('../middleware/auth');
 const router = express.Router();
 
@@ -89,7 +90,28 @@ router.post('/request-access', async (req, res) => {
         });
 
         if (existing) {
-            return res.status(400).send({ error: 'A request for this name already exists.' });
+            // Self-healing: If request is dead (rejected or abandoned completed), allow fresh request
+            if (existing.status === 'completed') {
+                const user = await User.findOne({
+                    $or: [
+                        { _id: existing.userId },
+                        {
+                            firstName: { $regex: new RegExp(`^${firstName}$`, 'i') },
+                            lastName: { $regex: new RegExp(`^${lastName}$`, 'i') }
+                        }
+                    ],
+                    role: 'student'
+                });
+                if (!user) {
+                    await RegistrationRequest.deleteOne({ _id: existing._id });
+                } else {
+                    return res.status(400).send({ error: 'A request for this name already exists and the student is active.' });
+                }
+            } else if (existing.status === 'rejected') {
+                await RegistrationRequest.deleteOne({ _id: existing._id });
+            } else {
+                return res.status(400).send({ error: 'A request for this name already exists and is being processed.' });
+            }
         }
 
         const request = new RegistrationRequest({ firstName, lastName });
@@ -140,10 +162,17 @@ router.post('/complete-registration', async (req, res) => {
             return res.status(400).send({ error: 'Username already taken.' });
         }
 
-        const user = new User({ username: finalUsername, password, role: 'student' });
+        const user = new User({
+            username: finalUsername,
+            password,
+            role: 'student',
+            firstName: request.firstName,
+            lastName: request.lastName
+        });
         await user.save();
 
         request.status = 'completed';
+        request.userId = user._id;
         await request.save();
 
         const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET || 'fallback_secret_key_123');
@@ -305,8 +334,9 @@ router.get('/admin/students', auth, authorize('admin'), async (req, res) => {
 // Admin ONLY: Delete student
 router.delete('/admin/students/:id', auth, authorize('admin'), async (req, res) => {
     try {
+        const studentId = req.params.id;
         const student = await User.findOneAndDelete({
-            _id: req.params.id,
+            _id: studentId,
             role: 'student'
         });
 
@@ -314,7 +344,41 @@ router.delete('/admin/students/:id', auth, authorize('admin'), async (req, res) 
             return res.status(404).send({ error: 'Student not found' });
         }
 
-        res.send({ message: 'Student deleted successfully' });
+        // Cleanup: Delete registration requests associated with this student
+        // We use userId link AND name-based search (fallback for older records)
+        const usernamePrefix = student.username.split('@')[0];
+        const nameQuery = [];
+        if (student.firstName && student.lastName) {
+            nameQuery.push({
+                firstName: { $regex: new RegExp(`^${student.firstName}$`, 'i') },
+                lastName: { $regex: new RegExp(`^${student.lastName}$`, 'i') }
+            });
+        }
+
+        await RegistrationRequest.deleteMany({
+            $or: [
+                { userId: studentId },
+                ...nameQuery,
+                // Robust fallback for old students: Match concatenated firstName + lastName with username
+                {
+                    status: 'completed',
+                    $expr: {
+                        $or: [
+                            { $eq: [{ $toLower: { $concat: ["$firstName", "$lastName"] } }, usernamePrefix.toLowerCase()] },
+                            { $eq: [{ $toLower: { $concat: ["$firstName", " ", "$lastName"] } }, usernamePrefix.toLowerCase()] }
+                        ]
+                    }
+                }
+            ]
+        });
+
+        // Cleanup: Remove student from all course lists
+        await Course.updateMany(
+            { students: studentId },
+            { $pull: { students: studentId } }
+        );
+
+        res.send({ message: 'Student deleted successfully and associated data cleaned up' });
     } catch (e) {
         res.status(500).send({ error: e.message });
     }
