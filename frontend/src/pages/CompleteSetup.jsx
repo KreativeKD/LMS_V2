@@ -47,25 +47,26 @@ const CompleteSetup = () => {
     };
 
     const inputStyle = {
-        width: '100%', padding: '0.8rem', borderRadius: '6px', border: 'none',
-        background: 'rgba(255,255,255,0.05)', color: 'white', outline: 'none'
+        width: '100%', padding: '0.8rem', borderRadius: '6px', border: '1px solid var(--border)',
+        background: '#f9fafb', color: 'var(--text-main)', outline: 'none'
     };
 
     return (
         <div style={{
             display: 'flex', minHeight: '100vh', justifyContent: 'center', alignItems: 'center',
-            background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', color: 'white'
+            background: 'var(--background)', color: 'var(--text-main)'
         }}>
             <div style={{
-                background: 'rgba(255, 255, 255, 0.1)', padding: '2rem', borderRadius: '12px',
-                backdropFilter: 'blur(10px)', width: '100%', maxWidth: '400px', border: '1px solid rgba(255,255,255,0.1)'
+                background: 'white', padding: '2rem', borderRadius: '12px',
+                width: '100%', maxWidth: '400px', border: '1px solid var(--border)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.05)'
             }}>
                 <h2 style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
                     {step === 1 ? 'Activate Account' : 'Finalize Setup'}
                 </h2>
 
                 {step === 1 && (
-                    <p style={{ textAlign: 'center', color: '#cbd5e1', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+                    <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
                         Enter your name to verify your admin approval.
                     </p>
                 )}
@@ -73,48 +74,48 @@ const CompleteSetup = () => {
                 {step === 1 ? (
                     <form onSubmit={handleCheck} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#cbd5e1' }}>First Name</label>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>First Name</label>
                             <input style={inputStyle} value={firstName} onChange={e => setFirstName(e.target.value)} required placeholder="Name used in request" />
                         </div>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#cbd5e1' }}>Last Name</label>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Last Name</label>
                             <input style={inputStyle} value={lastName} onChange={e => setLastName(e.target.value)} required placeholder="Name used in request" />
                         </div>
 
                         {error && <div style={{ color: '#ef4444', background: 'rgba(239, 68, 68, 0.1)', padding: '0.5rem', borderRadius: '6px' }}>{error}</div>}
 
-                        <button type="submit" style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '0.9rem', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', marginTop: '0.5rem' }}>
+                        <button type="submit" style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '0.9rem', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', marginTop: '0.5rem' }}>
                             Verify & Continue
                         </button>
 
                         <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-                            <span style={{ color: '#94a3b8', fontSize: '0.9rem', cursor: 'pointer' }} onClick={() => navigate('/request-access')}>
+                            <span style={{ color: 'var(--text-accent)', fontSize: '0.9rem', cursor: 'pointer' }} onClick={() => navigate('/request-access')}>
                                 I haven't requested yet
                             </span>
-                            <span style={{ margin: '0 0.5rem', color: '#64748b' }}>|</span>
-                            <span style={{ color: '#94a3b8', fontSize: '0.9rem', cursor: 'pointer' }} onClick={() => navigate('/login')}>
+                            <span style={{ margin: '0 0.5rem', color: 'var(--border)' }}>|</span>
+                            <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem', cursor: 'pointer' }} onClick={() => navigate('/login')}>
                                 Login
                             </span>
                         </div>
                     </form>
                 ) : (
                     <form onSubmit={handleSetup} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <div style={{ background: 'rgba(34, 197, 94, 0.15)', padding: '1rem', borderRadius: '8px', color: '#4ade80', fontSize: '0.9rem', border: '1px solid rgba(34, 197, 94, 0.3)' }}>
+                        <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '1rem', borderRadius: '8px', color: 'var(--text-accent)', fontSize: '0.9rem', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
                             <strong>Success!</strong> You are approved. Please create your credentials.
                         </div>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#cbd5e1' }}>Choose Username</label>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Choose Username</label>
                             <input style={inputStyle} value={username} onChange={e => setUsername(e.target.value)} required />
-                            <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '0.3rem' }}>Your login will be: <strong>{username}@student</strong></div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>Your login will be: <strong>{username}@student</strong></div>
                         </div>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#cbd5e1' }}>Create Password</label>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Create Password</label>
                             <input style={inputStyle} type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="New password" />
                         </div>
 
                         {error && <div style={{ color: '#ef4444', background: 'rgba(239, 68, 68, 0.1)', padding: '0.5rem', borderRadius: '6px' }}>{error}</div>}
 
-                        <button type="submit" style={{ background: '#22c55e', color: 'white', border: 'none', padding: '0.9rem', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', marginTop: '0.5rem' }}>
+                        <button type="submit" style={{ background: 'var(--secondary)', color: 'white', border: 'none', padding: '0.9rem', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', marginTop: '0.5rem' }}>
                             Complete & Login
                         </button>
                     </form>

@@ -50,13 +50,13 @@ const QuizView = () => {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
                     {quiz.questions.map((q, idx) => (
-                        <div key={idx} style={{ padding: '1rem', background: '#252525', borderRadius: '8px', textAlign: 'left', border: answers[idx] === q.correctAnswer ? '1px solid var(--accent)' : '1px solid #ff4d4d' }}>
+                        <div key={idx} style={{ padding: '1rem', background: 'var(--glass)', borderRadius: '8px', textAlign: 'left', border: answers[idx] === q.correctAnswer ? '1px solid var(--accent)' : '1px solid #ff4d4d' }}>
                             <p style={{ fontWeight: 'bold' }}>{q.questionText}</p>
-                            <p style={{ fontSize: '0.9rem', color: answers[idx] === q.correctAnswer ? 'var(--accent)' : '#ff4d4d' }}>
+                            <p style={{ fontSize: '0.9rem', color: answers[idx] === q.correctAnswer ? 'var(--text-accent)' : '#ff4d4d' }}>
                                 Your answer: {q.options[answers[idx]] || 'None'}
                             </p>
                             {answers[idx] !== q.correctAnswer && (
-                                <p style={{ fontSize: '0.9rem', color: 'var(--accent)' }}>
+                                <p style={{ fontSize: '0.9rem', color: 'var(--text-accent)' }}>
                                     Correct answer: {q.options[q.correctAnswer]}
                                 </p>
                             )}
@@ -73,7 +73,7 @@ const QuizView = () => {
         <div style={{ maxWidth: '800px', margin: '2rem auto' }}>
             <button
                 onClick={() => navigate(-1)}
-                style={{ background: 'transparent', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem' }}
+                style={{ background: 'transparent', color: 'var(--text-accent)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem' }}
             >
                 <ArrowLeft size={18} /> Exit Quiz
             </button>
@@ -95,10 +95,10 @@ const QuizView = () => {
                                         alignItems: 'center',
                                         gap: '1rem',
                                         padding: '1rem',
-                                        background: answers[qIdx] === oIdx ? '#333' : '#252525',
+                                        background: answers[qIdx] === oIdx ? 'rgba(79, 70, 229, 0.1)' : 'var(--glass)',
                                         borderRadius: '8px',
                                         cursor: 'pointer',
-                                        border: answers[qIdx] === oIdx ? '1px solid var(--primary)' : '1px solid transparent'
+                                        border: answers[qIdx] === oIdx ? '1px solid var(--primary)' : '1px solid #eee'
                                     }}>
                                         <input
                                             type="radio"

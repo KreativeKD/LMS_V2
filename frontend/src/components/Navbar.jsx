@@ -12,6 +12,16 @@ const Navbar = () => {
         navigate('/login');
     };
 
+    const getDashboardPath = () => {
+        if (!user) return '/';
+        switch (user.role) {
+            case 'admin': return '/admin';
+            case 'teacher': return '/teacher';
+            case 'student': return '/student';
+            default: return '/';
+        }
+    };
+
     if (!user) return null;
 
     return (
@@ -20,21 +30,21 @@ const Navbar = () => {
             justifyContent: 'space-between',
             alignItems: 'center',
             padding: '1rem 2rem',
-            background: 'rgba(26, 26, 26, 0.8)',
+            background: 'rgba(255, 255, 255, 0.8)',
             backdropFilter: 'blur(10px)',
-            borderBottom: '1px solid #333',
+            borderBottom: '1px solid var(--border)',
             position: 'sticky',
             top: 0,
             zIndex: 1000
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <h2 className="gradient-text" style={{ cursor: 'pointer' }} onClick={() => navigate('/')}>
+                <h2 className="gradient-text" style={{ cursor: 'pointer' }} onClick={() => navigate(getDashboardPath())}>
                     CourseZ
                 </h2>
             </div>
 
             <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
-                <Link to="/" style={{ color: 'var(--text-main)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Link to={getDashboardPath()} style={{ color: 'var(--text-main)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <BookOpen size={18} color="var(--primary)" /> Courses
                 </Link>
 
@@ -50,7 +60,7 @@ const Navbar = () => {
                     </Link>
                 )}
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: '1rem', borderLeft: '1px solid #333', paddingLeft: '2rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginLeft: '1rem', borderLeft: '1px solid var(--border)', paddingLeft: '2rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <User size={18} />
                         <span style={{ fontSize: '0.9rem' }}>{user.username.split('@')[0]}</span>

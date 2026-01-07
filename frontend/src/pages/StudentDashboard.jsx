@@ -82,7 +82,7 @@ const StudentDashboard = () => {
             <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
                 <button
                     onClick={() => setSelectedCourse(null)}
-                    style={{ background: 'transparent', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem' }}
+                    style={{ background: 'transparent', color: 'var(--text-accent)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem' }}
                 >
                     <ArrowLeft size={18} /> Back to My Courses
                 </button>
@@ -96,11 +96,11 @@ const StudentDashboard = () => {
                     {selectedCourse.chapters?.map((chapter, idx) => (
                         <div key={chapter._id} className="card">
                             <h2 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                <span style={{ color: 'var(--primary)', opacity: 0.5 }}>{idx + 1}</span> {chapter.title}
+                                <span style={{ color: 'var(--text-accent)', opacity: 0.5 }}>{idx + 1}</span> {chapter.title}
                             </h2>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
                                 {chapter.units?.map(unit => (
-                                    <div key={unit._id} className="card" style={{ background: '#1a1a1a', border: '1px solid #333' }}>
+                                    <div key={unit._id} className="card" style={{ background: 'var(--glass)', border: '1px solid var(--border)' }}>
                                         <div
                                             onClick={() => {
                                                 if (unit.type === 'quiz') {
@@ -132,7 +132,7 @@ const StudentDashboard = () => {
 
                                         {/* Unit Content Display */}
                                         {expandedUnits[unit._id] && unit.type !== 'quiz' && (
-                                            <div style={{ marginTop: '1rem', padding: '1rem', background: '#0f0f0f', borderRadius: '8px', borderTop: '1px solid #333' }}>
+                                            <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(0,0,0,0.02)', borderRadius: '8px', borderTop: '1px solid var(--border)' }}>
                                                 {unit.type === 'video' && unit.content?.videoUrl && (
                                                     <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden' }}>
                                                         <iframe
@@ -193,10 +193,10 @@ const StudentDashboard = () => {
             </h1>
 
             {completionDate && (
-                <div className="card" style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem', borderLeft: '4px solid var(--accent)' }}>
-                    <Calendar size={24} color="var(--accent)" />
+                <div className="card" style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem', borderLeft: '4px solid var(--text-accent)' }}>
+                    <Calendar size={24} color="var(--text-accent)" />
                     <div>
-                        <h4 style={{ margin: 0, color: 'var(--accent)' }}>Course Completion Deadline</h4>
+                        <h4 style={{ margin: 0, color: 'var(--text-accent)' }}>Course Completion Deadline</h4>
                         <p style={{ margin: 0, color: 'var(--text-muted)' }}>All coursework must be completed by <strong>{completionDate}</strong>. Accounts will be frozen after this date.</p>
                     </div>
                 </div>
@@ -213,11 +213,11 @@ const StudentDashboard = () => {
                                 borderRadius: '12px 12px 0 0',
                                 marginBottom: '1rem'
                             }}>
-                                <BookOpen size={32} color="white" />
+                                <BookOpen size={32} color="rgba(255, 255, 255, 0.9)" />
                             </div>
 
                             <div style={{ padding: '0 1rem', flex: 1 }}>
-                                <h3 style={{ marginBottom: '0.5rem', color: 'var(--primary)' }}>{course.title}</h3>
+                                <h3 style={{ marginBottom: '0.5rem', color: 'var(--text-accent)' }}>{course.title}</h3>
                                 <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1rem' }}>
                                     {course.description}
                                 </p>
@@ -234,7 +234,7 @@ const StudentDashboard = () => {
                                 </div>
                             </div>
 
-                            <div style={{ padding: '1rem', borderTop: '1px solid #333', marginTop: 'auto' }}>
+                            <div style={{ padding: '1rem', borderTop: '1px solid var(--border)', marginTop: 'auto' }}>
                                 {enrolled ? (
                                     <button
                                         onClick={() => navigate(`/course/read/${course._id}`)}

@@ -28,7 +28,8 @@ const StudentCourseView = () => {
 
             if (!isEnrolled && !isAdmin && !isInstructor) {
                 alert('You must be enrolled and approved to view this course content.');
-                navigate('/student');
+                const path = user?.role === 'admin' ? '/admin' : (user?.role === 'teacher' ? '/teacher' : '/student');
+                navigate(path);
                 return;
             }
 
@@ -54,14 +55,14 @@ const StudentCourseView = () => {
         <div style={{ display: 'flex', height: 'calc(100vh - 80px)', overflow: 'hidden' }}>
             {/* Sidebar */}
             <div style={{
-                width: isSidebarOpen ? '320px' : '0',
-                background: '#1a1a1a',
-                borderRight: '1px solid #333',
+                width: isSidebarOpen ? '400px' : '0',
+                background: '#f9fafb',
+                borderRight: '1px solid var(--border)',
                 transition: 'width 0.3s ease',
                 overflowY: 'auto',
                 flexShrink: 0
             }}>
-                <div style={{ padding: '1.5rem', borderBottom: '1px solid #333' }}>
+                <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border)' }}>
                     <h3 className="gradient-text" style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>{course.title}</h3>
 
                     {/* Teacher Visibility */}
@@ -74,7 +75,10 @@ const StudentCourseView = () => {
                     </div>
 
                     <button
-                        onClick={() => navigate('/student')}
+                        onClick={() => {
+                            const path = user?.role === 'admin' ? '/admin' : (user?.role === 'teacher' ? '/teacher' : '/student');
+                            navigate(path);
+                        }}
                         style={{ background: 'transparent', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', padding: 0 }}
                     >
                         <ArrowLeft size={14} /> Back to Dashboard
@@ -98,8 +102,8 @@ const StudentCourseView = () => {
                                             gap: '0.8rem',
                                             padding: '0.8rem',
                                             width: '100%',
-                                            background: selectedUnit?._id === unit._id ? 'rgba(92, 107, 192, 0.1)' : 'transparent',
-                                            color: selectedUnit?._id === unit._id ? 'var(--primary)' : 'var(--text-main)',
+                                            background: selectedUnit?._id === unit._id ? 'rgba(79, 70, 229, 0.1)' : 'transparent',
+                                            color: selectedUnit?._id === unit._id ? 'var(--text-accent)' : 'var(--text-main)',
                                             borderLeft: selectedUnit?._id === unit._id ? '3px solid var(--primary)' : '3px solid transparent',
                                             borderRadius: '0 4px 4px 0',
                                             textAlign: 'left'
@@ -121,10 +125,10 @@ const StudentCourseView = () => {
             </div>
 
             {/* Main Content */}
-            <div style={{ flex: 1, overflowY: 'auto', background: '#0a0a0a', position: 'relative' }}>
+            <div style={{ flex: 1, overflowY: 'auto', background: 'var(--background)', position: 'relative' }}>
                 <button
                     onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                    style={{ position: 'absolute', top: '1rem', left: '1rem', zIndex: 10, background: 'rgba(0,0,0,0.5)', padding: '8px', borderRadius: '4px' }}
+                    style={{ position: 'absolute', top: '1rem', left: '1rem', zIndex: 10, background: 'var(--glass)', padding: '8px', borderRadius: '4px', border: '1px solid var(--border)' }}
                 >
                     <Menu size={20} />
                 </button>
@@ -132,14 +136,14 @@ const StudentCourseView = () => {
                 <div style={{ maxWidth: '900px', margin: '0 auto', padding: '3rem 2rem' }}>
                     {selectedUnit ? (
                         <>
-                            <header style={{ marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '1px solid #333' }}>
+                            <header style={{ marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
                                 <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>{selectedUnit.title}</h1>
                                 <span style={{
                                     background: 'var(--glass)',
                                     padding: '4px 8px',
                                     borderRadius: '4px',
                                     fontSize: '0.8rem',
-                                    color: 'var(--primary)',
+                                    color: 'var(--text-accent)',
                                     textTransform: 'uppercase'
                                 }}>
                                     {selectedUnit.type} content

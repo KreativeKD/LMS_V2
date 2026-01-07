@@ -221,7 +221,7 @@ const CourseEditor = () => {
         <div style={{ maxWidth: '1000px', margin: '0 auto', paddingBottom: '4rem' }}>
             <button
                 onClick={() => navigate(-1)}
-                style={{ background: 'transparent', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem' }}
+                style={{ background: 'transparent', color: 'var(--text-accent)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem' }}
             >
                 <ArrowLeft size={18} /> Back to Dashboard
             </button>
@@ -257,8 +257,9 @@ const CourseEditor = () => {
                                     display: 'flex',
                                     justifyContent: 'space-between',
                                     alignItems: 'center',
-                                    background: '#1a1a1a',
-                                    borderRadius: '8px'
+                                    background: '#f9fafb',
+                                    borderRadius: '8px',
+                                    borderBottom: expandedChapters[chapter._id] ? '1px solid var(--border)' : 'none'
                                 }}
                             >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -268,7 +269,7 @@ const CourseEditor = () => {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); handleEditChapter(chapter); }}
-                                        style={{ background: 'transparent', color: 'var(--primary)', padding: '4px' }}
+                                        style={{ background: 'transparent', color: 'var(--text-accent)', padding: '4px' }}
                                         title="Edit chapter"
                                     >
                                         <Edit size={18} />
@@ -284,10 +285,10 @@ const CourseEditor = () => {
                             </div>
 
                             {expandedChapters[chapter._id] && (
-                                <div style={{ padding: '1.5rem', borderTop: '1px solid #333' }}>
+                                <div style={{ padding: '1.5rem', borderTop: '1px solid var(--border)' }}>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginBottom: '1.5rem' }}>
                                         {chapter.units?.map(unit => (
-                                            <div key={unit._id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.8rem', background: '#252525', borderRadius: '6px' }}>
+                                            <div key={unit._id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.8rem', background: 'var(--glass)', borderRadius: '6px', border: '1px solid var(--border)' }}>
                                                 {unit.type === 'video' ? <VideoIcon size={16} color="var(--primary)" /> :
                                                     unit.type === 'pdf' ? <FileText size={16} color="var(--secondary)" /> :
                                                         <HelpCircle size={16} color="var(--accent)" />}
@@ -296,7 +297,7 @@ const CourseEditor = () => {
                                                 {unit.type === 'quiz' && (
                                                     <button
                                                         onClick={() => handleEditQuiz(unit)}
-                                                        style={{ background: 'transparent', color: 'var(--primary)', padding: '4px' }}
+                                                        style={{ background: 'transparent', color: 'var(--text-accent)', padding: '4px' }}
                                                         title="Edit quiz"
                                                     >
                                                         <Edit size={14} />
@@ -305,7 +306,7 @@ const CourseEditor = () => {
                                                 {unit.type !== 'quiz' && (
                                                     <button
                                                         onClick={() => handleEditUnit(unit)}
-                                                        style={{ background: 'transparent', color: 'var(--primary)', padding: '4px' }}
+                                                        style={{ background: 'transparent', color: 'var(--text-accent)', padding: '4px' }}
                                                         title="Edit unit"
                                                     >
                                                         <Edit size={14} />
@@ -346,7 +347,7 @@ const CourseEditor = () => {
                     <div className="modal-content animate-fade-in" style={{ maxWidth: '450px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
                             <h2 className="gradient-text">Add {unitType.charAt(0).toUpperCase() + unitType.slice(1)} Unit</h2>
-                            <button onClick={() => setShowUnitModal(false)} style={{ background: 'transparent', color: 'white' }}>
+                            <button onClick={() => setShowUnitModal(false)} style={{ background: 'transparent', color: 'var(--text-main)' }}>
                                 <X size={24} />
                             </button>
                         </div>
@@ -367,7 +368,7 @@ const CourseEditor = () => {
                                 {unitType === 'text' ? (
                                     <textarea
                                         placeholder="Enter content here..."
-                                        style={{ background: '#18181b', color: 'white', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px', minHeight: '120px', outline: 'none' }}
+                                        style={{ background: '#f9fafb', color: 'var(--text-main)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px', minHeight: '120px', outline: 'none' }}
                                         value={unitForm.contentValue}
                                         onChange={e => setUnitForm({ ...unitForm, contentValue: e.target.value })}
                                         required
@@ -395,7 +396,7 @@ const CourseEditor = () => {
                     <div className="modal-content animate-fade-in">
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
                             <h2 className="gradient-text">{editingQuiz ? 'Edit MCQ Quiz' : 'Create MCQ Quiz'}</h2>
-                            <button onClick={() => { setShowQuizModal(false); setEditingQuiz(null); setQuizData({ title: '', questions: [{ questionText: '', options: ['', '', '', ''], correctAnswer: 0 }] }); }} style={{ background: 'none' }}><X color="white" /></button>
+                            <button onClick={() => { setShowQuizModal(false); setEditingQuiz(null); setQuizData({ title: '', questions: [{ questionText: '', options: ['', '', '', ''], correctAnswer: 0 }] }); }} style={{ background: 'none' }}><X color="var(--text-main)" /></button>
                         </div>
 
                         <form onSubmit={editingQuiz ? handleUpdateQuiz : handleQuizSubmit}>
@@ -409,9 +410,9 @@ const CourseEditor = () => {
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '2rem' }}>
                                 {quizData.questions.map((q, qIdx) => (
-                                    <div key={qIdx} style={{ padding: '1rem', background: '#1c1c1c', borderRadius: '12px', border: '1px solid #333' }}>
+                                    <div key={qIdx} style={{ padding: '1rem', background: '#f9fafb', borderRadius: '12px', border: '1px solid var(--border)' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                                            <h4 style={{ color: 'var(--primary)', margin: 0 }}>Question {qIdx + 1}</h4>
+                                            <h4 style={{ color: 'var(--text-accent)', margin: 0 }}>Question {qIdx + 1}</h4>
                                             <button
                                                 type="button"
                                                 onClick={() => deleteQuestion(qIdx)}
@@ -466,7 +467,7 @@ const CourseEditor = () => {
                     <div className="modal-content animate-fade-in" style={{ maxWidth: '450px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
                             <h2 className="gradient-text">Edit Chapter</h2>
-                            <button onClick={() => setShowEditChapterModal(false)} style={{ background: 'transparent', color: 'white' }}>
+                            <button onClick={() => setShowEditChapterModal(false)} style={{ background: 'transparent', color: 'var(--text-main)' }}>
                                 <X size={24} />
                             </button>
                         </div>
@@ -494,7 +495,7 @@ const CourseEditor = () => {
                     <div className="modal-content animate-fade-in" style={{ maxWidth: '450px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
                             <h2 className="gradient-text">Edit {editingUnit.type.charAt(0).toUpperCase() + editingUnit.type.slice(1)} Unit</h2>
-                            <button onClick={() => setShowEditUnitModal(false)} style={{ background: 'transparent', color: 'white' }}>
+                            <button onClick={() => setShowEditUnitModal(false)} style={{ background: 'transparent', color: 'var(--text-main)' }}>
                                 <X size={24} />
                             </button>
                         </div>
@@ -515,7 +516,7 @@ const CourseEditor = () => {
                                 {editingUnit.type === 'text' ? (
                                     <textarea
                                         placeholder="Enter content here..."
-                                        style={{ background: '#18181b', color: 'white', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px', minHeight: '120px', outline: 'none' }}
+                                        style={{ background: '#f9fafb', color: 'var(--text-main)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px', minHeight: '120px', outline: 'none' }}
                                         value={editingUnit.contentValue}
                                         onChange={e => setEditingUnit({ ...editingUnit, contentValue: e.target.value })}
                                         required
@@ -543,7 +544,7 @@ const CourseEditor = () => {
                     <div className="modal-content animate-fade-in" style={{ maxWidth: '800px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
                             <h2 className="gradient-text">Student Progress</h2>
-                            <button onClick={() => setShowProgressModal(false)} style={{ background: 'transparent', color: 'white' }}>
+                            <button onClick={() => setShowProgressModal(false)} style={{ background: 'transparent', color: 'var(--text-main)' }}>
                                 <X size={24} />
                             </button>
                         </div>
@@ -554,21 +555,21 @@ const CourseEditor = () => {
                             <div style={{ overflowX: 'auto' }}>
                                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                     <thead>
-                                        <tr style={{ borderBottom: '2px solid #333' }}>
-                                            <th style={{ padding: '1rem', textAlign: 'left', color: 'var(--primary)' }}>Student</th>
-                                            <th style={{ padding: '1rem', textAlign: 'center', color: 'var(--primary)' }}>Progress</th>
-                                            <th style={{ padding: '1rem', textAlign: 'center', color: 'var(--primary)' }}>Units</th>
-                                            <th style={{ padding: '1rem', textAlign: 'center', color: 'var(--primary)' }}>Quiz Avg</th>
-                                            <th style={{ padding: '1rem', textAlign: 'left', color: 'var(--primary)' }}>Last Active</th>
+                                        <tr style={{ borderBottom: '2px solid var(--border)' }}>
+                                            <th style={{ padding: '1rem', textAlign: 'left', color: 'var(--text-accent)' }}>Student</th>
+                                            <th style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-accent)' }}>Progress</th>
+                                            <th style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-accent)' }}>Units</th>
+                                            <th style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-accent)' }}>Quiz Avg</th>
+                                            <th style={{ padding: '1rem', textAlign: 'left', color: 'var(--text-accent)' }}>Last Active</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {studentProgress.map((student, idx) => (
-                                            <tr key={idx} style={{ borderBottom: '1px solid #222' }}>
+                                            <tr key={idx} style={{ borderBottom: '1px solid var(--border)' }}>
                                                 <td style={{ padding: '1rem' }}>{student.studentName}</td>
                                                 <td style={{ padding: '1rem', textAlign: 'center' }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                        <div style={{ flex: 1, height: '6px', background: '#333', borderRadius: '3px', overflow: 'hidden' }}>
+                                                        <div style={{ flex: 1, height: '6px', background: 'var(--border)', borderRadius: '3px', overflow: 'hidden' }}>
                                                             <div style={{ width: `${student.completionPercentage}%`, height: '100%', background: 'var(--primary)' }} />
                                                         </div>
                                                         <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', minWidth: '40px' }}>{student.completionPercentage}%</span>
@@ -577,7 +578,7 @@ const CourseEditor = () => {
                                                 <td style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
                                                     {student.completedUnits}/{student.totalUnits}
                                                 </td>
-                                                <td style={{ padding: '1rem', textAlign: 'center', color: student.quizAverage > 0 ? 'var(--accent)' : 'var(--text-muted)' }}>
+                                                <td style={{ padding: '1rem', textAlign: 'center', color: student.quizAverage > 0 ? 'var(--text-accent)' : 'var(--text-muted)' }}>
                                                     {student.quizAverage > 0 ? `${student.quizAverage}%` : 'N/A'}
                                                 </td>
                                                 <td style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>

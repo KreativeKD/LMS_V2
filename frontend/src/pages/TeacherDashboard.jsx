@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Book, ChevronRight, Layout, Users, X, Calendar } from 'lucide-react';
+import { Plus, Book, ChevronRight, Layout, Users, X, Calendar, Eye } from 'lucide-react';
 import { fetchCourses, createCourse, fetchEnrolledStudents, fetchSettings, fetchEnrollmentRequests, approveEnrollment } from '../api/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -107,7 +107,7 @@ const TeacherDashboard = () => {
                 <div className="card" style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem', borderLeft: '4px solid var(--secondary)' }}>
                     <Calendar size={24} color="var(--secondary)" />
                     <div>
-                        <h4 style={{ margin: 0, color: 'var(--secondary)' }}>Semester Schedule</h4>
+                        <h4 style={{ margin: 0, color: 'var(--text-accent)' }}>Semester Schedule</h4>
                         <p style={{ margin: 0, color: 'var(--text-muted)' }}>Students must complete courses by <strong>{completionDate}</strong>.</p>
                     </div>
                 </div>
@@ -141,7 +141,7 @@ const TeacherDashboard = () => {
                                 style={{
                                     padding: '1rem',
                                     borderRadius: '8px',
-                                    background: selectedCourse?._id === course._id ? '#333' : '#252525',
+                                    background: selectedCourse?._id === course._id ? 'rgba(79, 70, 229, 0.1)' : 'var(--glass)',
                                     cursor: 'pointer',
                                     display: 'flex',
                                     justifyContent: 'space-between',
@@ -169,24 +169,33 @@ const TeacherDashboard = () => {
                     {selectedCourse ? (
                         <>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                                <h2 style={{ color: 'var(--primary)' }}>{selectedCourse.title} Details</h2>
-                                <button
-                                    className="btn-accent"
-                                    onClick={() => navigate(`/course/edit/${selectedCourse._id}`)}
-                                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                                >
-                                    <Layout size={18} /> Edit Curriculum
-                                </button>
+                                <h2 style={{ color: 'var(--text-accent)' }}>{selectedCourse.title} Details</h2>
+                                <div style={{ display: 'flex', gap: '1rem' }}>
+                                    <button
+                                        className="btn-secondary"
+                                        onClick={() => navigate(`/course/read/${selectedCourse._id}`)}
+                                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                                    >
+                                        <Eye size={18} /> View Content
+                                    </button>
+                                    <button
+                                        className="btn-accent"
+                                        onClick={() => navigate(`/course/edit/${selectedCourse._id}`)}
+                                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                                    >
+                                        <Layout size={18} /> Edit Curriculum
+                                    </button>
+                                </div>
                             </div>
 
-                            <div style={{ padding: '1rem', background: '#252525', borderRadius: '8px', marginTop: '1rem' }}>
+                            <div style={{ padding: '1rem', background: 'var(--glass)', borderRadius: '8px', marginTop: '1rem' }}>
                                 <p style={{ color: 'var(--text-muted)' }}>{selectedCourse.description}</p>
                                 <div style={{ marginTop: '2rem', display: 'flex', gap: '2rem', fontSize: '0.9rem' }}>
                                     <div>
-                                        <span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{selectedCourse.chapters?.length || 0}</span> Chapters
+                                        <span style={{ color: 'var(--text-accent)', fontWeight: 'bold' }}>{selectedCourse.chapters?.length || 0}</span> Chapters
                                     </div>
                                     <div>
-                                        <span style={{ color: 'var(--secondary)', fontWeight: 'bold' }}>{selectedCourse.students?.length || 0}</span> Enrolled Students
+                                        <span style={{ color: 'var(--text-accent)', fontWeight: 'bold' }}>{selectedCourse.students?.length || 0}</span> Enrolled Students
                                         <button
                                             className="btn-secondary"
                                             onClick={() => handleViewStudents(selectedCourse._id)}
@@ -219,7 +228,7 @@ const TeacherDashboard = () => {
                     <div className="modal-content animate-fade-in" style={{ maxWidth: '500px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
                             <h2 className="gradient-text">Enrolled Students</h2>
-                            <button onClick={() => setShowStudentsModal(false)} style={{ background: 'transparent', color: 'white' }}>
+                            <button onClick={() => setShowStudentsModal(false)} style={{ background: 'transparent', color: 'var(--text-main)' }}>
                                 <X size={24} />
                             </button>
                         </div>
@@ -229,7 +238,7 @@ const TeacherDashboard = () => {
                                 {enrolledStudents.map(student => (
                                     <div key={student._id} style={{
                                         padding: '1rem',
-                                        background: '#252525',
+                                        background: 'var(--glass)',
                                         borderRadius: '8px',
                                         display: 'flex',
                                         alignItems: 'center',
@@ -260,7 +269,7 @@ const TeacherDashboard = () => {
                     <div className="modal-content animate-fade-in" style={{ maxWidth: '600px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
                             <h2 className="gradient-text">Enrollment Requests</h2>
-                            <button onClick={() => setShowRequestsModal(false)} style={{ background: 'transparent', color: 'white' }}>
+                            <button onClick={() => setShowRequestsModal(false)} style={{ background: 'transparent', color: 'var(--text-main)' }}>
                                 <X size={24} />
                             </button>
                         </div>
@@ -270,7 +279,7 @@ const TeacherDashboard = () => {
                                 {requests.map(student => (
                                     <div key={student._id} style={{
                                         padding: '1rem',
-                                        background: '#252525',
+                                        background: 'var(--glass)',
                                         borderRadius: '8px',
                                         display: 'flex',
                                         alignItems: 'center',

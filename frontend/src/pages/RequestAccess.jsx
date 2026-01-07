@@ -25,20 +25,21 @@ const RequestAccess = () => {
     return (
         <div style={{
             display: 'flex', minHeight: '100vh', justifyContent: 'center', alignItems: 'center',
-            background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', color: 'white'
+            background: 'var(--background)', color: 'var(--text-main)'
         }}>
             <div style={{
-                background: 'rgba(255, 255, 255, 0.1)', padding: '2rem', borderRadius: '12px',
-                backdropFilter: 'blur(10px)', width: '100%', maxWidth: '400px', border: '1px solid rgba(255,255,255,0.1)'
+                background: 'white', padding: '2rem', borderRadius: '12px',
+                width: '100%', maxWidth: '400px', border: '1px solid var(--border)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.05)'
             }}>
                 <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>Request Access</h2>
 
                 {status === 'success' ? (
                     <div style={{ textAlign: 'center' }}>
-                        <div style={{ background: 'rgba(34, 197, 94, 0.2)', color: '#4ade80', padding: '1rem', borderRadius: '8px', marginBottom: '1rem' }}>
+                        <div style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--text-accent)', padding: '1rem', borderRadius: '8px', marginBottom: '1rem' }}>
                             {message}
                         </div>
-                        <p style={{ color: '#cbd5e1', marginBottom: '1.5rem' }}>
+                        <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
                             Once approved, you can complete your registration.
                         </p>
                         <button
@@ -54,11 +55,11 @@ const RequestAccess = () => {
                 ) : (
                     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#cbd5e1' }}>First Name</label>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>First Name</label>
                             <input
                                 style={{
-                                    width: '100%', padding: '0.8rem', borderRadius: '6px', border: 'none',
-                                    background: 'rgba(255,255,255,0.05)', color: 'white', outline: 'none'
+                                    width: '100%', padding: '0.8rem', borderRadius: '6px', border: '1px solid var(--border)',
+                                    background: '#f9fafb', color: 'var(--text-main)', outline: 'none'
                                 }}
                                 value={firstName}
                                 onChange={e => setFirstName(e.target.value)}
@@ -66,11 +67,11 @@ const RequestAccess = () => {
                             />
                         </div>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#cbd5e1' }}>Last Name</label>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Last Name</label>
                             <input
                                 style={{
-                                    width: '100%', padding: '0.8rem', borderRadius: '6px', border: 'none',
-                                    background: 'rgba(255,255,255,0.05)', color: 'white', outline: 'none'
+                                    width: '100%', padding: '0.8rem', borderRadius: '6px', border: '1px solid var(--border)',
+                                    background: '#f9fafb', color: 'var(--text-main)', outline: 'none'
                                 }}
                                 value={lastName}
                                 onChange={e => setLastName(e.target.value)}
@@ -87,7 +88,7 @@ const RequestAccess = () => {
                         <button
                             type="submit"
                             style={{
-                                background: '#3b82f6', color: 'white', border: 'none', padding: '0.9rem',
+                                background: 'var(--primary)', color: 'white', border: 'none', padding: '0.9rem',
                                 borderRadius: '8px', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer', marginTop: '0.5rem'
                             }}
                         >
@@ -95,11 +96,11 @@ const RequestAccess = () => {
                         </button>
 
                         <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-                            <span style={{ color: '#94a3b8', fontSize: '0.9rem', cursor: 'pointer' }} onClick={() => navigate('/complete-setup')}>
+                            <span style={{ color: 'var(--text-accent)', fontSize: '0.9rem', cursor: 'pointer' }} onClick={() => navigate('/complete-setup')}>
                                 Check Status
                             </span>
-                            <span style={{ margin: '0 0.5rem', color: '#64748b' }}>|</span>
-                            <span style={{ color: '#94a3b8', fontSize: '0.9rem', cursor: 'pointer' }} onClick={() => navigate('/login')}>
+                            <span style={{ margin: '0 0.5rem', color: 'var(--border)' }}>|</span>
+                            <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem', cursor: 'pointer' }} onClick={() => navigate('/login')}>
                                 Back to Login
                             </span>
                         </div>

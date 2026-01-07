@@ -283,7 +283,7 @@ const Login = () => {
                                 <button
                                     type="submit"
                                     style={{
-                                        background: 'var(--primary)', // Or #2563eb
+                                        background: '#00d2ff', // Original primary blue
                                         color: 'white',
                                         border: 'none',
                                         padding: '0.9rem',
@@ -294,8 +294,8 @@ const Login = () => {
                                         transition: 'background 0.2s',
                                         marginTop: '0.5rem'
                                     }}
-                                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#1d4ed8'}
-                                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'var(--primary)'}
+                                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#00b8e6'}
+                                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#00d2ff'}
                                 >
                                     {isRegister ? '' : 'Sign In Securely'}
                                 </button>
