@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-    BookOpen, Award, BarChart2, Shield, Users, Globe, 
+import {
+    BookOpen, Award, BarChart2, Shield, Users, Globe,
     Star, Check, Zap, Target, TrendingUp, Sparkles,
     Clock, Trophy, Rocket, Heart, Facebook, Twitter, Instagram, Linkedin,
     GraduationCap, Briefcase, FileText, Mail, Phone, ExternalLink,
@@ -11,6 +11,38 @@ import {
 const LandingPage = () => {
     const navigate = useNavigate();
     const [scrolled, setScrolled] = useState(false);
+    const [selectedCourse, setSelectedCourse] = useState(null);
+
+    const courses = [
+        {
+            id: 'dsp',
+            title: 'Digital Signal Processing (DSP)',
+            description: 'Master the fundamentals of processing discrete-time signals and systems. This course covers everything from basic signal theory to advanced filter design and implementation.',
+            chapters: [
+                'Discrete-time Signals and Systems',
+                'Z-Transform and its Applications',
+                'Discrete Fourier Transform (DFT)',
+                'Fast Fourier Transform (FFT) Algorithms',
+                'Design of Digital IIR Filters',
+                'Design of Digital FIR Filters',
+                'Finite Word Length Effects'
+            ]
+        },
+        {
+            id: 'isp',
+            title: 'Image Signal Processing (ISP)',
+            description: 'Dive into the world of digital image processing. Learn how to manipulate, enhance, and extract information from digital images using state-of-the-art algorithms.',
+            chapters: [
+                'Digital Image Fundamentals',
+                'Image Enhancement in Spatial Domain',
+                'Image Enhancement in Frequency Domain',
+                'Image Restoration and Reconstruction',
+                'Morphological Image Processing',
+                'Image Segmentation Techniques',
+                'Representation and Description'
+            ]
+        }
+    ];
 
     useEffect(() => {
         const handleScroll = () => {
@@ -38,11 +70,9 @@ const LandingPage = () => {
                     <span>CourseZ</span>
                 </div>
                 <div className="nav-links">
-                    <a href="#about" className="nav-link">About</a>
-                    <a href="#features" className="nav-link">Features</a>
-                    <a href="#credentials" className="nav-link">Credentials</a>
-                    <a href="#testimonials" className="nav-link">Testimonials</a>
-                    <a href="#pricing" className="nav-link">Pricing</a>
+                    <a href="#" className="nav-link" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>Home</a>
+                    <a href="#professors" className="nav-link" onClick={(e) => { e.preventDefault(); document.getElementById('professors')?.scrollIntoView({ behavior: 'smooth' }); }}>Professors</a>
+                    <a href="#contact" className="nav-link" onClick={(e) => { e.preventDefault(); document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }); }}>Contact</a>
                 </div>
                 <div className="nav-actions">
                     <button className="btn-secondary" onClick={() => handleNavigation('/login')}>
@@ -67,8 +97,8 @@ const LandingPage = () => {
                         Master Your Future with <span className="gradient-text">CourseZ</span>
                     </h1>
                     <p className="hero-subtitle">
-                        Learn from Dr. Kiran Talele, an award-winning professor with 85+ research publications 
-                        and 22 patents. Experience curriculum-designed courses that transform students into 
+                        Learn from Dr. Kiran Talele, an award-winning professor with 85+ research publications
+                        and 22 patents. Experience curriculum-designed courses that transform students into
                         industry-ready professionals.
                     </p>
                     <div className="hero-buttons">
@@ -137,8 +167,8 @@ const LandingPage = () => {
 
                 <div className="hero-image-container animate-slide-right">
                     <div className="image-glow"></div>
-                    <img 
-                        src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop" 
+                    <img
+                        src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop"
                         alt="Students Learning"
                         className="hero-image"
                     />
@@ -164,7 +194,7 @@ const LandingPage = () => {
             </section>
 
             {/* About Professor Section with Photo */}
-            <section id="about" className="about-professor-section">
+            <section id="professors" className="about-professor-section">
                 <div className="about-professor-container">
                     <div className="section-header">
                         <div className="section-badge">
@@ -173,11 +203,11 @@ const LandingPage = () => {
                         </div>
                         <h2 className="section-title">Learn from an Industry Leader</h2>
                         <p className="section-subtitle">
-                            Dr. Kiran Talele brings three decades of academic excellence and real-world expertise 
+                            Dr. Kiran Talele brings three decades of academic excellence and real-world expertise
                             to create courses that transform careers
                         </p>
                     </div>
-                    
+
                     <div className="professor-card">
                         <div className="professor-photo-section">
                             <div className="photo-wrapper">
@@ -191,13 +221,13 @@ const LandingPage = () => {
                                     </div>
                                 </div> */}
                             </div>
-                            
+
                             <div className="professor-quick-info">
                                 <h3>Dr. Kiran Talele</h3>
                                 <p className="professor-designation">PhD, Associate Professor</p>
                                 <p className="professor-dept">Electronics & Telecommunication Engineering</p>
                                 <p className="professor-institution">Sardar Patel Institute of Technology, Mumbai</p>
-                                
+
                                 <div className="quick-stats">
                                     <div className="quick-stat">
                                         <strong>33+</strong>
@@ -227,6 +257,31 @@ const LandingPage = () => {
                                         <span>Email</span>
                                     </a>
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* Courses Section within Professor Card */}
+                        <div className="professor-courses-section">
+                            <h4 className="courses-section-title">Expert-Led Courses</h4>
+                            <div className="courses-grid">
+                                {courses.map(course => (
+                                    <div key={course.id} className="landing-course-card">
+                                        <div className="course-card-content">
+                                            <div className="course-icon">
+                                                {course.id === 'dsp' ? <BarChart2 size={32} /> : <Zap size={32} />}
+                                            </div>
+                                            <h3>{course.title}</h3>
+                                            <p>{course.description.substring(0, 100)}...</p>
+                                            <button
+                                                className="know-more-btn"
+                                                onClick={() => setSelectedCourse(course)}
+                                            >
+                                                <ExternalLink size={16} />
+                                                Know More
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
 
@@ -345,15 +400,50 @@ const LandingPage = () => {
                         </div>
                     </div>
 
+                    {/* Modal for Course Details */}
+                    {selectedCourse && (
+                        <div className="modal-overlay" onClick={() => setSelectedCourse(null)}>
+                            <div className="modal-content animate-fade-in" onClick={e => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <h2>{selectedCourse.title}</h2>
+                                    <button className="close-btn" onClick={() => setSelectedCourse(null)}>×</button>
+                                </div>
+                                <div className="modal-body">
+                                    <p className="course-full-description">{selectedCourse.description}</p>
+                                    <div className="chapters-section">
+                                        <h4>Course Chapters</h4>
+                                        <ul className="chapters-list">
+                                            {selectedCourse.chapters.map((chapter, index) => (
+                                                <li key={index}>
+                                                    <CheckCircle size={16} className="check-icon" />
+                                                    {chapter}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                    <div className="modal-actions">
+                                        <button
+                                            className="btn-primary btn-large"
+                                            onClick={() => handleNavigation('/login')}
+                                        >
+                                            Enroll Now
+                                            <ArrowRight size={20} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Educational Philosophy */}
                     <div className="philosophy-section">
                         <div className="philosophy-card">
                             <MessageCircle size={48} className="philosophy-icon" />
                             <h3>Teaching Philosophy</h3>
                             <p>
-                                "Education is not just about transferring knowledge—it's about igniting curiosity, 
-                                fostering innovation, and preparing students to solve real-world challenges. With CourseZ, 
-                                I bring my three decades of academic and industry experience to create courses that don't 
+                                "Education is not just about transferring knowledge—it's about igniting curiosity,
+                                fostering innovation, and preparing students to solve real-world challenges. With CourseZ,
+                                I bring my three decades of academic and industry experience to create courses that don't
                                 just teach concepts, but transform careers and lives."
                             </p>
                             <div className="philosophy-signature">
@@ -508,14 +598,14 @@ const LandingPage = () => {
                     <h2 className="section-title">How It Works</h2>
                     <p className="section-subtitle">Your journey to mastery in three simple steps</p>
                 </div>
-                
+
                 <div className="steps-grid">
                     <div className="step-card animate-fade-in">
                         <div className="step-number">1</div>
                         <Target className="step-icon" size={48} />
                         <h3>Choose Your Path</h3>
                         <p>
-                            Select from expertly designed, curriculum-based courses created by Dr. Kiran Talele. 
+                            Select from expertly designed, curriculum-based courses created by Dr. Kiran Talele.
                             Each course is structured to build practical skills progressively.
                         </p>
                         <ul className="step-features">
@@ -530,7 +620,7 @@ const LandingPage = () => {
                         <BookOpen className="step-icon" size={48} />
                         <h3>Learn & Practice</h3>
                         <p>
-                            Engage with content backed by 33+ years of teaching experience. Benefit from 
+                            Engage with content backed by 33+ years of teaching experience. Benefit from
                             industry-aligned curriculum and hands-on projects.
                         </p>
                         <ul className="step-features">
@@ -545,7 +635,7 @@ const LandingPage = () => {
                         <TrendingUp className="step-icon" size={48} />
                         <h3>Achieve & Grow</h3>
                         <p>
-                            Earn recognized certificates and build a portfolio that demonstrates your expertise. 
+                            Earn recognized certificates and build a portfolio that demonstrates your expertise.
                             Join successful alumni in top companies.
                         </p>
                         <ul className="step-features">
@@ -563,7 +653,7 @@ const LandingPage = () => {
                     <h2 className="section-title">Powerful Features</h2>
                     <p className="section-subtitle">Everything you need to succeed in your learning journey</p>
                 </div>
-                
+
                 <div className="features-grid">
                     <div className="feature-card">
                         <div className="feature-icon-wrapper">
@@ -571,7 +661,7 @@ const LandingPage = () => {
                         </div>
                         <h3>Expert-Led Curriculum</h3>
                         <p>
-                            Learn from courses designed by Dr. Kiran Talele, with 33+ years of teaching experience 
+                            Learn from courses designed by Dr. Kiran Talele, with 33+ years of teaching experience
                             and deep industry connections.
                         </p>
                         <div className="feature-badge">PhD Instructor</div>
@@ -583,7 +673,7 @@ const LandingPage = () => {
                         </div>
                         <h3>Progress Analytics</h3>
                         <p>
-                            Track your learning with comprehensive dashboards showing module completion, 
+                            Track your learning with comprehensive dashboards showing module completion,
                             quiz scores, and skill development.
                         </p>
                         <div className="feature-badge">Real-time Tracking</div>
@@ -595,7 +685,7 @@ const LandingPage = () => {
                         </div>
                         <h3>Secure Platform</h3>
                         <p>
-                            Your data and progress are protected with enterprise-grade security. 
+                            Your data and progress are protected with enterprise-grade security.
                             Focus on learning without worries.
                         </p>
                         <div className="feature-badge">Bank-level Security</div>
@@ -607,7 +697,7 @@ const LandingPage = () => {
                         </div>
                         <h3>Learn Anywhere</h3>
                         <p>
-                            Access courses on any device with one login. Study at your pace, 
+                            Access courses on any device with one login. Study at your pace,
                             whether you're at home or on the go.
                         </p>
                         <div className="feature-badge">Multi-device</div>
@@ -619,7 +709,7 @@ const LandingPage = () => {
                         </div>
                         <h3>Student Community</h3>
                         <p>
-                            Connect with SPIT students and learners worldwide. Collaborate on projects 
+                            Connect with SPIT students and learners worldwide. Collaborate on projects
                             and grow together.
                         </p>
                         <div className="feature-badge">500+ Students</div>
@@ -631,7 +721,7 @@ const LandingPage = () => {
                         </div>
                         <h3>Industry Certificates</h3>
                         <p>
-                            Earn recognized certificates signed by Dr. Talele that validate your skills 
+                            Earn recognized certificates signed by Dr. Talele that validate your skills
                             and enhance your resume.
                         </p>
                         <div className="feature-badge">Verified Credentials</div>
@@ -646,7 +736,7 @@ const LandingPage = () => {
                         <h2 className="section-title">Student Success Stories</h2>
                         <p className="section-subtitle">Real results from real students</p>
                     </div>
-                    
+
                     <div className="testimonials-grid">
                         <div className="testimonial-card">
                             <div className="testimonial-rating">
@@ -655,8 +745,8 @@ const LandingPage = () => {
                                 ))}
                             </div>
                             <p className="testimonial-text">
-                                "Dr. Talele's courses are exceptional. The curriculum is industry-aligned, 
-                                and his teaching style makes complex concepts easy to understand. Landed my 
+                                "Dr. Talele's courses are exceptional. The curriculum is industry-aligned,
+                                and his teaching style makes complex concepts easy to understand. Landed my
                                 dream job at a top tech company!"
                             </p>
                             <div className="testimonial-author">
@@ -675,8 +765,8 @@ const LandingPage = () => {
                                 ))}
                             </div>
                             <p className="testimonial-text">
-                                "The best investment in my education. Dr. Talele's real-world experience 
-                                and mentorship helped me transition from student to professional seamlessly. 
+                                "The best investment in my education. Dr. Talele's real-world experience
+                                and mentorship helped me transition from student to professional seamlessly.
                                 Highly recommend!"
                             </p>
                             <div className="testimonial-author">
@@ -695,8 +785,8 @@ const LandingPage = () => {
                                 ))}
                             </div>
                             <p className="testimonial-text">
-                                "CourseZ transformed my understanding of signal processing. Dr. Talele's 
-                                teaching methodology bridges theory and practice perfectly. Now working on 
+                                "CourseZ transformed my understanding of signal processing. Dr. Talele's
+                                teaching methodology bridges theory and practice perfectly. Now working on
                                 cutting-edge AI projects!"
                             </p>
                             <div className="testimonial-author">
@@ -742,7 +832,7 @@ const LandingPage = () => {
                     <h2 className="section-title">Choose Your Plan</h2>
                     <p className="section-subtitle">Start free, upgrade as you grow</p>
                 </div>
-                
+
                 <div className="pricing-grid">
                     <div className="pricing-card">
                         <div className="pricing-header">
@@ -836,8 +926,8 @@ const LandingPage = () => {
                                 <h4>Who is this platform for?</h4>
                             </div>
                             <p className="faq-answer">
-                                CourseZ is designed for SPIT students, engineering students, and professionals looking to 
-                                enhance their skills in Electronics, Signal Processing, Machine Learning, and related fields. 
+                                CourseZ is designed for SPIT students, engineering students, and professionals looking to
+                                enhance their skills in Electronics, Signal Processing, Machine Learning, and related fields.
                                 Whether you're a beginner or advanced learner, our curriculum adapts to your level.
                             </p>
                         </div>
@@ -848,8 +938,8 @@ const LandingPage = () => {
                                 <h4>Are the certificates recognized?</h4>
                             </div>
                             <p className="faq-answer">
-                                Yes! All certificates are signed by Dr. Kiran Talele and include verification codes. 
-                                They are recognized by employers and can be added to your LinkedIn profile and resume. 
+                                Yes! All certificates are signed by Dr. Kiran Talele and include verification codes.
+                                They are recognized by employers and can be added to your LinkedIn profile and resume.
                                 Pro members receive additional verified digital credentials.
                             </p>
                         </div>
@@ -860,8 +950,8 @@ const LandingPage = () => {
                                 <h4>How much time do I need to invest?</h4>
                             </div>
                             <p className="faq-answer">
-                                Courses are self-paced! Most students spend 3-5 hours per week. Complete courses at your 
-                                own speed, with lifetime access to all materials. Our mobile app lets you learn on the go, 
+                                Courses are self-paced! Most students spend 3-5 hours per week. Complete courses at your
+                                own speed, with lifetime access to all materials. Our mobile app lets you learn on the go,
                                 making it easy to fit learning into your schedule.
                             </p>
                         </div>
@@ -872,8 +962,8 @@ const LandingPage = () => {
                                 <h4>Can I interact with Dr. Talele?</h4>
                             </div>
                             <p className="faq-answer">
-                                Pro members get access to monthly live Q&A sessions, discussion forums moderated by Dr. Talele, 
-                                and can book 1-on-1 mentorship sessions. Free members can participate in community discussions 
+                                Pro members get access to monthly live Q&A sessions, discussion forums moderated by Dr. Talele,
+                                and can book 1-on-1 mentorship sessions. Free members can participate in community discussions
                                 and attend select webinars.
                             </p>
                         </div>
@@ -884,8 +974,8 @@ const LandingPage = () => {
                                 <h4>What if I'm not satisfied?</h4>
                             </div>
                             <p className="faq-answer">
-                                We offer a 30-day money-back guarantee for Pro subscriptions. If you're not completely 
-                                satisfied with the quality and value, contact us within 30 days for a full refund. 
+                                We offer a 30-day money-back guarantee for Pro subscriptions. If you're not completely
+                                satisfied with the quality and value, contact us within 30 days for a full refund.
                                 No questions asked!
                             </p>
                         </div>
@@ -896,8 +986,8 @@ const LandingPage = () => {
                                 <h4>How often is content updated?</h4>
                             </div>
                             <p className="faq-answer">
-                                Courses are regularly updated to reflect the latest industry trends and technologies. 
-                                Dr. Talele adds new modules quarterly, and Pro members get immediate access to all new 
+                                Courses are regularly updated to reflect the latest industry trends and technologies.
+                                Dr. Talele adds new modules quarterly, and Pro members get immediate access to all new
                                 content and updates at no additional cost.
                             </p>
                         </div>
@@ -919,7 +1009,7 @@ const LandingPage = () => {
                     <div className="cta-content">
                         <h2>Ready to Transform Your Career?</h2>
                         <p>
-                            Join 500+ students learning from Dr. Kiran Talele's expert-led courses. 
+                            Join 500+ students learning from Dr. Kiran Talele's expert-led courses.
                             Start your journey today with our free plan.
                         </p>
                         <div className="cta-buttons">
@@ -942,6 +1032,90 @@ const LandingPage = () => {
                 </div>
             </section>
 
+            {/* Contact Section */}
+            <section id="contact" className="contact-section">
+                <div className="contact-container">
+                    <div className="section-header">
+                        <div className="section-badge">
+                            <MessageCircle size={16} />
+                            <span>Get In Touch</span>
+                        </div>
+                        <h2 className="section-title">Contact Us</h2>
+                        <p className="section-subtitle">Have questions? We're here to help you on your learning journey.</p>
+                    </div>
+
+                    <div className="contact-grid">
+                        <div className="contact-info-card card">
+                            <div className="contact-item">
+                                <div className="contact-icon-wrapper">
+                                    <Mail size={24} />
+                                </div>
+                                <div className="contact-text">
+                                    <h4>Email</h4>
+                                    <p><a href="mailto:talelesir@gmail.com">talelesir@gmail.com</a></p>
+                                </div>
+                            </div>
+
+                            <div className="contact-item">
+                                <div className="contact-icon-wrapper">
+                                    <Phone size={24} />
+                                </div>
+                                <div className="contact-text">
+                                    <h4>Phone</h4>
+                                    <p><a href="tel:+919987030881">+91 99870 30881</a></p>
+                                </div>
+                            </div>
+
+                            <div className="contact-item">
+                                <div className="contact-icon-wrapper">
+                                    <Globe size={24} />
+                                </div>
+                                <div className="contact-text">
+                                    <h4>Website</h4>
+                                    <p><a href="https://www.talelesir.com" target="_blank" rel="noopener noreferrer">www.talelesir.com</a></p>
+                                </div>
+                            </div>
+
+                            <div className="social-connect">
+                                <h4>Follow Us</h4>
+                                <div className="social-btns">
+                                    <a href="https://www.linkedin.com/in/k-t-v-talele/" target="_blank" rel="noopener noreferrer" className="social-btn">
+                                        <Linkedin size={20} />
+                                    </a>
+                                    <a href="https://www.facebook.com/Kiran-Talele-1711929555720263" target="_blank" rel="noopener noreferrer" className="social-btn">
+                                        <Facebook size={20} />
+                                    </a>
+                                    <a href="https://www.youtube.com/@midnight-masterclass" target="_blank" rel="noopener noreferrer" className="social-btn">
+                                        <Play size={20} />
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="contact-form-card card">
+                            <form className="contact-form" onSubmit={(e) => e.preventDefault()}>
+                                <div className="form-group">
+                                    <label>Full Name</label>
+                                    <input type="text" placeholder="Your Name" required />
+                                </div>
+                                <div className="form-group">
+                                    <label>Email Address</label>
+                                    <input type="email" placeholder="Your Email" required />
+                                </div>
+                                <div className="form-group">
+                                    <label>Message</label>
+                                    <textarea placeholder="How can we help you?" rows="4"></textarea>
+                                </div>
+                                <button type="submit" className="btn-primary btn-large">
+                                    Send Message
+                                    <Rocket size={18} />
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* Footer */}
             <footer className="footer">
                 <div className="footer-content">
@@ -952,7 +1126,7 @@ const LandingPage = () => {
                                 <h3>CourseZ</h3>
                             </div>
                             <p className="footer-description">
-                                Empowering students and professionals worldwide with expert-led education 
+                                Empowering students and professionals worldwide with expert-led education
                                 from Dr. Kiran Talele, Associate Professor at SPIT Mumbai.
                             </p>
                             <div className="footer-creator">
