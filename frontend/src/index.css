@@ -155,6 +155,12 @@ input:focus {
   box-shadow: 0 12px 48px rgba(16, 185, 129, 0.1);
 }
 
+.btn-sidebar:hover:not(.active) {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text-accent);
+  transform: translateX(4px);
+}
+
 /* Modal Styles */
 .modal-overlay {
   position: fixed;
