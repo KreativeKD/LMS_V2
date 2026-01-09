@@ -12,6 +12,10 @@ import QuizView from './pages/QuizView';
 import StudentCourseView from './pages/StudentCourseView';
 import RequestAccess from './pages/RequestAccess';
 import CompleteSetup from './pages/CompleteSetup';
+import Professor from './pages/Professor';
+import CoursesPage from './pages/CoursesPage';
+import Scholarship from './pages/Scholarship';
+import ContactPage from './pages/ContactPage';
 
 const ProtectedRoute = ({ children, roles }) => {
   const { user } = useAuth();
@@ -67,6 +71,12 @@ function App() {
                   <QuizView />
                 </ProtectedRoute>
               } />
+
+
+              <Route path="/professor" element={<Professor />} />
+              <Route path="/courses" element={<CoursesPage />} />
+              <Route path="/scholarship" element={<Scholarship />} />
+              <Route path="/contact" element={<ContactPage />} />
 
               <Route path="/" element={<LandingPage />} />
             </Routes>
