@@ -23,11 +23,8 @@ const PublicNavbar = ({ scrolled }) => {
                 <Link to="/contact" className="nav-link">Contact</Link>
             </div>
             <div className="nav-actions">
-                <button className="btn-secondary" onClick={() => handleNavigation('/login')}>
-                    Sign In
-                </button>
                 <button className="btn-primary" onClick={() => handleNavigation('/login')}>
-                    Get Started
+                    Login / Signup
                 </button>
             </div>
         </nav>

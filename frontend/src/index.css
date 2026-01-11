@@ -376,15 +376,17 @@ input:focus {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(15, 23, 42, 0.1);
+  backdrop-filter: blur(0px);
 }
 
 .nav-bar.scrolled {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(15, 23, 42, 0.85);
   backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding: 1rem 4rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
 .nav-logo {
@@ -414,8 +416,12 @@ input:focus {
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 500;
-  transition: color 0.2s;
+  transition: all 0.3s ease;
   position: relative;
+}
+
+.nav-bar.scrolled .nav-link {
+  color: #cbd5e1;
 }
 
 .nav-link::after {
@@ -431,6 +437,11 @@ input:focus {
 
 .nav-link:hover {
   color: var(--primary);
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+}
+
+.nav-bar.scrolled .nav-link:hover {
+  color: #ffffff;
 }
 
 .nav-link:hover::after {
