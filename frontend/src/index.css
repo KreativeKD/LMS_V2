@@ -161,6 +161,24 @@ input:focus {
   transform: translateX(4px);
 }
 
+/* Typewriter Effect */
+.typewriter {
+  overflow: hidden;
+  border-right: 2px solid var(--primary);
+  white-space: nowrap;
+  animation: typing 4s steps(60, end), blink-caret 0.75s step-end infinite;
+}
+
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes blink-caret {
+  from, to { border-color: transparent; }
+  50% { border-color: var(--primary); }
+}
+
 /* Modal Styles */
 .modal-overlay {
   position: fixed;

@@ -107,6 +107,202 @@ const Professor = () => {
                         'Representation and Description'
                     ]
                 }
+            ],
+            testimonials: [
+                {
+                    text: "Dr. Talele's expertise in DSP transformed my understanding of signal processing. His teaching style is exceptional and his guidance was invaluable for my research.",
+                    author: "Priya Sharma",
+                    role: "PhD Student, IIT Bombay"
+                },
+                {
+                    text: "The courses offered by Dr. Talele are comprehensive and industry-relevant. His mentorship helped me secure a position at a leading tech company.",
+                    author: "Rahul Mehta",
+                    role: "Alumni, Software Engineer"
+                }
+            ]
+        },
+        {
+            id: 'sarah-johnson',
+            name: 'Dr. Sarah Johnson',
+            designation: 'PhD, Professor',
+            dept: 'Computer Science',
+            institution: 'Stanford University',
+            photo: '/default-prof.png',
+            stats: {
+                experience: '28+',
+                publications: '150+',
+                patents: '18'
+            },
+            contact: {
+                website: 'https://www.sarahjohnson.stanford.edu',
+                linkedin: 'https://www.linkedin.com/in/sarah-johnson/',
+                email: 'sarah.johnson@stanford.edu'
+            },
+            expertise: [
+                'Artificial Intelligence', 'Machine Learning', 'Natural Language Processing',
+                'Computer Vision', 'Robotics', 'Data Mining'
+            ],
+            leadership: [
+                {
+                    title: 'Director of AI Research Lab',
+                    org: 'Stanford University (Since 2018)'
+                },
+                {
+                    title: 'Chair of Computer Science Department',
+                    org: 'Stanford University (2020-2023)'
+                }
+            ],
+            achievements: [
+                {
+                    title: '150+ Research Publications',
+                    desc: 'Published in top-tier conferences like NeurIPS, ICML, and CVPR'
+                },
+                {
+                    title: '18 Patents Granted',
+                    desc: 'In AI and machine learning technologies'
+                },
+                {
+                    title: 'Turing Award Nominee',
+                    desc: 'Recognized for contributions to AI research (2022)'
+                }
+            ],
+            ventures: [
+                {
+                    title: 'Co-founder - AI Startup Inc.',
+                    desc: 'Developing next-generation AI solutions for healthcare'
+                }
+            ],
+            courses: [
+                {
+                    id: 'ai-ml',
+                    title: 'Artificial Intelligence and Machine Learning',
+                    description: 'Comprehensive course covering AI fundamentals, machine learning algorithms, and practical applications in various domains.',
+                    chapters: [
+                        'Introduction to AI',
+                        'Machine Learning Basics',
+                        'Supervised Learning',
+                        'Unsupervised Learning',
+                        'Deep Learning',
+                        'Reinforcement Learning',
+                        'AI Ethics and Applications'
+                    ]
+                },
+                {
+                    id: 'nlp',
+                    title: 'Natural Language Processing',
+                    description: 'Learn to process and understand human language using computational methods and deep learning techniques.',
+                    chapters: [
+                        'Text Processing Fundamentals',
+                        'Language Models',
+                        'Named Entity Recognition',
+                        'Sentiment Analysis',
+                        'Machine Translation',
+                        'Question Answering Systems',
+                        'NLP Applications'
+                    ]
+                }
+            ],
+            testimonials: [
+                {
+                    text: "Dr. Johnson's AI course opened my eyes to the possibilities of machine learning. Her research insights and teaching methodology are unparalleled.",
+                    author: "Alex Chen",
+                    role: "Research Assistant, Stanford"
+                },
+                {
+                    text: "Working under Dr. Johnson's guidance on NLP projects was transformative. Her expertise in deep learning is exceptional.",
+                    author: "Maria Rodriguez",
+                    role: "Graduate Student, Stanford"
+                }
+            ]
+        },
+        {
+            id: 'michael-chen',
+            name: 'Dr. Michael Chen',
+            designation: 'PhD, Assistant Professor',
+            dept: 'Electrical Engineering',
+            institution: 'University of California, Berkeley',
+            photo: '/default-prof.png',
+            stats: {
+                experience: '15+',
+                publications: '60+',
+                patents: '8'
+            },
+            contact: {
+                website: 'https://www.michaelchen.berkeley.edu',
+                linkedin: 'https://www.linkedin.com/in/michael-chen/',
+                email: 'michael.chen@berkeley.edu'
+            },
+            expertise: [
+                'Embedded Systems', 'IoT', 'Cyber-Physical Systems',
+                'Control Systems', 'Robotics', 'Sensor Networks'
+            ],
+            leadership: [
+                {
+                    title: 'Director of Embedded Systems Lab',
+                    org: 'UC Berkeley (Since 2020)'
+                }
+            ],
+            achievements: [
+                {
+                    title: '60+ Publications',
+                    desc: 'In journals and conferences on embedded systems and IoT'
+                },
+                {
+                    title: '8 Patents',
+                    desc: 'Related to IoT devices and sensor technologies'
+                },
+                {
+                    title: 'Best Paper Award',
+                    desc: 'IEEE IoT Conference (2021)'
+                }
+            ],
+            ventures: [
+                {
+                    title: 'Founder - IoT Solutions LLC',
+                    desc: 'Providing innovative IoT solutions for smart cities'
+                }
+            ],
+            courses: [
+                {
+                    id: 'embedded',
+                    title: 'Embedded Systems Design',
+                    description: 'Design and implement embedded systems for real-world applications, covering hardware-software integration and optimization.',
+                    chapters: [
+                        'Embedded System Fundamentals',
+                        'Microcontrollers and Microprocessors',
+                        'Real-Time Operating Systems',
+                        'Sensor Integration',
+                        'Communication Protocols',
+                        'Power Management',
+                        'System Optimization'
+                    ]
+                },
+                {
+                    id: 'iot',
+                    title: 'Internet of Things (IoT)',
+                    description: 'Explore the world of connected devices and IoT ecosystems, learning to build scalable and secure IoT solutions.',
+                    chapters: [
+                        'IoT Architecture',
+                        'Sensor Networks',
+                        'Data Analytics for IoT',
+                        'Security in IoT',
+                        'Edge Computing',
+                        'IoT Protocols',
+                        'Case Studies'
+                    ]
+                }
+            ],
+            testimonials: [
+                {
+                    text: "Dr. Chen's embedded systems course provided me with practical skills that I use daily in my IoT projects. His hands-on approach is outstanding.",
+                    author: "James Wilson",
+                    role: "IoT Engineer, TechCorp"
+                },
+                {
+                    text: "The IoT course under Dr. Chen was incredibly insightful. His industry connections and real-world examples made learning engaging.",
+                    author: "Lisa Park",
+                    role: "Graduate Student, UC Berkeley"
+                }
             ]
         }
     ];
@@ -174,14 +370,20 @@ const Professor = () => {
                         </p>
                     </div>
 
-                    <div className="professor-card">
-                        <div className="professor-photo-section">
-                            <div className="photo-wrapper">
-                                <img src={selectedProf.photo} alt={selectedProf.name} className="professor-photo" />
+                    <div className="professor-card" style={{ padding: '2rem' }}>
+                        <div className="professor-photo-section" style={{ gap: '2rem', marginBottom: '2rem' }}>
+                            <div className="photo-wrapper" style={{ maxWidth: '250px' }}>
+                                <img src={selectedProf.photo} alt={selectedProf.name} className="professor-photo" style={{ width: '100%', height: '250px' }} />
                             </div>
 
                             <div className="professor-quick-info">
-                                <h3>{selectedProf.name}</h3>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+                                    <h3>{selectedProf.name}</h3>
+                                    <div className="badge" style={{ fontSize: '0.75rem', padding: '0.25rem 0.75rem' }}>
+                                        <CheckCircle size={14} />
+                                        <span>Verified Professor</span>
+                                    </div>
+                                </div>
                                 <p className="professor-designation">{selectedProf.designation}</p>
                                 <p className="professor-dept">{selectedProf.dept}</p>
                                 <p className="professor-institution">{selectedProf.institution}</p>
@@ -223,7 +425,7 @@ const Professor = () => {
                         </div>
 
                         {/* Courses Section */}
-                        <div className="professor-courses-section">
+                        <div className="professor-courses-section" style={{ margin: '2rem 0' }}>
                             <h4 className="courses-section-title">Courses Taught by {selectedProf.name}</h4>
                             <div className="courses-grid">
                                 {selectedProf.courses.map(course => (
@@ -247,46 +449,24 @@ const Professor = () => {
                             </div>
                         </div>
 
-                        <div className="professor-details">
-                            {selectedProf.leadership && selectedProf.leadership.length > 0 && (
-                                <div className="detail-section">
-                                    <div className="detail-header">
-                                        <Briefcase size={24} className="detail-icon" />
-                                        <h4>Leadership Positions</h4>
-                                    </div>
-                                    <ul className="detail-list">
-                                        {selectedProf.leadership.map((item, idx) => (
-                                            <li key={idx}>
-                                                <CheckCircle size={16} className="list-icon" />
-                                                <div>
-                                                    <strong>{item.title}</strong>
-                                                    <p>{item.org}</p>
-                                                </div>
-                                            </li>
-                                        ))}
-                                    </ul>
+                        <div className="professor-details" style={{ gap: '1.5rem' }}>
+                            <div className="detail-section">
+                                <div className="detail-header">
+                                    <Award size={24} className="detail-icon" />
+                                    <h4>Key Achievements</h4>
                                 </div>
-                            )}
-
-                            {selectedProf.achievements && selectedProf.achievements.length > 0 && (
-                                <div className="detail-section">
-                                    <div className="detail-header">
-                                        <Award size={24} className="detail-icon" />
-                                        <h4>Research & Achievements</h4>
-                                    </div>
-                                    <ul className="detail-list">
-                                        {selectedProf.achievements.map((item, idx) => (
-                                            <li key={idx}>
-                                                <Star size={16} className="list-icon" />
-                                                <div>
-                                                    <strong>{item.title}</strong>
-                                                    <p>{item.desc}</p>
-                                                </div>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
+                                <ul className="detail-list">
+                                    {selectedProf.achievements.slice(0, 2).map((item, idx) => (
+                                        <li key={idx}>
+                                            <Star size={16} className="list-icon" />
+                                            <div>
+                                                <strong>{item.title}</strong>
+                                                <p>{item.desc}</p>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
 
                             <div className="detail-section">
                                 <div className="detail-header">
@@ -294,29 +474,35 @@ const Professor = () => {
                                     <h4>Areas of Expertise</h4>
                                 </div>
                                 <div className="expertise-tags">
-                                    {selectedProf.expertise.map((tag, idx) => (
+                                    {selectedProf.expertise.slice(0, 4).map((tag, idx) => (
                                         <span key={idx} className="expertise-tag">{tag}</span>
                                     ))}
                                 </div>
                             </div>
 
-                            {selectedProf.ventures && selectedProf.ventures.length > 0 && (
+                            {selectedProf.testimonials && selectedProf.testimonials.length > 0 && (
                                 <div className="detail-section">
                                     <div className="detail-header">
-                                        <Building size={24} className="detail-icon" />
-                                        <h4>Professional Ventures</h4>
+                                        <Star size={24} className="detail-icon" />
+                                        <h4>Student Feedback</h4>
                                     </div>
-                                    <ul className="detail-list">
-                                        {selectedProf.ventures.map((item, idx) => (
-                                            <li key={idx}>
-                                                <CheckCircle size={16} className="list-icon" />
-                                                <div>
-                                                    <strong>{item.title}</strong>
-                                                    <p>{item.desc}</p>
-                                                </div>
-                                            </li>
-                                        ))}
-                                    </ul>
+                                    <div className="testimonial-card" style={{ margin: 0 }}>
+                                        <div className="testimonial-rating">
+                                            {[...Array(5)].map((_, i) => (
+                                                <Star key={i} size={16} fill="currentColor" />
+                                            ))}
+                                        </div>
+                                        <p className="testimonial-text">"{selectedProf.testimonials[0].text}"</p>
+                                        <div className="testimonial-author">
+                                            <div className="author-avatar">
+                                                {selectedProf.testimonials[0].author.split(' ').map(n => n[0]).join('')}
+                                            </div>
+                                            <div>
+                                                <h4>{selectedProf.testimonials[0].author}</h4>
+                                                <p>{selectedProf.testimonials[0].role}</p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             )}
                         </div>

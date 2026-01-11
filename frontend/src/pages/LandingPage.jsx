@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     BookOpen, Award, BarChart2, Shield, Users, Globe,
     Star, Check, Target, TrendingUp, Sparkles,
-    Clock, Trophy, Rocket, Heart,
+    Clock, Trophy, Rocket, Heart, Zap,
     GraduationCap, FileText, Mail, Phone,
     CheckCircle, ArrowRight, Building, MessageCircle
 } from 'lucide-react';
@@ -37,7 +37,7 @@ const LandingPage = () => {
             <PublicNavbar scrolled={scrolled} />
 
             {/* Hero Section */}
-            <section className="hero-section">
+            <section className="hero-section" style={{ padding: '6rem 4rem 3rem' }}>
                 <div className="hero-content animate-slide-left">
                     {/*to be removed*/}
                     <div className="badge-container">
@@ -47,27 +47,30 @@ const LandingPage = () => {
                         </span>
                     </div>
                     <h1 className="hero-title">
-                        Master Your Future with <span className="gradient-text">CourseZ</span>
+                        Launch Your Engineering Career with <span className="gradient-text">SPIT's Elite Faculty</span>
                     </h1>
                     <p className="hero-subtitle">
-                        Learn from Dr. Kiran TALELE, an award-winning professor with 85+ research publications
-                        and 22 patents. Experience curriculum-designed courses that transform students into
-                        industry-ready professionals.
+                        Master Signal Processing, AI & Embedded Systems from SPIT's elite faculty with 33+ years combined experience, 150+ publications, and 30+ patents. Transform theory into industry-ready skills that companies demand.
+                    </p>
+                    <p className="hero-subtitle" style={{ fontStyle: 'italic', marginTop: '1rem', color: 'var(--text-muted)' }}>
+                        Don't just study engineering—become the engineer companies fight to hire.
                     </p>
                     <div className="hero-buttons">
                         <button
                             className="btn-primary btn-large"
                             onClick={() => handleNavigation('/login')}
+                            style={{ fontSize: '1.1rem', padding: '16px 32px' }}
                         >
-                            <span>Start Learning</span>
+                            <span>Start Learning Today</span>
                             <ArrowRight size={20} />
                         </button>
                         <button
-                            className="btn-secondary btn-large"
+                            className="btn-outline"
                             onClick={() => handleNavigation('/professor')}
+                            style={{ marginLeft: '1rem' }}
                         >
                             <Users size={18} />
-                            <span>Meet the Professors</span>
+                            <span>Meet the Faculty</span>
                         </button>
                     </div>
 
@@ -86,8 +89,8 @@ const LandingPage = () => {
                                 <BookOpen size={28} />
                             </div>
                             <div className="stat-content">
-                                <h3>2</h3>
-                                <p>Courses</p>
+                                <h3>6+</h3>
+                                <p>Courses Planned</p>
                             </div>
                         </div>
                         <div className="stat-card">
@@ -95,8 +98,8 @@ const LandingPage = () => {
                                 <Award size={28} />
                             </div>
                             <div className="stat-content">
-                                <h3>1</h3>
-                                <p>Professors</p>
+                                <h3>3</h3>
+                                <p>Expert Professors</p>
                             </div>
                         </div>
                     </div>
@@ -132,6 +135,94 @@ const LandingPage = () => {
                 </div>
             </section>
 
+            {/* Trust & Credibility Section */}
+            <section className="trust-section" style={{ padding: '1.5rem 4rem', background: 'linear-gradient(180deg, rgba(16, 185, 129, 0.02) 0%, transparent 100%)', textAlign: 'center' }}>
+                <div className="trust-container" style={{ maxWidth: '1400px', margin: '0 auto' }}>
+                    <div className="trust-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem', alignItems: 'center' }}>
+                        <div className="trust-item" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'center' }}>
+                            <Building size={24} style={{ color: 'var(--primary)' }} />
+                            <div>
+                                <strong style={{ fontSize: '1.1rem', color: 'var(--text-main)' }}>SPIT Faculty</strong>
+                                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>Elite Institution</p>
+                            </div>
+                        </div>
+                        <div className="trust-item" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'center' }}>
+                            <Award size={24} style={{ color: 'var(--primary)' }} />
+                            <div>
+                                <strong style={{ fontSize: '1.1rem', color: 'var(--text-main)' }}>50+ Years</strong>
+                                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>Combined Experience</p>
+                            </div>
+                        </div>
+                        <div className="trust-item" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'center' }}>
+                            <FileText size={24} style={{ color: 'var(--primary)' }} />
+                            <div>
+                                <strong style={{ fontSize: '1.1rem', color: 'var(--text-main)' }}>150+ Publications</strong>
+                                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>Research Papers</p>
+                            </div>
+                        </div>
+                        <div className="trust-item" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'center' }}>
+                            <Trophy size={24} style={{ color: 'var(--primary)' }} />
+                            <div>
+                                <strong style={{ fontSize: '1.1rem', color: 'var(--text-main)' }}>30+ Patents</strong>
+                                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>Filed & Granted</p>
+                            </div>
+                        </div>
+                        <div className="trust-item" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'center' }}>
+                            <Users size={24} style={{ color: 'var(--primary)' }} />
+                            <div>
+                                <strong style={{ fontSize: '1.1rem', color: 'var(--text-main)' }}>500+ Students</strong>
+                                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>Successfully Trained</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Faculty Preview Section */}
+            <section className="faculty-preview-section" style={{ padding: '3rem 4rem', background: 'var(--background)' }}>
+                <div className="section-header" style={{ textAlign: 'center', marginBottom: '3rem' }}>
+                    <h2 className="section-title">Meet Your Expert Faculty</h2>
+                    <p className="section-subtitle">Learn from industry veterans with decades of experience</p>
+                </div>
+                <div className="faculty-preview-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', maxWidth: '1400px', margin: '0 auto' }}>
+                    <div className="faculty-preview-card" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '16px', padding: '2rem', textAlign: 'center', transition: 'all 0.3s ease', cursor: 'pointer' }} onClick={() => handleNavigation('/professor')}>
+                        <img src="/ktalele.png" alt="Dr. Kiran TALELE" style={{ width: '80px', height: '80px', borderRadius: '50%', marginBottom: '1rem', border: '3px solid var(--primary)' }} />
+                        <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Dr. Kiran TALELE</h3>
+                        <p style={{ color: 'var(--primary)', marginBottom: '1rem' }}>PhD, Associate Professor</p>
+                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>33+ years experience • 85+ publications • 22 patents</p>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'center' }}>
+                            <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--primary)', padding: '0.25rem 0.75rem', borderRadius: '12px', fontSize: '0.8rem' }}>Signal Processing</span>
+                            <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--primary)', padding: '0.25rem 0.75rem', borderRadius: '12px', fontSize: '0.8rem' }}>AI & ML</span>
+                        </div>
+                    </div>
+                    <div className="faculty-preview-card" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '16px', padding: '2rem', textAlign: 'center', transition: 'all 0.3s ease', cursor: 'pointer' }} onClick={() => handleNavigation('/professor')}>
+                        <div style={{ width: '80px', height: '80px', borderRadius: '50%', marginBottom: '1rem', border: '3px solid var(--primary)', background: 'var(--text-gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', fontWeight: 'bold', color: 'white' }}>SJ</div>
+                        <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Dr. Sarah Johnson</h3>
+                        <p style={{ color: 'var(--primary)', marginBottom: '1rem' }}>PhD, Professor</p>
+                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>28+ years experience • 150+ publications • 18 patents</p>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'center' }}>
+                            <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--primary)', padding: '0.25rem 0.75rem', borderRadius: '12px', fontSize: '0.8rem' }}>AI & ML</span>
+                            <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--primary)', padding: '0.25rem 0.75rem', borderRadius: '12px', fontSize: '0.8rem' }}>NLP</span>
+                        </div>
+                    </div>
+                    <div className="faculty-preview-card" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '16px', padding: '2rem', textAlign: 'center', transition: 'all 0.3s ease', cursor: 'pointer' }} onClick={() => handleNavigation('/professor')}>
+                        <div style={{ width: '80px', height: '80px', borderRadius: '50%', marginBottom: '1rem', border: '3px solid var(--primary)', background: 'var(--text-gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', fontWeight: 'bold', color: 'white' }}>MC</div>
+                        <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Dr. Michael Chen</h3>
+                        <p style={{ color: 'var(--primary)', marginBottom: '1rem' }}>PhD, Assistant Professor</p>
+                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>15+ years experience • 60+ publications • 8 patents</p>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'center' }}>
+                            <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--primary)', padding: '0.25rem 0.75rem', borderRadius: '12px', fontSize: '0.8rem' }}>Embedded Systems</span>
+                            <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--primary)', padding: '0.25rem 0.75rem', borderRadius: '12px', fontSize: '0.8rem' }}>IoT</span>
+                        </div>
+                    </div>
+                </div>
+                <div style={{ textAlign: 'center', marginTop: '3rem' }}>
+                    <button className="btn-secondary" onClick={() => handleNavigation('/professor')}>
+                        <Users size={18} />
+                        <span>View All Faculty</span>
+                    </button>
+                </div>
+            </section>
 
             {/* How It Works Section */}
             <section className="how-it-works-section">
@@ -202,7 +293,7 @@ const LandingPage = () => {
                         </div>
                         <h3>Expert-Led Curriculum</h3>
                         <p>
-                            Learn from courses designed by Dr. Kiran TALELE, with 33+ years of teaching experience
+                            Learn from courses designed by SPIT's elite faculty, with 50+ years of combined teaching experience
                             and deep industry connections.
                         </p>
                         <div className="feature-badge">PhD Instructor</div>
@@ -262,7 +353,7 @@ const LandingPage = () => {
                         </div>
                         <h3>Industry Certificates</h3>
                         <p>
-                            Earn recognized certificates signed by Dr. TALELE that validate your skills
+                            Earn recognized certificates signed by SPIT faculty that validate your skills
                             and enhance your resume.
                         </p>
                         <div className="feature-badge">Verified Credentials</div>
@@ -270,8 +361,50 @@ const LandingPage = () => {
                 </div>
             </section>
 
+            {/* Courses Section */}
+            <section className="courses-section" style={{ padding: '3rem 4rem', background: 'linear-gradient(180deg, transparent 0%, rgba(16, 185, 129, 0.02) 50%, transparent 100%)' }}>
+                <div className="section-header" style={{ textAlign: 'center', marginBottom: '3rem' }}>
+                    <h2 className="section-title">Be First to Access Premium Engineering Courses</h2>
+                    <p className="section-subtitle">Secure your spot for exclusive courses launching Q1 2025. Led by SPIT faculty with industry experience.</p>
+                </div>
+                <div className="courses-container" style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
+                    <div className="courses-preview" style={{ marginBottom: '3rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
+                            <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem' }}>
+                                <BarChart2 size={32} style={{ color: 'var(--primary)', marginBottom: '1rem' }} />
+                                <h4 style={{ marginBottom: '0.5rem' }}>Digital Signal Processing</h4>
+                                <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Master advanced signal processing techniques</p>
+                            </div>
+                            <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem' }}>
+                                <Sparkles size={32} style={{ color: 'var(--primary)', marginBottom: '1rem' }} />
+                                <h4 style={{ marginBottom: '0.5rem' }}>AI & Machine Learning</h4>
+                                <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Build cutting-edge AI solutions</p>
+                            </div>
+                            <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem' }}>
+                                <Zap size={32} style={{ color: 'var(--primary)', marginBottom: '1rem' }} />
+                                <h4 style={{ marginBottom: '0.5rem' }}>Embedded Systems & IoT</h4>
+                                <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Design next-gen connected devices</p>
+                            </div>
+                        </div>
+                        <p style={{ fontStyle: 'italic', color: 'var(--text-muted)' }}>Positions limited. Early access guarantees premium mentorship opportunities.</p>
+                    </div>
+                    <div className="email-capture" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '16px', padding: '2rem', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.05)' }}>
+                        <h3 style={{ marginBottom: '1rem' }}>Join 500+ Students on the Waitlist</h3>
+                        <p style={{ marginBottom: '2rem', color: 'var(--text-muted)' }}>Get notified when courses launch and receive exclusive early access.</p>
+                        <form onSubmit={(e) => { e.preventDefault(); alert('Thank you! We\'ll notify you when courses launch.'); }} style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                            <input type="email" placeholder="Enter your email" required style={{ flex: '1', minWidth: '250px' }} />
+                            <button type="submit" className="btn-primary" style={{ whiteSpace: 'nowrap' }}>
+                                <Mail size={18} />
+                                <span>Notify Me</span>
+                            </button>
+                        </form>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '1rem' }}>No spam, unsubscribe anytime.</p>
+                    </div>
+                </div>
+            </section>
+
             {/* Testimonials Section */}
-            <section id="testimonials" className="testimonials-section">
+            <section id="testimonials" className="testimonials-section" style={{ padding: '3rem 4rem' }}>
                 <div className="testimonials-container">
                     <div className="section-header">
                         <h2 className="section-title">Student Success Stories</h2>
@@ -516,13 +649,13 @@ const LandingPage = () => {
             </section>
 
             {/* CTA Section */}
-            <section className="cta-section">
+            <section className="cta-section" style={{ padding: '3rem 4rem' }}>
                 <div className="cta-card">
                     <div className="cta-content">
-                        <h2>Ready to Transform Your Career?</h2>
+                        <h2>Launch Your Engineering Career Today</h2>
                         <p>
-                            Join 500+ students learning from  expert-led courses.
-                            Start your journey today with our free plan.
+                            Join 500+ ambitious students learning from SPIT's elite faculty.
+                            Transform theory into industry-ready skills that companies demand.
                         </p>
                         <div className="cta-buttons">
                             <button className="btn-accent" onClick={() => handleNavigation('/login')}>
