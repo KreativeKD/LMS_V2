@@ -47,10 +47,10 @@ const LandingPage = () => {
                         </span>
                     </div>
                     <h1 className="hero-title">
-                        Launch Your Engineering Career with <span className="gradient-text">SPIT's Elite Faculty</span>
+                        Launch Your Engineering Career with <span className="gradient-text">CourseZ</span>
                     </h1>
                     <p className="hero-subtitle">
-                        Master Signal Processing, AI & Embedded Systems from SPIT's elite faculty with 33+ years combined experience, 150+ publications, and 30+ patents. Transform theory into industry-ready skills that companies demand.
+                    CourseZ stands out as the essential platform for engineering education, offering comprehensive courses in Signal Processing, AI & Embedded Systems that are uniquely designed to bridge academic theory with real-world application. Unlike traditional learning methods, CourseZ emphasizes practical skills, personalized mentorship, and industry-relevant projects that prepare you for the demands of modern engineering careers.
                     </p>
                     <p className="hero-subtitle" style={{ fontStyle: 'italic', marginTop: '1rem', color: 'var(--text-muted)' }}>
                         Don't just study engineering—become the engineer companies fight to hire.
