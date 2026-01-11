@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { BookOpen, BarChart2, Zap, Sparkles, Clock, Users, Award, ArrowRight } from 'lucide-react';
 import PublicNavbar from '../components/PublicNavbar';
 import PublicFooter from '../components/PublicFooter';
 
 const CoursesPage = () => {
+    const navigate = useNavigate();
     const [scrolled, setScrolled] = useState(false);
 
     useEffect(() => {
@@ -95,7 +97,7 @@ const CoursesPage = () => {
                     <p className="section-subtitle">Choose your learning path and start building expertise</p>
                 </div>
 
-                <div className="features-grid">
+                <div className="courses-page-grid">
                     {coursesData.map(course => {
                         const IconComponent = course.icon;
                         return (
@@ -112,7 +114,7 @@ const CoursesPage = () => {
                                     <p><strong>Students:</strong> {course.students}</p>
                                     <p><strong>Chapters:</strong> {course.chapters}</p>
                                 </div>
-                                <button className="btn-primary" style={{ marginTop: '1.5rem', width: '100%' }}>
+                                <button className="btn-primary" style={{ marginTop: '1.5rem', width: '100%' }} onClick={() => navigate('/login')}>
                                     <span>Enroll Now</span>
                                     <ArrowRight size={18} />
                                 </button>

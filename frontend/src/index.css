@@ -170,13 +170,25 @@ input:focus {
 }
 
 @keyframes typing {
-  from { width: 0; }
-  to { width: 100%; }
+  from {
+    width: 0;
+  }
+
+  to {
+    width: 100%;
+  }
 }
 
 @keyframes blink-caret {
-  from, to { border-color: transparent; }
-  50% { border-color: var(--primary); }
+
+  from,
+  to {
+    border-color: transparent;
+  }
+
+  50% {
+    border-color: var(--primary);
+  }
 }
 
 /* Modal Styles */
@@ -2140,6 +2152,8 @@ input:focus {
 
   .steps-grid,
   .features-grid,
+  .courses-page-grid,
+  .courses-grid,
   .testimonials-grid,
   .pricing-grid,
   .credentials-grid,
@@ -2233,8 +2247,31 @@ input:focus {
 
 .courses-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 2rem;
+}
+
+.courses-page-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+
+.courses-page-grid .feature-card {
+  padding: 1.5rem;
+}
+
+.courses-page-grid .feature-card h3 {
+  font-size: 1.1rem;
+}
+
+.courses-page-grid .feature-card p {
+  font-size: 0.85rem;
+}
+
+.courses-page-grid .btn-primary {
+  padding: 8px 16px;
+  font-size: 0.75rem;
 }
 
 .landing-course-card {
