@@ -19,6 +19,15 @@ const LandingPage = () => {
             setScrolled(window.scrollY > 50);
         };
         window.addEventListener('scroll', handleScroll);
+
+        // Handle initial hash scroll
+        if (window.location.hash === '#testimonials') {
+            const element = document.getElementById('testimonials');
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
@@ -43,14 +52,14 @@ const LandingPage = () => {
                     <div className="badge-container">
                         <span className="badge badge-premium">
                             <Sparkles size={16} />
-                            <span>By SPIT Faculty • 33+ Years Experience</span>
+                            <span>Brought to you by Academic Experts</span>
                         </span>
                     </div>
                     <h1 className="hero-title">
                         Launch Your Engineering Career with <span className="gradient-text">CourseZ</span>
                     </h1>
                     <p className="hero-subtitle">
-                    CourseZ stands out as the essential platform for engineering education, offering comprehensive courses in Signal Processing, AI & Embedded Systems that are uniquely designed to bridge academic theory with real-world application. Unlike traditional learning methods, CourseZ emphasizes practical skills, personalized mentorship, and industry-relevant projects that prepare you for the demands of modern engineering careers.
+                        CourseZ stands out as the essential platform for engineering education, offering comprehensive courses in Signal Processing, AI & Embedded Systems that are uniquely designed to bridge academic theory with real-world application. Unlike traditional learning methods, CourseZ emphasizes practical skills, personalized mentorship, and industry-relevant projects that prepare you for the demands of modern engineering careers.
                     </p>
                     <p className="hero-subtitle" style={{ fontStyle: 'italic', marginTop: '1rem', color: 'var(--text-muted)' }}>
                         Don't just study engineering—become the engineer companies fight to hire.
@@ -130,49 +139,6 @@ const LandingPage = () => {
                         <div>
                             <h4>Career Growth</h4>
                             <p>Land your dream job</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Trust & Credibility Section */}
-            <section className="trust-section" style={{ padding: '1.5rem 4rem', background: 'linear-gradient(180deg, rgba(16, 185, 129, 0.02) 0%, transparent 100%)', textAlign: 'center' }}>
-                <div className="trust-container" style={{ maxWidth: '1400px', margin: '0 auto' }}>
-                    <div className="trust-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem', alignItems: 'center' }}>
-                        <div className="trust-item" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'center' }}>
-                            <Building size={24} style={{ color: 'var(--primary)' }} />
-                            <div>
-                                <strong style={{ fontSize: '1.1rem', color: 'var(--text-main)' }}>SPIT Faculty</strong>
-                                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>Elite Institution</p>
-                            </div>
-                        </div>
-                        <div className="trust-item" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'center' }}>
-                            <Award size={24} style={{ color: 'var(--primary)' }} />
-                            <div>
-                                <strong style={{ fontSize: '1.1rem', color: 'var(--text-main)' }}>50+ Years</strong>
-                                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>Combined Experience</p>
-                            </div>
-                        </div>
-                        <div className="trust-item" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'center' }}>
-                            <FileText size={24} style={{ color: 'var(--primary)' }} />
-                            <div>
-                                <strong style={{ fontSize: '1.1rem', color: 'var(--text-main)' }}>150+ Publications</strong>
-                                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>Research Papers</p>
-                            </div>
-                        </div>
-                        <div className="trust-item" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'center' }}>
-                            <Trophy size={24} style={{ color: 'var(--primary)' }} />
-                            <div>
-                                <strong style={{ fontSize: '1.1rem', color: 'var(--text-main)' }}>30+ Patents</strong>
-                                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>Filed & Granted</p>
-                            </div>
-                        </div>
-                        <div className="trust-item" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'center' }}>
-                            <Users size={24} style={{ color: 'var(--primary)' }} />
-                            <div>
-                                <strong style={{ fontSize: '1.1rem', color: 'var(--text-main)' }}>500+ Students</strong>
-                                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>Successfully Trained</p>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -367,26 +333,26 @@ const LandingPage = () => {
                     <h2 className="section-title">Be First to Access Premium Engineering Courses</h2>
                     <p className="section-subtitle">Secure your spot for exclusive courses launching Q1 2025. Led by SPIT faculty with industry experience.</p>
                 </div>
-                <div className="courses-container" style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
+                <div className="courses-container" style={{ maxWidth: '1000px', margin: '0 auto', textAlign: 'center' }}>
                     <div className="courses-preview" style={{ marginBottom: '3rem' }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
-                            <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem' }}>
-                                <BarChart2 size={32} style={{ color: 'var(--primary)', marginBottom: '1rem' }} />
-                                <h4 style={{ marginBottom: '0.5rem' }}>Digital Signal Processing</h4>
-                                <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Master advanced signal processing techniques</p>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '3rem', marginBottom: '2rem' }}>
+                            <div className="course-sticky-note sticky-yellow rotate-1">
+                                <BarChart2 size={40} className="sticky-icon" />
+                                <h4>Digital Signal Processing</h4>
+                                <p>Master advanced signal processing techniques with industry-standard tools.</p>
                             </div>
-                            <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem' }}>
-                                <Sparkles size={32} style={{ color: 'var(--primary)', marginBottom: '1rem' }} />
-                                <h4 style={{ marginBottom: '0.5rem' }}>AI & Machine Learning</h4>
-                                <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Build cutting-edge AI solutions</p>
+                            <div className="course-sticky-note sticky-cyan rotate-2">
+                                <Sparkles size={40} className="sticky-icon" />
+                                <h4>AI & Machine Learning</h4>
+                                <p>Build cutting-edge AI solutions from neural networks to deep learning models.</p>
                             </div>
-                            <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem' }}>
-                                <Zap size={32} style={{ color: 'var(--primary)', marginBottom: '1rem' }} />
-                                <h4 style={{ marginBottom: '0.5rem' }}>Embedded Systems & IoT</h4>
-                                <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Design next-gen connected devices</p>
+                            <div className="course-sticky-note sticky-pink rotate-3">
+                                <Zap size={40} className="sticky-icon" />
+                                <h4>Embedded Systems & IoT</h4>
+                                <p>Design next-gen connected devices using high-performance microcontrollers.</p>
                             </div>
                         </div>
-                        <p style={{ fontStyle: 'italic', color: 'var(--text-muted)' }}>Positions limited. Early access guarantees premium mentorship opportunities.</p>
+                        <p style={{ fontStyle: 'italic', color: 'var(--text-muted)', marginTop: '2rem' }}>Positions limited. Early access guarantees premium mentorship opportunities.</p>
                     </div>
                     <div className="email-capture" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '16px', padding: '2rem', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.05)' }}>
                         <h3 style={{ marginBottom: '1rem' }}>Join 500+ Students on the Waitlist</h3>

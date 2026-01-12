@@ -93,28 +93,51 @@ const CoursesPage = () => {
             {/* Courses Section */}
             <section style={{ padding: '8rem 4rem 4rem' }}>
                 <div className="section-header">
-                    <h2 className="section-title">Available Courses</h2>
+                    <h2 className="section-title">Academic Courses</h2>
                     <p className="section-subtitle">Choose your learning path and start building expertise</p>
                 </div>
 
-                <div className="courses-page-grid">
-                    {coursesData.map(course => {
+                <div className="courses-page-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '3rem', maxWidth: '1400px', margin: '0 auto' }}>
+                    {coursesData.map((course, index) => {
                         const IconComponent = course.icon;
+                        const colors = ['sticky-yellow', 'sticky-cyan', 'sticky-pink', 'sticky-lime'];
+                        const rotations = ['rotate-1', 'rotate-2', 'rotate-3'];
+                        const colorClass = colors[index % colors.length];
+                        const rotationClass = rotations[index % rotations.length];
+
                         return (
-                            <div key={course.id} className="feature-card">
-                                <div className="feature-icon-wrapper">
-                                    <IconComponent size={32} />
+                            <div key={course.id} className={`course-sticky-note ${colorClass} ${rotationClass}`} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                                    <IconComponent size={32} className="sticky-icon" style={{ margin: 0 }} />
+                                    <h3 style={{ fontSize: '1.3rem', margin: 0, fontWeight: '700' }}>{course.title}</h3>
                                 </div>
-                                <h3>{course.title}</h3>
-                                <p>{course.description}</p>
-                                <div style={{ marginTop: '1rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                                    <p><strong>Professor:</strong> {course.professor}</p>
-                                    <p><strong>Duration:</strong> {course.duration}</p>
-                                    <p><strong>Level:</strong> {course.level}</p>
-                                    <p><strong>Students:</strong> {course.students}</p>
-                                    <p><strong>Chapters:</strong> {course.chapters}</p>
+                                <p style={{ fontSize: '0.95rem', marginBottom: '1.5rem', flexGrow: 1 }}>{course.description}</p>
+
+                                <div style={{
+                                    background: 'rgba(255, 255, 255, 0.3)',
+                                    padding: '1rem',
+                                    borderRadius: '8px',
+                                    fontSize: '0.85rem',
+                                    marginBottom: '1.5rem',
+                                    border: '1px solid rgba(0,0,0,0.05)'
+                                }}>
+                                    <p style={{ margin: '0.2rem 0' }}><strong>Professor:</strong> {course.professor}</p>
+                                    <p style={{ margin: '0.2rem 0' }}><strong>Duration:</strong> {course.duration}</p>
+                                    <p style={{ margin: '0.2rem 0' }}><strong>Level:</strong> {course.level}</p>
                                 </div>
-                                <button className="btn-primary" style={{ marginTop: '1.5rem', width: '100%' }} onClick={() => navigate('/login')}>
+
+                                <button
+                                    className="btn-primary"
+                                    style={{
+                                        width: '100%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '0.5rem',
+                                        marginTop: 'auto'
+                                    }}
+                                    onClick={() => navigate('/login')}
+                                >
                                     <span>Enroll Now</span>
                                     <ArrowRight size={18} />
                                 </button>

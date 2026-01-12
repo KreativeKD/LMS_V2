@@ -12,6 +12,10 @@
   --text-muted: #6b7280;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -316,6 +320,89 @@ input:focus {
   background: var(--glass);
   border: 1px solid var(--border);
   color: var(--text-muted);
+}
+
+/* Course Sticky Notes */
+.course-sticky-note {
+  padding: 2.5rem 2rem;
+  border-radius: 4px;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: 280px;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.course-sticky-note::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(225deg, transparent 50%, rgba(0, 0, 0, 0.05) 50%);
+  z-index: 2;
+}
+
+.course-sticky-note:hover {
+  transform: scale(1.05) rotate(0deg) !important;
+  box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+}
+
+.sticky-yellow {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+.sticky-cyan {
+  background: #cffafe;
+  color: #155e75;
+}
+
+.sticky-pink {
+  background: #fce7f3;
+  color: #9d174d;
+}
+
+.sticky-lime {
+  background: #ecfccb;
+  color: #3f6212;
+}
+
+.rotate-1 {
+  transform: rotate(1.5deg);
+}
+
+.rotate-2 {
+  transform: rotate(-2deg);
+}
+
+.rotate-3 {
+  transform: rotate(1deg);
+}
+
+.course-sticky-note h4 {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.course-sticky-note p {
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  opacity: 0.9;
+}
+
+.course-sticky-note .sticky-icon {
+  margin-bottom: 1.5rem;
+  opacity: 0.8;
 }
 
 /* Landing Page Styles */

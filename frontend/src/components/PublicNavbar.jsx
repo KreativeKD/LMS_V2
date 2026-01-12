@@ -18,8 +18,18 @@ const PublicNavbar = ({ scrolled }) => {
             <div className="nav-links">
                 <Link to="/" className="nav-link">Home</Link>
                 <Link to="/professor" className="nav-link">Professor</Link>
-                <Link to="/courses" className="nav-link">Courses</Link>
+                <Link to="/courses" className="nav-link">Academic Courses</Link>
                 <Link to="/scholarship" className="nav-link">Funding and Scholarship</Link>
+                <a href="/#testimonials" className="nav-link" onClick={(e) => {
+                    if (window.location.pathname === '/') {
+                        e.preventDefault();
+                        const element = document.getElementById('testimonials');
+                        if (element) {
+                            element.scrollIntoView({ behavior: 'smooth' });
+                            window.history.pushState(null, null, '#testimonials');
+                        }
+                    }
+                }}>Testimonials</a>
                 <Link to="/contact" className="nav-link">Contact</Link>
             </div>
             <div className="nav-actions">
