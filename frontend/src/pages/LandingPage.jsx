@@ -45,100 +45,95 @@ const LandingPage = () => {
             {/* Navigation */}
             <PublicNavbar scrolled={scrolled} />
 
-            {/* Hero Section */}
-            <section className="hero-section" style={{ padding: '6rem 4rem 3rem' }}>
-                <div className="hero-content animate-slide-left">
-                    {/*to be removed*/}
-                    <div className="badge-container">
+            {/* Title Section */}
+            <section className="hero-title-section" style={{ padding: '8rem 4rem 4rem', textAlign: 'center', background: 'var(--background)' }}>
+                <div className="animate-slide-up">
+                    <div className="badge-container" style={{ justifyContent: 'center', marginBottom: '1.5rem' }}>
                         <span className="badge badge-premium">
                             <Sparkles size={16} />
                             <span>Brought to you by Academic Experts</span>
                         </span>
                     </div>
-                    <h1 className="hero-title">
+                    <h1 className="hero-title" style={{ fontSize: '4rem', maxWidth: '1200px', margin: '0 auto', lineHeight: '1.2' }}>
                         Launch Your Engineering Career with <span className="gradient-text">CourseZ</span>
                     </h1>
-                    <p className="hero-subtitle">
+                </div>
+            </section>
+
+            {/* Top Banner Images (Stacked Vertically) */}
+            <section className="top-banner-images" style={{ width: '100%', padding: '0' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '1rem' }}>
+                    <div className="animate-fade-in" style={{ width: '100%', height: 'auto', minHeight: '500px', overflow: 'hidden' }}>
+                        <img src="/generated/img1.png" alt="Engineering Hub" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    </div>
+                    <div className="animate-fade-in" style={{ width: '100%', height: 'auto', minHeight: '500px', overflow: 'hidden', animationDelay: '0.2s' }}>
+                        <img src="/generated/img2.png" alt="Advanced Learning" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    </div>
+                    <div className="animate-fade-in" style={{ width: '100%', height: 'auto', minHeight: '500px', overflow: 'hidden', animationDelay: '0.4s' }}>
+                        <img src="/generated/img3.png" alt="Future of Engineering" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    </div>
+                </div>
+            </section>
+
+            {/* CourseZ Intro Paragraph Section */}
+            <section className="coursez-description-section" style={{ padding: '6rem 4rem 2rem', textAlign: 'center' }}>
+                <div className="animate-slide-up" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                    <p className="hero-subtitle" style={{ fontSize: '1.5rem', lineHeight: '1.8', color: 'var(--text-main)', margin: 0 }}>
                         CourseZ stands out as the essential platform for engineering education, offering comprehensive courses in Signal Processing, AI & Embedded Systems that are uniquely designed to bridge academic theory with real-world application. Unlike traditional learning methods, CourseZ emphasizes practical skills, personalized mentorship, and industry-relevant projects that prepare you for the demands of modern engineering careers.
                     </p>
-                    <p className="hero-subtitle" style={{ fontStyle: 'italic', marginTop: '1rem', color: 'var(--text-muted)' }}>
+                    <p className="hero-subtitle" style={{ fontStyle: 'italic', marginTop: '2rem', color: 'var(--primary)', fontWeight: '600', fontSize: '1.25rem' }}>
                         Don't just study engineering—become the engineer companies fight to hire.
                     </p>
-                    <div className="hero-buttons">
-                        <button
-                            className="btn-primary btn-large"
-                            onClick={() => handleNavigation('/login')}
-                            style={{ fontSize: '1.1rem', padding: '16px 32px' }}
-                        >
-                            <span>Start Learning Today</span>
-                            <ArrowRight size={20} />
-                        </button>
-                        <button
-                            className="btn-outline"
-                            onClick={() => handleNavigation('/professor')}
-                            style={{ marginLeft: '1rem' }}
-                        >
-                            <Users size={18} />
-                            <span>Meet the Faculty</span>
-                        </button>
-                    </div>
+                </div>
+            </section>
 
-                    <div className="hero-stats">
-                        <div className="stat-card">
-                            <div className="stat-icon">
-                                <Users size={28} />
-                            </div>
-                            <div className="stat-content">
-                                <h3>500+</h3>
-                                <p>Students Enrolled</p>
-                            </div>
-                        </div>
-                        <div className="stat-card">
-                            <div className="stat-icon">
-                                <BookOpen size={28} />
-                            </div>
-                            <div className="stat-content">
-                                <h3>6+</h3>
-                                <p>Courses Planned</p>
-                            </div>
-                        </div>
-                        <div className="stat-card">
-                            <div className="stat-icon">
-                                <Award size={28} />
-                            </div>
-                            <div className="stat-content">
-                                <h3>3</h3>
-                                <p>Expert Professors</p>
-                            </div>
-                        </div>
-                    </div>
-
-
+            {/* Buttons and Stats Section */}
+            <section className="hero-cta-section" style={{ padding: '2rem 4rem 6rem', textAlign: 'center' }}>
+                <div className="hero-buttons animate-slide-up" style={{ justifyContent: 'center', display: 'flex', gap: '1.5rem', marginBottom: '5rem', animationDelay: '0.2s' }}>
+                    <button
+                        className="btn-primary btn-large"
+                        onClick={() => handleNavigation('/login')}
+                        style={{ fontSize: '1.2rem', padding: '18px 40px' }}
+                    >
+                        <span>Start Learning Today</span>
+                        <ArrowRight size={22} />
+                    </button>
+                    <button
+                        className="btn-outline btn-large"
+                        onClick={() => handleNavigation('/professor')}
+                        style={{ fontSize: '1.2rem', padding: '18px 40px' }}
+                    >
+                        <Users size={20} />
+                        <span>Meet the Faculty</span>
+                    </button>
                 </div>
 
-                <div className="hero-image-container animate-slide-right">
-                    <div className="image-glow"></div>
-                    <img
-                        src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop"
-                        alt="Students Learning"
-                        className="hero-image"
-                    />
-                    <div className="floating-card floating-card-1">
-                        <div className="floating-icon">
-                            <Trophy size={20} />
+                <div className="hero-stats animate-slide-up" style={{ justifyContent: 'center', display: 'flex', gap: '3rem', flexWrap: 'wrap', animationDelay: '0.4s' }}>
+                    <div className="stat-card" style={{ minWidth: '200px' }}>
+                        <div className="stat-icon">
+                            <Users size={32} />
                         </div>
-                        <div>
-                            <h4>Certified Programs</h4>
-                            <p>Industry-recognized certificates</p>
+                        <div className="stat-content">
+                            <h3 style={{ fontSize: '2rem' }}>500+</h3>
+                            <p>Students Enrolled</p>
                         </div>
                     </div>
-                    <div className="floating-card floating-card-2">
-                        <div className="floating-icon">
-                            <Rocket size={20} />
+                    <div className="stat-card" style={{ minWidth: '200px' }}>
+                        <div className="stat-icon">
+                            <BookOpen size={32} />
                         </div>
-                        <div>
-                            <h4>Career Growth</h4>
-                            <p>Land your dream job</p>
+                        <div className="stat-content">
+                            <h3 style={{ fontSize: '2rem' }}>6+</h3>
+                            <p>Courses Planned</p>
+                        </div>
+                    </div>
+                    <div className="stat-card" style={{ minWidth: '200px' }}>
+                        <div className="stat-icon">
+                            <Award size={32} />
+                        </div>
+                        <div className="stat-content">
+                            <h3 style={{ fontSize: '2rem' }}>3</h3>
+                            <p>Expert Professors</p>
                         </div>
                     </div>
                 </div>

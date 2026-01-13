@@ -62,7 +62,14 @@ const StudentCourseView = () => {
                 overflowY: 'auto',
                 flexShrink: 0
             }}>
-                <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border)' }}>
+                <div style={{
+                    padding: '1.5rem',
+                    borderBottom: '1px solid var(--border)',
+                    position: 'sticky',
+                    top: 0,
+                    backgroundColor: '#f9fafb',
+                    zIndex: 10
+                }}>
                     <h3 className="gradient-text" style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>{course.title}</h3>
 
                     {/* Teacher Visibility */}
@@ -74,15 +81,7 @@ const StudentCourseView = () => {
                         ].filter(Boolean).join(', ')}
                     </div>
 
-                    <button
-                        onClick={() => {
-                            const path = user?.role === 'admin' ? '/admin' : (user?.role === 'teacher' ? '/teacher' : '/student');
-                            navigate(path);
-                        }}
-                        style={{ background: 'transparent', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', padding: 0 }}
-                    >
-                        <ArrowLeft size={14} /> Back to Dashboard
-                    </button>
+                
                 </div>
 
                 <div style={{ padding: '1rem' }}>
@@ -132,6 +131,38 @@ const StudentCourseView = () => {
                 >
                     <Menu size={20} />
                 </button>
+
+                {/* Back to Dashboard Button on Right */}
+                <div style={{
+                    position: 'absolute',
+                    top: '1rem',
+                    right: '1.5rem',
+                    zIndex: 10
+                }}>
+                    <button
+                        onClick={() => {
+                            const path = user?.role === 'admin' ? '/admin' : (user?.role === 'teacher' ? '/teacher' : '/student');
+                            navigate(path);
+                        }}
+                        style={{
+                            background: 'var(--primary)',
+                            color: 'white',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            fontSize: '0.9rem',
+                            padding: '10px 18px',
+                            borderRadius: '10px',
+                            border: 'none',
+                            cursor: 'pointer',
+                            boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)',
+                            transition: 'all 0.3s ease'
+                        }}
+                        className="hover-scale"
+                    >
+                        <ArrowLeft size={16} /> <span>Back to Dashboard</span>
+                    </button>
+                </div>
 
                 <div style={{ maxWidth: '900px', margin: '0 auto', padding: '3rem 2rem' }}>
                     {selectedUnit ? (
