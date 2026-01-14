@@ -62,18 +62,26 @@ const LandingPage = () => {
 
             {/* Top Banner Images (Stacked Vertically) */}
             <section className="top-banner-images" style={{ width: '100%', padding: '0' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '1rem' }}>
-                    <div className="animate-fade-in" style={{ width: '100%', height: 'auto', minHeight: '500px', overflow: 'hidden' }}>
-                        <img src="/generated/img1.png" alt="Engineering Hub" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                    </div>
-                    <div className="animate-fade-in" style={{ width: '100%', height: 'auto', minHeight: '500px', overflow: 'hidden', animationDelay: '0.2s' }}>
-                        <img src="/generated/img2.png" alt="Advanced Learning" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                    </div>
-                    <div className="animate-fade-in" style={{ width: '100%', height: 'auto', minHeight: '500px', overflow: 'hidden', animationDelay: '0.4s' }}>
-                        <img src="/generated/img3.png" alt="Future of Engineering" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                    </div>
-                </div>
-            </section>
+  <div style={{ 
+    display: 'flex', 
+    flexDirection: 'row', // Changed from column to row
+    width: '100%', 
+    gap: '1rem' 
+  }}>
+    {/* Width changed to 33.33% so three items fit in one row */}
+    <div className="animate-fade-in" style={{ width: '33.33%', height: '50vh', minHeight: '500px', overflow: 'hidden' }}>
+      <img src="/generated/img1.png" alt="Engineering Hub" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+    </div>
+    
+    <div className="animate-fade-in" style={{ width: '33.33%', height: '50vh', minHeight: '500px', overflow: 'hidden', animationDelay: '0.2s' }}>
+      <img src="/generated/img2.png" alt="Advanced Learning" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+    </div>
+    
+    <div className="animate-fade-in" style={{ width: '33.33%', height: '50vh', minHeight: '500px', overflow: 'hidden', animationDelay: '0.4s' }}>
+      <img src="/generated/img3.png" alt="Future of Engineering" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+    </div>
+  </div>
+</section>
 
             {/* CourseZ Intro Paragraph Section */}
             <section className="coursez-description-section" style={{ padding: '6rem 4rem 2rem', textAlign: 'center' }}>
