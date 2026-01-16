@@ -97,7 +97,7 @@ const CoursesPage = () => {
                     <p className="section-subtitle">Choose your learning path and start building expertise</p>
                 </div>
 
-                <div className="courses-page-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '3rem', maxWidth: '1400px', margin: '0 auto' }}>
+                <div className="courses-page-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', maxWidth: '1400px', margin: '0 auto' }}>
                     {coursesData.map((course, index) => {
                         const IconComponent = course.icon;
                         const colors = ['sticky-yellow', 'sticky-cyan', 'sticky-pink', 'sticky-lime'];

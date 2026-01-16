@@ -837,14 +837,14 @@ input:focus {
   opacity: 0.9;
 }
 
-.top-banner-images > div {
+.top-banner-images>div {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.5rem;
   width: 100%;
 }
 
-.top-banner-images > div > div {
+.top-banner-images>div>div {
   width: 100%;
   height: 150px;
   overflow: hidden;
@@ -855,7 +855,7 @@ input:focus {
   position: relative;
 }
 
-.top-banner-images > div > div::after {
+.top-banner-images>div>div::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -863,7 +863,7 @@ input:focus {
   pointer-events: none;
 }
 
-.top-banner-images > div > div:hover {
+.top-banner-images>div>div:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(0, 210, 255, 0.1);
   border-color: var(--primary);
@@ -879,7 +879,7 @@ input:focus {
   filter: brightness(0.95);
 }
 
-.top-banner-images > div > div:hover img {
+.top-banner-images>div>div:hover img {
   transform: scale(1.02);
   filter: brightness(1);
 }
@@ -1064,7 +1064,7 @@ input:focus {
 
 .quick-stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 1.5rem;
   margin-bottom: 2rem;
   padding: 1.5rem 0;
@@ -1089,8 +1089,9 @@ input:focus {
 }
 
 .quick-stat span {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--text-muted);
+  line-height: 1.3;
 }
 
 .contact-buttons {
@@ -2308,18 +2309,18 @@ input:focus {
     padding: 0.5rem 2rem;
   }
 
-  .top-banner-images > div {
+  .top-banner-images>div {
     gap: 0.4rem;
   }
 
-  .top-banner-images > div > div {
+  .top-banner-images>div>div {
     height: 130px;
   }
 
   .hero-title-section .hero-title {
     font-size: 3.5rem;
   }
-  
+
   .coursez-description-section .hero-subtitle {
     font-size: 1.4rem;
   }
@@ -2354,19 +2355,19 @@ input:focus {
     grid-template-columns: 1fr;
   }
 
-  .top-banner-images > div {
+  .top-banner-images>div {
     grid-template-columns: 1fr;
     gap: 0.4rem;
   }
 
-  .top-banner-images > div > div {
+  .top-banner-images>div>div {
     height: 160px;
   }
 
   .hero-title-section {
     padding: 6rem 2rem 2rem;
   }
-  
+
   .hero-title-section .hero-title {
     font-size: 2.8rem;
   }
@@ -2374,7 +2375,7 @@ input:focus {
   .coursez-description-section {
     padding: 3rem 2rem 1.5rem;
   }
-  
+
   .coursez-description-section .hero-subtitle {
     font-size: 1.2rem;
   }
@@ -2494,7 +2495,7 @@ input:focus {
     padding: 0.4rem 1.5rem;
   }
 
-  .top-banner-images > div > div {
+  .top-banner-images>div>div {
     height: 140px;
   }
 
@@ -2558,7 +2559,7 @@ input:focus {
     font-size: 1rem;
   }
 
-  .top-banner-images > div > div {
+  .top-banner-images>div>div {
     height: 120px;
   }
 

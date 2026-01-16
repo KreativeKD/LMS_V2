@@ -25,7 +25,8 @@ const Professor = () => {
             stats: {
                 experience: '33+',
                 publications: '85+',
-                patents: '22'
+                patents: '22',
+                startups: '4'
             },
             contact: {
                 website: 'https://www.talelesir.com',
@@ -371,6 +372,7 @@ const Professor = () => {
                     </div>
 
                     <div className="professor-card" style={{ padding: '2rem' }}>
+                        {/* Top Section: Photo and Name with Paragraph */}
                         <div className="professor-photo-section" style={{ gap: '2rem', marginBottom: '2rem' }}>
                             <div className="photo-wrapper" style={{ maxWidth: '250px' }}>
                                 <img src={selectedProf.photo} alt={selectedProf.name} className="professor-photo" style={{ width: '100%', height: '250px' }} />
@@ -388,40 +390,60 @@ const Professor = () => {
                                 <p className="professor-dept">{selectedProf.dept}</p>
                                 <p className="professor-institution">{selectedProf.institution}</p>
 
-                                <div className="quick-stats">
-                                    <div className="quick-stat">
-                                        <strong>{selectedProf.stats.experience}</strong>
-                                        <span>Years Experience</span>
-                                    </div>
-                                    <div className="quick-stat">
-                                        <strong>{selectedProf.stats.publications}</strong>
-                                        <span>Publications</span>
-                                    </div>
-                                    <div className="quick-stat">
-                                        <strong>{selectedProf.stats.patents}</strong>
-                                        <span>Patents</span>
-                                    </div>
-                                </div>
-
-                                <div className="contact-buttons">
-                                    {selectedProf.contact.website !== '#' && (
-                                        <a href={selectedProf.contact.website} target="_blank" rel="noopener noreferrer" className="contact-btn">
-                                            <ExternalLink size={18} />
-                                            <span>Website</span>
-                                        </a>
-                                    )}
-                                    {selectedProf.contact.linkedin !== '#' && (
-                                        <a href={selectedProf.contact.linkedin} target="_blank" rel="noopener noreferrer" className="contact-btn">
-                                            <Linkedin size={18} />
-                                            <span>LinkedIn</span>
-                                        </a>
-                                    )}
-                                    <a href={`mailto:${selectedProf.contact.email}`} className="contact-btn">
-                                        <Mail size={18} />
-                                        <span>Email</span>
-                                    </a>
+                                {/* Professor Information Paragraph */}
+                                <div style={{ marginTop: '1.5rem', lineHeight: '1.6', color: '#555' }}>
+                                    {/* PROFESSOR INFORMATION HERE - Paste the professor's paragraph/bio here */}
+                                    <p style={{ fontSize: '0.95rem' }}>
+                                        Dr. Kiran Talele is an academician, entrepreneur, and mentor dedicated to fostering innovation
+                                        and professional excellence. With a strong focus on student development and entrepreneurial mindset,
+                                        he has contributed significantly to academic programs, startups, and skill-building initiatives.
+                                        Dr. Talele combines 36+ years of experience with a passion for teaching, guiding students and
+                                        professionals to achieve meaningful growth and career success.
+                                    </p>
                                 </div>
                             </div>
+                        </div>
+
+                        {/* Stats Section - Below Photo and Paragraph */}
+                        <div style={{ marginBottom: '2rem' }}>
+                            <div className="quick-stats">
+                                <div className="quick-stat">
+                                    <strong>{selectedProf.stats.experience}</strong>
+                                    <span>Years Experience</span>
+                                </div>
+                                <div className="quick-stat">
+                                    <strong>{selectedProf.stats.publications}</strong>
+                                    <span>Publications</span>
+                                </div>
+                                <div className="quick-stat">
+                                    <strong>{selectedProf.stats.patents}</strong>
+                                    <span>Patents</span>
+                                </div>
+                                <div className="quick-stat">
+                                    <strong>{selectedProf.stats.startups}</strong>
+                                    <span>Number of Startups Mentored</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Contact Buttons */}
+                        <div className="contact-buttons" style={{ marginBottom: '2rem' }}>
+                            {selectedProf.contact.website !== '#' && (
+                                <a href={selectedProf.contact.website} target="_blank" rel="noopener noreferrer" className="contact-btn">
+                                    <ExternalLink size={18} />
+                                    <span>Website</span>
+                                </a>
+                            )}
+                            {selectedProf.contact.linkedin !== '#' && (
+                                <a href={selectedProf.contact.linkedin} target="_blank" rel="noopener noreferrer" className="contact-btn">
+                                    <Linkedin size={18} />
+                                    <span>LinkedIn</span>
+                                </a>
+                            )}
+                            <a href={`mailto:${selectedProf.contact.email}`} className="contact-btn">
+                                <Mail size={18} />
+                                <span>Email</span>
+                            </a>
                         </div>
 
                         {/* Courses Section */}
@@ -450,35 +472,9 @@ const Professor = () => {
                         </div>
 
                         <div className="professor-details" style={{ gap: '1.5rem' }}>
-                            <div className="detail-section">
-                                <div className="detail-header">
-                                    <Award size={24} className="detail-icon" />
-                                    <h4>Key Achievements</h4>
-                                </div>
-                                <ul className="detail-list">
-                                    {selectedProf.achievements.slice(0, 2).map((item, idx) => (
-                                        <li key={idx}>
-                                            <Star size={16} className="list-icon" />
-                                            <div>
-                                                <strong>{item.title}</strong>
-                                                <p>{item.desc}</p>
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
 
-                            <div className="detail-section">
-                                <div className="detail-header">
-                                    <Lightbulb size={24} className="detail-icon" />
-                                    <h4>Areas of Expertise</h4>
-                                </div>
-                                <div className="expertise-tags">
-                                    {selectedProf.expertise.slice(0, 4).map((tag, idx) => (
-                                        <span key={idx} className="expertise-tag">{tag}</span>
-                                    ))}
-                                </div>
-                            </div>
+
+
 
                             {selectedProf.testimonials && selectedProf.testimonials.length > 0 && (
                                 <div className="detail-section">
