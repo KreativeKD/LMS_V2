@@ -69,7 +69,7 @@ const Login = () => {
 
                 {/* LEFT SIDE: Professional Landing / Hero Section */}
                 <div className="hero-section" style={{
-                    flex: '1.2',
+                    flex: '0.6',
                     background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
                     color: 'white',
                     display: 'flex',
@@ -114,7 +114,7 @@ const Login = () => {
 
                 {/* RIGHT SIDE: Form Section */}
                 <div className="form-section" style={{
-                    flex: '1',
+                    flex: '1.4',
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',

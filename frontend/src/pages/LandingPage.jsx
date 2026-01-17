@@ -48,13 +48,13 @@ const LandingPage = () => {
             {/* Title Section */}
             <section className="hero-title-section" style={{ padding: '8rem 4rem 4rem', textAlign: 'center', background: 'var(--background)' }}>
                 <div className="animate-slide-up">
-                    <div className="badge-container" style={{ justifyContent: 'center', marginBottom: '1.5rem' }}>
+                    <div className="badge-container" style={{ justifyContent: 'center', marginBottom: '1.0rem' }}>
                         <span className="badge badge-premium">
                             <Sparkles size={16} />
                             <span>Brought to you by Academic Experts</span>
                         </span>
                     </div>
-                    <h1 className="hero-title" style={{ fontSize: '4rem', maxWidth: '1200px', margin: '0 auto', lineHeight: '1.2' }}>
+                    <h1 className="hero-title" style={{ fontSize: '4rem', maxWidth: '1200px', margin: '0 auto', lineHeight: '1.0' }}>
                         Launch Your Engineering Career with <span className="gradient-text">CourseZ</span>
                     </h1>
                 </div>
@@ -87,7 +87,16 @@ const LandingPage = () => {
             <section className="coursez-description-section" style={{ padding: '6rem 4rem 2rem', textAlign: 'center' }}>
                 <div className="animate-slide-up" style={{ maxWidth: '1200px', margin: '0 auto' }}>
                     <p className="hero-subtitle" style={{ fontSize: '1.5rem', lineHeight: '1.8', color: 'var(--text-main)', margin: 0 }}>
-                        CourseZ stands out as the essential platform for engineering education, offering comprehensive courses in Signal Processing, AI & Embedded Systems that are uniquely designed to bridge academic theory with real-world application. Unlike traditional learning methods, CourseZ emphasizes practical skills, personalized mentorship, and industry-relevant projects that prepare you for the demands of modern engineering careers.
+                        CourseZ is an online learning platform designed to provide high-quality, structured education in a flexible and 
+                        accessible way. It enables learners to gain knowledge, develop practical skills, and improve professional 
+                        competence through well-organized digital courses.
+                        <br /><br />
+                        The platform offers courses across technology, management, entrepreneurship, and professional development. 
+                        Each course is created by experts and includes video lectures, assessments, and certificates to ensure clear 
+                        and measurable learning outcomes.
+                        <br /><br />
+                        Blending proven educational methods with modern digital tools, CourseZ enables learners to build practical 
+                        skills, enhance professional competence, and advance their careers with confidence.
                     </p>
                     <p className="hero-subtitle" style={{ fontStyle: 'italic', marginTop: '2rem', color: 'var(--primary)', fontWeight: '600', fontSize: '1.25rem' }}>
                         Don't just study engineering—become the engineer companies fight to hire.
