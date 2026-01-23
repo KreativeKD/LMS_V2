@@ -16,6 +16,22 @@ const userSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
+    email: {
+        type: String,
+        trim: true
+    },
+    phone: {
+        type: String,
+        trim: true
+    },
+    city: {
+        type: String,
+        trim: true
+    },
+    country: {
+        type: String,
+        trim: true
+    },
     password: {
         type: String,
         required: true

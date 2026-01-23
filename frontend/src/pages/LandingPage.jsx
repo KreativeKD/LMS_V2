@@ -7,18 +7,39 @@ import {
     GraduationCap, FileText, Mail, Phone,
     CheckCircle, ArrowRight, Building, MessageCircle
 } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import PublicNavbar from '../components/PublicNavbar';
 import PublicFooter from '../components/PublicFooter';
+import { fetchPublicProfessors, fetchAcademicCourses } from '../api/api';
 
 const LandingPage = () => {
     const navigate = useNavigate();
     const [scrolled, setScrolled] = useState(false);
+    const [publicProfessors, setPublicProfessors] = useState([]);
+    const [publicCourses, setPublicCourses] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const handleScroll = () => {
             setScrolled(window.scrollY > 50);
         };
         window.addEventListener('scroll', handleScroll);
+
+        const loadData = async () => {
+            try {
+                const [profs, courses] = await Promise.all([
+                    fetchPublicProfessors(),
+                    fetchAcademicCourses()
+                ]);
+                setPublicProfessors(profs);
+                setPublicCourses(courses);
+            } catch (err) {
+                console.error("Failed to load landing page data", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
 
         // Handle initial hash scroll
         if (window.location.hash === '#testimonials') {
@@ -55,47 +76,47 @@ const LandingPage = () => {
                         </span>
                     </div>
                     <h1 className="hero-title" style={{ fontSize: '4rem', maxWidth: '1200px', margin: '0 auto', lineHeight: '1.0' }}>
-                        Launch Your Engineering Career with <span className="gradient-text">CourseZ</span>
+                        Launch Your Engineering Career with <span className="brand-course">Course</span><span className="brand-z">Z</span>
                     </h1>
                 </div>
             </section>
 
             {/* Top Banner Images (Stacked Vertically) */}
             <section className="top-banner-images" style={{ width: '100%', padding: '0' }}>
-  <div style={{ 
-    display: 'flex', 
-    flexDirection: 'row', // Changed from column to row
-    width: '100%', 
-    gap: '1rem' 
-  }}>
-    {/* Width changed to 33.33% so three items fit in one row */}
-    <div className="animate-fade-in" style={{ width: '33.33%', height: '50vh', minHeight: '500px', overflow: 'hidden' }}>
-      <img src="/generated/img1.png" alt="Engineering Hub" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-    </div>
-    
-    <div className="animate-fade-in" style={{ width: '33.33%', height: '50vh', minHeight: '500px', overflow: 'hidden', animationDelay: '0.2s' }}>
-      <img src="/generated/img2.png" alt="Advanced Learning" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-    </div>
-    
-    <div className="animate-fade-in" style={{ width: '33.33%', height: '50vh', minHeight: '500px', overflow: 'hidden', animationDelay: '0.4s' }}>
-      <img src="/generated/img3.png" alt="Future of Engineering" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-    </div>
-  </div>
-</section>
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'row', // Changed from column to row
+                    width: '100%',
+                    gap: '1rem'
+                }}>
+                    {/* Width changed to 33.33% so three items fit in one row */}
+                    <div className="animate-fade-in" style={{ width: '33.33%', height: '50vh', minHeight: '500px', overflow: 'hidden' }}>
+                        <img src="/generated/img1.png" alt="Engineering Hub" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    </div>
+
+                    <div className="animate-fade-in" style={{ width: '33.33%', height: '50vh', minHeight: '500px', overflow: 'hidden', animationDelay: '0.2s' }}>
+                        <img src="/generated/img2.png" alt="Advanced Learning" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    </div>
+
+                    <div className="animate-fade-in" style={{ width: '33.33%', height: '50vh', minHeight: '500px', overflow: 'hidden', animationDelay: '0.4s' }}>
+                        <img src="/generated/img3.png" alt="Future of Engineering" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    </div>
+                </div>
+            </section>
 
             {/* CourseZ Intro Paragraph Section */}
             <section className="coursez-description-section" style={{ padding: '6rem 4rem 2rem', textAlign: 'center' }}>
                 <div className="animate-slide-up" style={{ maxWidth: '1200px', margin: '0 auto' }}>
-                    <p className="hero-subtitle" style={{ fontSize: '1.5rem', lineHeight: '1.8', color: 'var(--text-main)', margin: 0 }}>
-                        CourseZ is an online learning platform designed to provide high-quality, structured education in a flexible and 
-                        accessible way. It enables learners to gain knowledge, develop practical skills, and improve professional 
+                    <p className="hero-subtitle" style={{ fontSize: '1rem', lineHeight: '1.8', color: 'var(--text-main)', margin: 0 }}>
+                        <span className="brand-course">Course</span><span className="brand-z">Z</span> is an online learning platform designed to provide high-quality, structured education in a flexible and
+                        accessible way. It enables learners to gain knowledge, develop practical skills, and improve professional
                         competence through well-organized digital courses.
                         <br /><br />
-                        The platform offers courses across technology, management, entrepreneurship, and professional development. 
-                        Each course is created by experts and includes video lectures, assessments, and certificates to ensure clear 
+                        The platform offers courses across technology, management, entrepreneurship, and professional development.
+                        Each course is created by academic experts and includes video lectures, assessments, and certificates to ensure clear
                         and measurable learning outcomes.
                         <br /><br />
-                        Blending proven educational methods with modern digital tools, CourseZ enables learners to build practical 
+                        Blending proven educational methods with modern digital tools, <span className="brand-course">Course</span><span className="brand-z">Z</span> enables learners to build practical
                         skills, enhance professional competence, and advance their careers with confidence.
                     </p>
                     <p className="hero-subtitle" style={{ fontStyle: 'italic', marginTop: '2rem', color: 'var(--primary)', fontWeight: '600', fontSize: '1.25rem' }}>
@@ -163,36 +184,24 @@ const LandingPage = () => {
                     <p className="section-subtitle">Learn from industry veterans with decades of experience</p>
                 </div>
                 <div className="faculty-preview-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', maxWidth: '1400px', margin: '0 auto' }}>
-                    <div className="faculty-preview-card" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '16px', padding: '2rem', textAlign: 'center', transition: 'all 0.3s ease', cursor: 'pointer' }} onClick={() => handleNavigation('/professor')}>
-                        <img src="/ktalele.png" alt="Dr. Kiran TALELE" style={{ width: '80px', height: '80px', borderRadius: '50%', marginBottom: '1rem', border: '3px solid var(--primary)' }} />
-                        <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Dr. Kiran TALELE</h3>
-                        <p style={{ color: 'var(--primary)', marginBottom: '1rem' }}>PhD, Associate Professor</p>
-                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>33+ years experience • 85+ publications • 22 patents</p>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'center' }}>
-                            <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--primary)', padding: '0.25rem 0.75rem', borderRadius: '12px', fontSize: '0.8rem' }}>Signal Processing</span>
-                            <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--primary)', padding: '0.25rem 0.75rem', borderRadius: '12px', fontSize: '0.8rem' }}>AI & ML</span>
+                    {publicProfessors.map((prof, index) => (
+                        <div key={prof._id} className="faculty-preview-card" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '16px', padding: '2rem', textAlign: 'center', transition: 'all 0.3s ease', cursor: 'pointer' }} onClick={() => handleNavigation('/professor')}>
+                            <img src={prof.photo || '/default-prof.png'} alt={prof.name} style={{ width: '80px', height: '80px', borderRadius: '50%', marginBottom: '1rem', border: '3px solid var(--primary)' }} />
+                            <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{prof.name}</h3>
+                            <p style={{ color: 'var(--primary)', marginBottom: '1rem' }}>{prof.designation}</p>
+                            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
+                                {prof.stats?.experience} experience • {prof.stats?.publications} publications • {prof.stats?.patents} patents
+                            </p>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'center' }}>
+                                {(prof.expertise || []).slice(0, 3).map((exp, i) => (
+                                    <span key={i} style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--primary)', padding: '0.25rem 0.75rem', borderRadius: '12px', fontSize: '0.8rem' }}>{exp}</span>
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                    <div className="faculty-preview-card" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '16px', padding: '2rem', textAlign: 'center', transition: 'all 0.3s ease', cursor: 'pointer' }} onClick={() => handleNavigation('/professor')}>
-                        <div style={{ width: '80px', height: '80px', borderRadius: '50%', marginBottom: '1rem', border: '3px solid var(--primary)', background: 'var(--text-gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', fontWeight: 'bold', color: 'white' }}>SJ</div>
-                        <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Dr. Sarah Johnson</h3>
-                        <p style={{ color: 'var(--primary)', marginBottom: '1rem' }}>PhD, Professor</p>
-                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>28+ years experience • 150+ publications • 18 patents</p>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'center' }}>
-                            <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--primary)', padding: '0.25rem 0.75rem', borderRadius: '12px', fontSize: '0.8rem' }}>AI & ML</span>
-                            <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--primary)', padding: '0.25rem 0.75rem', borderRadius: '12px', fontSize: '0.8rem' }}>NLP</span>
-                        </div>
-                    </div>
-                    <div className="faculty-preview-card" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '16px', padding: '2rem', textAlign: 'center', transition: 'all 0.3s ease', cursor: 'pointer' }} onClick={() => handleNavigation('/professor')}>
-                        <div style={{ width: '80px', height: '80px', borderRadius: '50%', marginBottom: '1rem', border: '3px solid var(--primary)', background: 'var(--text-gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', fontWeight: 'bold', color: 'white' }}>MC</div>
-                        <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Dr. Michael Chen</h3>
-                        <p style={{ color: 'var(--primary)', marginBottom: '1rem' }}>PhD, Assistant Professor</p>
-                        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>15+ years experience • 60+ publications • 8 patents</p>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'center' }}>
-                            <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--primary)', padding: '0.25rem 0.75rem', borderRadius: '12px', fontSize: '0.8rem' }}>Embedded Systems</span>
-                            <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--primary)', padding: '0.25rem 0.75rem', borderRadius: '12px', fontSize: '0.8rem' }}>IoT</span>
-                        </div>
-                    </div>
+                    ))}
+                    {!loading && publicProfessors.length === 0 && (
+                        <p style={{ gridColumn: '1/-1', textAlign: 'center' }}>Keep checking for our faculty updates!</p>
+                    )}
                 </div>
                 <div style={{ textAlign: 'center', marginTop: '3rem' }}>
                     <button className="btn-secondary" onClick={() => handleNavigation('/professor')}>
@@ -215,7 +224,7 @@ const LandingPage = () => {
                         <Target className="step-icon" size={48} />
                         <h3>Choose Your Path</h3>
                         <p>
-                            Select from expertly designed, curriculum-based courses created by Dr. Kiran TALELE.
+                            Select from expertly designed, curriculum-based courses by academic experts.
                             Each course is structured to build practical skills progressively.
                         </p>
                         <ul className="step-features">
@@ -234,7 +243,7 @@ const LandingPage = () => {
                             industry-aligned curriculum and hands-on projects.
                         </p>
                         <ul className="step-features">
-                            <li>Video lectures by Dr. TALELE</li>
+                            <li>Video lectures by academic experts</li>
                             <li>Practical assignments</li>
                             <li>Expert guidance</li>
                         </ul>
@@ -347,22 +356,38 @@ const LandingPage = () => {
                 </div>
                 <div className="courses-container" style={{ maxWidth: '1000px', margin: '0 auto', textAlign: 'center' }}>
                     <div className="courses-preview" style={{ marginBottom: '3rem' }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '3rem', marginBottom: '2rem' }}>
-                            <div className="course-sticky-note sticky-yellow rotate-1">
-                                <BarChart2 size={40} className="sticky-icon" />
-                                <h4>Digital Signal Processing</h4>
-                                <p>Master advanced signal processing techniques with industry-standard tools.</p>
-                            </div>
-                            <div className="course-sticky-note sticky-cyan rotate-2">
-                                <Sparkles size={40} className="sticky-icon" />
-                                <h4>AI & Machine Learning</h4>
-                                <p>Build cutting-edge AI solutions from neural networks to deep learning models.</p>
-                            </div>
-                            <div className="course-sticky-note sticky-pink rotate-3">
-                                <Zap size={40} className="sticky-icon" />
-                                <h4>Embedded Systems & IoT</h4>
-                                <p>Design next-gen connected devices using high-performance microcontrollers.</p>
-                            </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
+                            {publicCourses.slice(0, 3).map((course, index) => {
+                                const Icon = LucideIcons[course.iconName] || BarChart2;
+                                const themes = ['sticky-yellow', 'sticky-cyan', 'sticky-pink'];
+                                const rotations = ['rotate-1', 'rotate-2', 'rotate-3'];
+                                return (
+                                    <div key={course._id} className={`course-sticky-note ${themes[index % 3]} ${rotations[index % 3]}`}>
+                                        <Icon size={40} className="sticky-icon" />
+                                        <h4>{course.title}</h4>
+                                        <p>{course.description.substring(0, 80)}...</p>
+                                    </div>
+                                );
+                            })}
+                            {!loading && publicCourses.length === 0 && (
+                                <>
+                                    <div className="course-sticky-note sticky-yellow rotate-1">
+                                        <BarChart2 size={40} className="sticky-icon" />
+                                        <h4>Digital Signal Processing</h4>
+                                        <p>Master advanced signal processing techniques with industry-standard tools.</p>
+                                    </div>
+                                    <div className="course-sticky-note sticky-cyan rotate-2">
+                                        <Sparkles size={40} className="sticky-icon" />
+                                        <h4>AI & Machine Learning</h4>
+                                        <p>Build cutting-edge AI solutions from neural networks to deep learning models.</p>
+                                    </div>
+                                    <div className="course-sticky-note sticky-pink rotate-3">
+                                        <Zap size={40} className="sticky-icon" />
+                                        <h4>Embedded Systems & IoT</h4>
+                                        <p>Design next-gen connected devices using high-performance microcontrollers.</p>
+                                    </div>
+                                </>
+                            )}
                         </div>
                         <p style={{ fontStyle: 'italic', color: 'var(--text-muted)', marginTop: '2rem' }}>Positions limited. Early access guarantees premium mentorship opportunities.</p>
                     </div>
@@ -437,7 +462,7 @@ const LandingPage = () => {
                                 ))}
                             </div>
                             <p className="testimonial-text">
-                                "CourseZ transformed my understanding of signal processing. Dr. TALELE's
+                                "<span className="brand-course">Course</span><span className="brand-z">Z</span> transformed my understanding of signal processing. Dr. TALELE's
                                 teaching methodology bridges theory and practice perfectly. Now working on
                                 cutting-edge AI projects!"
                             </p>
@@ -539,7 +564,7 @@ const LandingPage = () => {
                 <div className="faq-container">
                     <div className="section-header">
                         <h2 className="section-title">Frequently Asked Questions</h2>
-                        <p className="section-subtitle">Everything you need to know about CourseZ</p>
+                        <p className="section-subtitle">Everything you need to know about <span className="brand-course">Course</span><span className="brand-z">Z</span></p>
                     </div>
 
                     <div className="faq-grid">
@@ -549,7 +574,7 @@ const LandingPage = () => {
                                 <h4>Who is this platform for?</h4>
                             </div>
                             <p className="faq-answer">
-                                CourseZ is designed for SPIT students, engineering students, and professionals looking to
+                                <span className="brand-course">Course</span><span className="brand-z">Z</span> is designed for SPIT students, engineering students, and professionals looking to
                                 enhance their skills in Electronics, Signal Processing, Machine Learning, and related fields.
                                 Whether you're a beginner or advanced learner, our curriculum adapts to your level.
                             </p>

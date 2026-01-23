@@ -179,64 +179,33 @@ const Login = () => {
                                 {isRegister ? (
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                         <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
-                                            <p style={{ color: '#64748b' }}>Select your status:</p>
+                                            <p style={{ color: '#64748b' }}>Ready to start learning?</p>
                                         </div>
 
                                         <button
                                             type="button"
                                             onClick={() => navigate('/request-access')}
                                             style={{
-                                                background: 'white',
-                                                border: '1px solid #e2e8f0',
+                                                background: 'var(--text-gradient)',
+                                                color: 'white',
+                                                border: 'none',
                                                 padding: '1rem',
                                                 borderRadius: '8px',
                                                 cursor: 'pointer',
                                                 display: 'flex',
                                                 alignItems: 'center',
+                                                justifyContent: 'center',
                                                 gap: '1rem',
-                                                textAlign: 'left',
+                                                fontWeight: 'bold',
                                                 transition: 'all 0.2s',
-                                                boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                                                boxShadow: '0 4px 12px rgba(79, 70, 229, 0.2)'
                                             }}
-                                            onMouseOver={(e) => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.background = '#f8fafc'; }}
-                                            onMouseOut={(e) => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.background = 'white'; }}
                                         >
-                                            <div style={{ background: '#dbeafe', padding: '0.8rem', borderRadius: '50%', color: '#2563eb' }}>
-                                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
-                                            </div>
-                                            <div>
-                                                <div style={{ fontWeight: '600', color: '#1e293b' }}>I am a New Student</div>
-                                                <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Request access to join the platform</div>
-                                            </div>
+                                            Register Now
                                         </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => navigate('/complete-setup')}
-                                            style={{
-                                                background: 'white',
-                                                border: '1px solid #e2e8f0',
-                                                padding: '1rem',
-                                                borderRadius: '8px',
-                                                cursor: 'pointer',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '1rem',
-                                                textAlign: 'left',
-                                                transition: 'all 0.2s',
-                                                boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
-                                            }}
-                                            onMouseOver={(e) => { e.currentTarget.style.borderColor = '#22c55e'; e.currentTarget.style.background = '#f8fafc'; }}
-                                            onMouseOut={(e) => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.background = 'white'; }}
-                                        >
-                                            <div style={{ background: '#dcfce7', padding: '0.8rem', borderRadius: '50%', color: '#16a34a' }}>
-                                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                            </div>
-                                            <div>
-                                                <div style={{ fontWeight: '600', color: '#1e293b' }}>I have been Approved</div>
-                                                <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Complete account setup & password</div>
-                                            </div>
-                                        </button>
+                                        <p style={{ fontSize: '0.85rem', color: '#64748b', textAlign: 'center' }}>
+                                            No admin approval required. Instant access.
+                                        </p>
                                     </div>
                                 ) : (
                                     <>

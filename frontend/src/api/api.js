@@ -18,16 +18,26 @@ export const loginUser = async (username, password) => {
     return response.json();
 };
 
-export const registerStudent = async (name, password) => {
+export const registerStudent = async (data) => {
     const response = await fetch(`${API_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, password })
+        body: JSON.stringify(data)
     });
     if (!response.ok) {
         const error = await response.json();
         throw new Error(error.error || 'Registration failed');
     }
+    return response.json();
+};
+
+export const updateStudentAdmin = async (studentId, data) => {
+    const response = await fetch(`${API_URL}/auth/admin/students/${studentId}`, {
+        method: 'PATCH',
+        headers: getHeaders(),
+        body: JSON.stringify(data)
+    });
+    if (!response.ok) throw new Error('Failed to update student');
     return response.json();
 };
 
@@ -353,5 +363,77 @@ export const fetchCurrentUser = async () => {
         headers: getHeaders()
     });
     if (!response.ok) throw new Error('Failed to fetch user');
+    return response.json();
+};
+
+// --- Public Data API ---
+
+export const fetchPublicProfessors = async () => {
+    const response = await fetch(`${API_URL}/public/professors`);
+    if (!response.ok) throw new Error('Failed to fetch professors');
+    return response.json();
+};
+
+export const createProfessor = async (data) => {
+    const response = await fetch(`${API_URL}/public/professors`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(data)
+    });
+    if (!response.ok) throw new Error('Failed to create professor');
+    return response.json();
+};
+
+export const updateProfessor = async (id, data) => {
+    const response = await fetch(`${API_URL}/public/professors/${id}`, {
+        method: 'PUT',
+        headers: getHeaders(),
+        body: JSON.stringify(data)
+    });
+    if (!response.ok) throw new Error('Failed to update professor');
+    return response.json();
+};
+
+export const deleteProfessor = async (id) => {
+    const response = await fetch(`${API_URL}/public/professors/${id}`, {
+        method: 'DELETE',
+        headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to delete professor');
+    return response.json();
+};
+
+export const fetchAcademicCourses = async () => {
+    const response = await fetch(`${API_URL}/public/academic-courses`);
+    if (!response.ok) throw new Error('Failed to fetch academic courses');
+    return response.json();
+};
+
+export const createAcademicCourse = async (data) => {
+    const response = await fetch(`${API_URL}/public/academic-courses`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(data)
+    });
+    if (!response.ok) throw new Error('Failed to create academic course');
+    return response.json();
+};
+
+export const updateAcademicCourse = async (id, data) => {
+    const response = await fetch(`${API_URL}/public/academic-courses/${id}`, {
+        method: 'PUT',
+        headers: getHeaders(),
+        body: JSON.stringify(data)
+    });
+    if (!response.ok) throw new Error('Failed to update academic course');
+    return response.json();
+};
+
+export const deleteAcademicCourse = async (id) => {
+    const response = await fetch(`${API_URL}/public/academic-courses/${id}`, {
+        method: 'DELETE',
+        headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to delete academic course');
     return response.json();
 };

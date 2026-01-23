@@ -6,6 +6,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const courseRoutes = require('./routes/course');
 const quizRoutes = require('./routes/quiz');
+const publicRoutes = require('./routes/public');
 const seedAdmin = require('./utils/seedAdmin');
 
 const app = express();
@@ -26,6 +27,7 @@ mongoose.connect(process.env.MONGO_URI)
 app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/quizzes', quizRoutes);
+app.use('/api/public', publicRoutes);
 
 app.get('/', (req, res) => {
     res.send('LMS API is running...');

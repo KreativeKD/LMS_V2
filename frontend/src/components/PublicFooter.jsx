@@ -13,7 +13,7 @@ const PublicFooter = () => {
                     <div className="footer-brand">
                         <div className="footer-logo">
                             <GraduationCap size={32} />
-                            <h3>CourseZ</h3>
+                            <h3><span className="brand-course">Course</span><span className="brand-z">Z</span></h3>
                         </div>
                         <p className="footer-description">
                             Empowering students and professionals worldwide with expert-led education
@@ -90,7 +90,7 @@ const PublicFooter = () => {
 
                 <div className="footer-bottom">
                     <div className="footer-bottom-content">
-                        <p>&copy; 2025 CourseZ. Created by Dr. Kiran TALELE. All rights reserved.</p>
+                        <p>&copy; 2025 <span className="brand-course">Course</span><span className="brand-z">Z</span>. Created by Dr. Kiran TALELE. All rights reserved.</p>
                         <div className="footer-bottom-links">
                             <a href="/#privacy">Privacy Policy</a>
                             <span>•</span>

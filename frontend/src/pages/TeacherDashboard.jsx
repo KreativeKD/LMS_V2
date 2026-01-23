@@ -11,9 +11,9 @@ const TeacherDashboard = () => {
     const [selectedCourse, setSelectedCourse] = useState(null);
     const [showCourseForm, setShowCourseForm] = useState(false);
     const [courseTitle, setCourseTitle] = useState('');
+    const [completionDate, setCompletionDate] = useState('');
     const [showStudentsModal, setShowStudentsModal] = useState(false);
     const [enrolledStudents, setEnrolledStudents] = useState([]);
-    const [completionDate, setCompletionDate] = useState(null);
     const [showRequestsModal, setShowRequestsModal] = useState(false);
     const [requests, setRequests] = useState([]);
 
@@ -21,7 +21,6 @@ const TeacherDashboard = () => {
         if (user) {
             loadCourses();
         }
-        loadSettings();
     }, [user]);
 
     const loadCourses = async () => {
@@ -40,22 +39,17 @@ const TeacherDashboard = () => {
         }
     };
 
-    const loadSettings = async () => {
-        try {
-            const data = await fetchSettings();
-            if (data?.semesterCompletionDate) {
-                setCompletionDate(new Date(data.semesterCompletionDate).toLocaleDateString());
-            }
-        } catch (err) {
-            console.error(err);
-        }
-    };
 
     const handleCreateCourse = async (e) => {
         e.preventDefault();
         try {
-            await createCourse({ title: courseTitle, description: 'New course by teacher' });
+            await createCourse({
+                title: courseTitle,
+                description: 'New course by teacher',
+                completionDate: completionDate // Pass the date from state
+            });
             setCourseTitle('');
+            setCompletionDate('');
             setShowCourseForm(false);
             loadCourses();
         } catch (err) { alert(err.message); }
@@ -103,15 +97,6 @@ const TeacherDashboard = () => {
                 </button>
             </header>
 
-            {completionDate && (
-                <div className="card" style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem', borderLeft: '4px solid var(--secondary)' }}>
-                    <Calendar size={24} color="var(--secondary)" />
-                    <div>
-                        <h4 style={{ margin: 0, color: 'var(--text-accent)' }}>Semester Schedule</h4>
-                        <p style={{ margin: 0, color: 'var(--text-muted)' }}>Students must complete courses by <strong>{completionDate}</strong>.</p>
-                    </div>
-                </div>
-            )}
 
             {showCourseForm && (
                 <div className="card" style={{ marginBottom: '2rem' }}>
@@ -122,6 +107,12 @@ const TeacherDashboard = () => {
                             value={courseTitle}
                             onChange={e => setCourseTitle(e.target.value)}
                             required
+                        />
+                        <input
+                            type="date"
+                            style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--border)' }}
+                            value={completionDate}
+                            onChange={e => setCompletionDate(e.target.value)}
                         />
                         <button className="btn-primary">Create</button>
                         <button type="button" className="btn-secondary" onClick={() => setShowCourseForm(false)}>Cancel</button>

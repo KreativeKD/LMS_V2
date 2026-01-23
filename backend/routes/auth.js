@@ -33,23 +33,6 @@ router.post('/login', async (req, res) => {
             return res.status(403).send({ error: 'Account is frozen by admin. Contact support.' });
         }
 
-        const isMatch = await user.comparePassword(password);
-        if (!isMatch) {
-            console.log(`Password mismatch for: ${username}`);
-            return res.status(400).send({ error: 'Invalid login credentials' });
-        }
-
-        // Check for Semester Freeze (Only for students)
-        if (user.role === 'student' && !user.unfrozenByAdmin) {
-            const setting = await SystemSetting.findOne({ key: 'semesterCompletionDate' });
-            if (setting && setting.value) {
-                const completionDate = new Date(setting.value);
-                if (Date.now() > completionDate) {
-                    return res.status(403).send({ error: 'Account is frozen due to semester completion. Contact admin.' });
-                }
-            }
-        }
-
         user.lastLogin = Date.now();
         await user.save();
 
@@ -183,33 +166,42 @@ router.post('/complete-registration', async (req, res) => {
     }
 });
 
-// Public (Authenticated): Get Settings
-router.get('/settings', auth, async (req, res) => {
+// Direct Registration (Skip Approval)
+router.post('/register', async (req, res) => {
     try {
-        const setting = await SystemSetting.findOne({ key: 'semesterCompletionDate' });
-        res.send({ semesterCompletionDate: setting ? setting.value : null });
+        const { firstName, lastName, email, phone, city, country, username, password } = req.body;
+
+        if (!firstName || !lastName || !email || !phone || !city || !country || !username || !password) {
+            return res.status(400).send({ error: 'All fields are required' });
+        }
+
+        const finalUsername = `${username}@student`;
+        const existingUser = await User.findOne({ username: finalUsername });
+        if (existingUser) {
+            return res.status(400).send({ error: 'Username already taken.' });
+        }
+
+        const user = new User({
+            username: finalUsername,
+            password,
+            role: 'student',
+            firstName,
+            lastName,
+            email,
+            phone,
+            city,
+            country
+        });
+        await user.save();
+
+        const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET || 'fallback_secret_key_123');
+        res.status(201).send({ user: { _id: user._id, username: user.username, role: user.role }, token });
+
     } catch (e) {
-        res.status(500).send(e.message);
+        res.status(400).send({ error: e.message });
     }
 });
 
-// Admin: Set Settings
-router.post('/admin/settings', auth, authorize('admin'), async (req, res) => {
-    try {
-        const { semesterCompletionDate } = req.body;
-        await SystemSetting.findOneAndUpdate(
-            { value: semesterCompletionDate },
-            { upsert: true, new: true }
-        );
-
-        // RESET IMMUNITY: Ensure new date applies to ALL students
-        await User.updateMany({ role: 'student' }, { $set: { unfrozenByAdmin: false } });
-
-        res.send({ message: 'Settings updated' });
-    } catch (e) {
-        res.status(500).send(e.message);
-    }
-});
 
 // Admin: Get Registration Requests
 router.get('/admin/registration-requests', auth, authorize('admin'), async (req, res) => {
@@ -381,6 +373,31 @@ router.delete('/admin/students/:id', auth, authorize('admin'), async (req, res) 
         res.send({ message: 'Student deleted successfully and associated data cleaned up' });
     } catch (e) {
         res.status(500).send({ error: e.message });
+    }
+});
+
+// Admin ONLY: Update student details
+router.patch('/admin/students/:id', auth, authorize('admin'), async (req, res) => {
+    const updates = Object.keys(req.body);
+    const allowedUpdates = ['firstName', 'lastName', 'email', 'phone', 'city', 'country', 'isFrozen'];
+    const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
+
+    if (!isValidOperation) {
+        return res.status(400).send({ error: 'Invalid updates!' });
+    }
+
+    try {
+        const student = await User.findOne({ _id: req.params.id, role: 'student' });
+
+        if (!student) {
+            return res.status(404).send({ error: 'Student not found' });
+        }
+
+        updates.forEach((update) => student[update] = req.body[update]);
+        await student.save();
+        res.send(student);
+    } catch (e) {
+        res.status(400).send(e.message);
     }
 });
 
