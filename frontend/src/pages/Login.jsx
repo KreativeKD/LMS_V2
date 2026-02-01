@@ -249,7 +249,7 @@ const Login = () => {
                                     </div>
                                 )}
 
-                                <button
+                                {/* <button
                                     type="submit"
                                     style={{
                                         background: '#00d2ff', // Original primary blue
@@ -267,7 +267,7 @@ const Login = () => {
                                     onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#00d2ff'}
                                 >
                                     {isRegister ? '' : 'Sign In Securely'}
-                                </button>
+                                </button> */}
                             </form>
 
                             {/* Toggle Switch */}
