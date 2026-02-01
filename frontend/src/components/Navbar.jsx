@@ -40,7 +40,7 @@ const Navbar = () => {
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <img
-                        src="/logo.png"
+                        src="/logo.jpeg"
                         alt="CourseZ Logo"
                         style={{ height: '60px', width: 'auto', cursor: 'pointer' }}
                         onClick={() => navigate(getDashboardPath())}

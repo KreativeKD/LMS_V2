@@ -11,6 +11,7 @@ const StudentCourseView = () => {
     const [course, setCourse] = useState(null);
     const [selectedUnit, setSelectedUnit] = useState(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [expandedChapter, setExpandedChapter] = useState(null);
 
     useEffect(() => {
         loadCourse();
@@ -81,43 +82,78 @@ const StudentCourseView = () => {
                         ].filter(Boolean).join(', ')}
                     </div>
 
-                
+
                 </div>
 
                 <div style={{ padding: '1rem' }}>
                     {course.chapters?.map((chapter, idx) => (
-                        <div key={chapter._id} style={{ marginBottom: '1.5rem' }}>
-                            <h4 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '0.5rem', paddingLeft: '0.5rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                                Chapter {idx + 1}: {chapter.title}
-                            </h4>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                {chapter.units?.map(unit => (
-                                    <button
-                                        key={unit._id}
-                                        onClick={() => setSelectedUnit(unit)}
-                                        style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '0.8rem',
-                                            padding: '0.8rem',
-                                            width: '100%',
-                                            background: selectedUnit?._id === unit._id ? 'rgba(79, 70, 229, 0.1)' : 'transparent',
-                                            color: selectedUnit?._id === unit._id ? 'var(--text-accent)' : 'var(--text-main)',
-                                            borderLeft: selectedUnit?._id === unit._id ? '3px solid var(--primary)' : '3px solid transparent',
-                                            borderRadius: '0 4px 4px 0',
-                                            textAlign: 'left'
-                                        }}
-                                    >
-                                        {unit.type === 'video' ? <PlayCircle size={16} /> :
-                                            unit.type === 'pdf' ? <FileText size={16} /> :
-                                                unit.type === 'text' ? <FileType size={16} /> :
-                                                    <HelpCircle size={16} />}
-                                        <span style={{ fontSize: '0.9rem', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                            {unit.title}
-                                        </span>
-                                    </button>
-                                ))}
-                            </div>
+                        <div key={chapter._id} style={{ marginBottom: '1rem' }}>
+                            <button
+                                onClick={() => {
+                                    setExpandedChapter(expandedChapter === chapter._id ? null : chapter._id);
+                                }}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    width: '100%',
+                                    padding: '1rem',
+                                    background: expandedChapter === chapter._id ? 'rgba(79, 70, 229, 0.08)' : 'rgba(0, 0, 0, 0.02)',
+                                    color: 'var(--text-main)',
+                                    borderRadius: '8px',
+                                    textAlign: 'left',
+                                    fontWeight: '600',
+                                    fontSize: '0.95rem',
+                                    border: expandedChapter === chapter._id ? '1px solid rgba(79, 70, 229, 0.2)' : '1px solid transparent',
+                                    transition: 'all 0.2s ease'
+                                }}
+                            >
+                                <span>Chapter {idx + 1}: {chapter.title}</span>
+                                <ChevronRight
+                                    size={18}
+                                    style={{
+                                        transform: expandedChapter === chapter._id ? 'rotate(90deg)' : 'rotate(0deg)',
+                                        transition: 'transform 0.2s ease'
+                                    }}
+                                />
+                            </button>
+
+                            {expandedChapter === chapter._id && (
+                                <div style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '4px',
+                                    marginTop: '0.5rem',
+                                    paddingLeft: '0.5rem'
+                                }}>
+                                    {chapter.units?.map(unit => (
+                                        <button
+                                            key={unit._id}
+                                            onClick={() => setSelectedUnit(unit)}
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '0.8rem',
+                                                padding: '0.8rem',
+                                                width: '100%',
+                                                background: selectedUnit?._id === unit._id ? 'rgba(79, 70, 229, 0.1)' : 'transparent',
+                                                color: selectedUnit?._id === unit._id ? 'var(--text-accent)' : 'var(--text-main)',
+                                                borderLeft: selectedUnit?._id === unit._id ? '3px solid var(--primary)' : '3px solid transparent',
+                                                borderRadius: '0 4px 4px 0',
+                                                textAlign: 'left'
+                                            }}
+                                        >
+                                            {unit.type === 'video' ? <PlayCircle size={16} /> :
+                                                unit.type === 'pdf' ? <FileText size={16} /> :
+                                                    unit.type === 'text' ? <FileType size={16} /> :
+                                                        <HelpCircle size={16} />}
+                                            <span style={{ fontSize: '0.9rem', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                {unit.title}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>

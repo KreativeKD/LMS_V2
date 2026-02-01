@@ -19,7 +19,7 @@ router.get('/professors', async (req, res) => {
 // Get all academic courses
 router.get('/academic-courses', async (req, res) => {
     try {
-        const courses = await AcademicCourse.find({});
+        const courses = await AcademicCourse.find({}).populate('linkedCourse', 'students');
         res.send(courses);
     } catch (err) {
         res.status(500).send(err);

@@ -109,14 +109,8 @@ const Professor = () => {
                                     <div className="professor-quick-info">
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
                                             <h3>{selectedProf.name}</h3>
-                                            <div className="badge" style={{ fontSize: '0.75rem', padding: '0.25rem 0.75rem' }}>
-                                                <CheckCircle size={14} />
-                                                <span>Verified Professor</span>
-                                            </div>
                                         </div>
-                                        <p className="professor-designation">{selectedProf.designation}</p>
-                                        <p className="professor-dept">{selectedProf.dept}</p>
-                                        <p className="professor-institution">{selectedProf.institution}</p>
+
 
                                         {/* Professor Information Paragraph */}
                                         <div style={{ marginTop: '1.5rem', lineHeight: '1.6', color: '#555' }}>

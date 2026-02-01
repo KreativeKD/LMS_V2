@@ -158,10 +158,13 @@ const CoursesPage = () => {
                                             marginBottom: '1.5rem',
                                             border: '1px solid rgba(0,0,0,0.05)'
                                         }}>
-                                            <p style={{ margin: '0.2rem 0' }}><strong>Branch:</strong> <span className="tag" style={{ marginLeft: '0.5rem' }}>{course.branch || 'General'}</span></p>
                                             <p style={{ margin: '0.2rem 0' }}><strong>Professor:</strong> {course.professor}</p>
-                                            <p style={{ margin: '0.2rem 0' }}><strong>Duration:</strong> {course.duration}</p>
-                                            <p style={{ margin: '0.2rem 0' }}><strong>Level:</strong> {course.level}</p>
+                                            <p style={{ margin: '0.2rem 0', fontWeight: 'bold' }}>
+                                                Enrolled Students:
+                                                <span className="tag" style={{ marginLeft: '0.5rem' }}>
+                                                    {course.linkedCourse && course.linkedCourse.students ? course.linkedCourse.students.length : '-'}
+                                                </span>
+                                            </p>
                                         </div>
 
                                         <button

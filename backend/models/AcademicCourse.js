@@ -10,6 +10,7 @@ const academicCourseSchema = new mongoose.Schema({
     icon: { type: String }, // Store Lucide icon name as string
     chapters: { type: Number },
     branch: { type: String, default: 'EXTC' }, // Engineering branch
+    linkedCourse: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' } // Linked internal course for real-time data
 }, { timestamps: true });
 
 module.exports = mongoose.model('AcademicCourse', academicCourseSchema);
