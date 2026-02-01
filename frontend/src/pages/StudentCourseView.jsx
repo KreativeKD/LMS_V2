@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { fetchCourse } from '../api/api';
-import { ArrowLeft, PlayCircle, FileText, FileType, HelpCircle, ChevronRight, Menu } from 'lucide-react';
+import { fetchCourse, toggleHiddenContent } from '../api/api';
+import { ArrowLeft, PlayCircle, FileText, FileType, HelpCircle, ChevronRight, Menu, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const StudentCourseView = () => {
@@ -12,6 +12,31 @@ const StudentCourseView = () => {
     const [selectedUnit, setSelectedUnit] = useState(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [expandedChapter, setExpandedChapter] = useState(null);
+    const { login } = useAuth(); // To update user state
+
+    const getHiddenContent = () => {
+        if (!user || !user.enrolledCourses) return [];
+        const enrollment = user.enrolledCourses.find(e => e.course === id || e.course?._id === id);
+        return enrollment?.hiddenContent || [];
+    };
+
+    const isHidden = (contentId) => {
+        const hiddenList = getHiddenContent();
+        return hiddenList.includes(contentId);
+    };
+
+    const handleToggleHide = async (e, contentId) => {
+        e.stopPropagation(); // Prevent triggering other click events
+        try {
+            const updatedUser = await toggleHiddenContent(id, contentId);
+            // We need to re-construct the token or just update the user object if the context allows
+            // existing login function expects (userData, userToken). We reuse the current token.
+            login(updatedUser, localStorage.getItem('token'));
+        } catch (err) {
+            console.error(err);
+            alert('Failed to update visibility preference');
+        }
+    };
 
     useEffect(() => {
         loadCourse();
@@ -90,7 +115,9 @@ const StudentCourseView = () => {
                         <div key={chapter._id} style={{ marginBottom: '1rem' }}>
                             <button
                                 onClick={() => {
-                                    setExpandedChapter(expandedChapter === chapter._id ? null : chapter._id);
+                                    if (!isHidden(chapter._id)) {
+                                        setExpandedChapter(expandedChapter === chapter._id ? null : chapter._id);
+                                    }
                                 }}
                                 style={{
                                     display: 'flex',
@@ -99,23 +126,55 @@ const StudentCourseView = () => {
                                     width: '100%',
                                     padding: '1rem',
                                     background: expandedChapter === chapter._id ? 'rgba(79, 70, 229, 0.08)' : 'rgba(0, 0, 0, 0.02)',
-                                    color: 'var(--text-main)',
+                                    color: isHidden(chapter._id) ? 'var(--text-muted)' : 'var(--text-main)',
                                     borderRadius: '8px',
                                     textAlign: 'left',
                                     fontWeight: '600',
                                     fontSize: '0.95rem',
                                     border: expandedChapter === chapter._id ? '1px solid rgba(79, 70, 229, 0.2)' : '1px solid transparent',
-                                    transition: 'all 0.2s ease'
+                                    transition: 'all 0.2s ease',
+                                    opacity: isHidden(chapter._id) ? 0.6 : 1
                                 }}
                             >
-                                <span>Chapter {idx + 1}: {chapter.title}</span>
-                                <ChevronRight
-                                    size={18}
-                                    style={{
-                                        transform: expandedChapter === chapter._id ? 'rotate(90deg)' : 'rotate(0deg)',
-                                        transition: 'transform 0.2s ease'
-                                    }}
-                                />
+                                <span style={{ textDecoration: isHidden(chapter._id) ? 'line-through' : 'none' }}>
+                                    Chapter {idx + 1}: {chapter.title}
+                                </span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <button
+                                        onClick={(e) => handleToggleHide(e, chapter._id)}
+                                        style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            color: isHidden(chapter._id) ? 'var(--text-muted)' : 'var(--primary)',
+                                            padding: '4px',
+                                            display: 'flex', // Always visible now
+                                            alignItems: 'center',
+                                            gap: '4px',
+                                            fontSize: '0.8rem'
+                                        }}
+                                        title={isHidden(chapter._id) ? "Unhide Content" : "Hide Content"}
+                                    >
+                                        {isHidden(chapter._id) ? (
+                                            <>
+                                                <Eye size={18} /> Unhide
+                                            </>
+                                        ) : (
+                                            <>
+                                                <EyeOff size={18} /> Hide
+                                            </>
+                                        )}
+                                    </button>
+                                    {!isHidden(chapter._id) && (
+                                        <ChevronRight
+                                            size={18}
+                                            style={{
+                                                transform: expandedChapter === chapter._id ? 'rotate(90deg)' : 'rotate(0deg)',
+                                                transition: 'transform 0.2s ease'
+                                            }}
+                                        />
+                                    )}
+                                </div>
                             </button>
 
                             {expandedChapter === chapter._id && (
@@ -127,9 +186,13 @@ const StudentCourseView = () => {
                                     paddingLeft: '0.5rem'
                                 }}>
                                     {chapter.units?.map(unit => (
-                                        <button
+                                        <div
                                             key={unit._id}
-                                            onClick={() => setSelectedUnit(unit)}
+                                            onClick={() => {
+                                                if (!isHidden(unit._id)) {
+                                                    setSelectedUnit(unit);
+                                                }
+                                            }}
                                             style={{
                                                 display: 'flex',
                                                 alignItems: 'center',
@@ -137,20 +200,42 @@ const StudentCourseView = () => {
                                                 padding: '0.8rem',
                                                 width: '100%',
                                                 background: selectedUnit?._id === unit._id ? 'rgba(79, 70, 229, 0.1)' : 'transparent',
-                                                color: selectedUnit?._id === unit._id ? 'var(--text-accent)' : 'var(--text-main)',
+                                                color: isHidden(unit._id) ? 'var(--text-muted)' : (selectedUnit?._id === unit._id ? 'var(--text-accent)' : 'var(--text-main)'),
                                                 borderLeft: selectedUnit?._id === unit._id ? '3px solid var(--primary)' : '3px solid transparent',
                                                 borderRadius: '0 4px 4px 0',
-                                                textAlign: 'left'
+                                                textAlign: 'left',
+                                                opacity: isHidden(unit._id) ? 0.6 : 1,
+                                                cursor: isHidden(unit._id) ? 'default' : 'pointer'
                                             }}
                                         >
-                                            {unit.type === 'video' ? <PlayCircle size={16} /> :
-                                                unit.type === 'pdf' ? <FileText size={16} /> :
-                                                    unit.type === 'text' ? <FileType size={16} /> :
-                                                        <HelpCircle size={16} />}
-                                            <span style={{ fontSize: '0.9rem', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                                {unit.title}
-                                            </span>
-                                        </button>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1, overflow: 'hidden' }}>
+                                                {unit.type === 'video' ? <PlayCircle size={16} /> :
+                                                    unit.type === 'pdf' ? <FileText size={16} /> :
+                                                        unit.type === 'text' ? <FileType size={16} /> :
+                                                            <HelpCircle size={16} />}
+                                                <span style={{ fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: isHidden(unit._id) ? 'line-through' : 'none' }}>
+                                                    {unit.title}
+                                                </span>
+                                            </div>
+
+                                            <button
+                                                onClick={(e) => handleToggleHide(e, unit._id)}
+                                                style={{
+                                                    background: 'none',
+                                                    border: 'none',
+                                                    padding: '4px',
+                                                    cursor: 'pointer',
+                                                    color: isHidden(unit._id) ? 'var(--text-muted)' : 'var(--text-muted)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    opacity: 0.8
+                                                }}
+                                                className="hide-btn"
+                                                title={isHidden(unit._id) ? "Unhide" : "Hide"}
+                                            >
+                                                {isHidden(unit._id) ? <Eye size={16} /> : <EyeOff size={16} />}
+                                            </button>
+                                        </div>
                                     ))}
                                 </div>
                             )}

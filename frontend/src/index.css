@@ -425,7 +425,7 @@ input:focus {
 .landing-page {
   display: flex;
   flex-direction: column;
-  gap: 6rem;
+  gap: 3rem;
   padding-bottom: 4rem;
   position: relative;
 }

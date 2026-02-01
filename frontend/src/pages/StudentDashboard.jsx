@@ -188,7 +188,7 @@ const StudentDashboard = () => {
 
     return (
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            <h1 className="gradient-text" style={{ marginBottom: '2rem' }}>
+            <h1 className="gradient-text" style={{ marginBottom: '1.5rem' }}>
                 {user.role === 'student' ? 'My Learning Journey' : 'Course Catalog'}
             </h1>
 

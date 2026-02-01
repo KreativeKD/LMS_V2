@@ -437,3 +437,13 @@ export const deleteAcademicCourse = async (id) => {
     if (!response.ok) throw new Error('Failed to delete academic course');
     return response.json();
 };
+
+export const toggleHiddenContent = async (courseId, contentId) => {
+    const response = await fetch(`${API_URL}/auth/toggle-hidden-content`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ courseId, contentId })
+    });
+    if (!response.ok) throw new Error('Failed to toggle content visibility');
+    return response.json();
+};

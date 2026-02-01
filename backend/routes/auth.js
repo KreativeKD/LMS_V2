@@ -8,6 +8,64 @@ const { auth, authorize } = require('../middleware/auth');
 const router = express.Router();
 
 // Login route with name@role logic
+router.post('/toggle-hidden-content', auth, async (req, res) => {
+    try {
+        const { courseId, contentId } = req.body;
+        console.log(`Toggle hidden content: course=${courseId}, content=${contentId}`);
+
+        const user = await User.findById(req.user._id);
+
+        if (!user) {
+            console.log('User not found in toggle');
+            return res.status(404).send({ error: 'User not found' });
+        }
+
+        // Check if enrolledCourses exists
+        if (!user.enrolledCourses) {
+            console.log('No enrolledCourses for user');
+            return res.status(404).send({ error: 'No enrollments found' });
+        }
+
+        const enrollment = user.enrolledCourses.find(e => e.course && e.course.toString() === courseId);
+
+        if (!enrollment) {
+            console.log(`Enrollment not found for course: ${courseId}`);
+            // Log available courses to debug
+            const available = user.enrolledCourses.map(e => e.course ? e.course.toString() : 'null').join(', ');
+            console.log(`Available enrollments: ${available}`);
+            return res.status(404).send({ error: 'Course enrollment not found' });
+        }
+
+        // Initialize if undefined (for old records)
+        if (!enrollment.hiddenContent) {
+            enrollment.hiddenContent = [];
+        }
+
+        // Use findIndex with toString() for robust comparison
+        const index = enrollment.hiddenContent.findIndex(id => id && id.toString() === contentId);
+
+        if (index > -1) {
+            // Unhide
+            console.log('Unhiding content');
+            enrollment.hiddenContent.splice(index, 1);
+        } else {
+            // Hide
+            console.log('Hiding content');
+            enrollment.hiddenContent.push(contentId);
+        }
+
+        await user.save();
+
+        // Return fully populated user to keep frontend state consistent
+        const populatedUser = await User.findById(user._id).populate('enrolledCourses.course');
+        res.send(populatedUser);
+
+    } catch (e) {
+        console.error('Error in toggle-hidden-content:', e);
+        res.status(500).send({ error: e.message });
+    }
+});
+
 router.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;

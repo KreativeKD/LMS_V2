@@ -67,7 +67,7 @@ const LandingPage = () => {
             <PublicNavbar scrolled={scrolled} />
 
             {/* Title Section */}
-            <section className="hero-title-section" style={{ padding: '8rem 4rem 4rem', textAlign: 'center', background: 'var(--background)' }}>
+            <section className="hero-title-section" style={{ padding: '5rem 4rem 2rem', textAlign: 'center', background: 'var(--background)' }}>
                 <div className="animate-slide-up">
                     <div className="badge-container" style={{ justifyContent: 'center', marginBottom: '1.0rem' }}>
                         <span className="badge badge-premium">
@@ -90,32 +90,32 @@ const LandingPage = () => {
                     gap: '1rem'
                 }}>
                     {/* Width changed to 33.33% so three items fit in one row */}
-                    <div className="animate-fade-in" style={{ width: '33.33%', height: '50vh', minHeight: '500px', overflow: 'hidden' }}>
+                    <div className="animate-fade-in" style={{ width: '33.33%', height: '40vh', minHeight: '350px', overflow: 'hidden' }}>
                         <img src="/generated/img1.png" alt="Engineering Hub" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                     </div>
 
-                    <div className="animate-fade-in" style={{ width: '33.33%', height: '50vh', minHeight: '500px', overflow: 'hidden', animationDelay: '0.2s' }}>
+                    <div className="animate-fade-in" style={{ width: '33.33%', height: '40vh', minHeight: '350px', overflow: 'hidden', animationDelay: '0.2s' }}>
                         <img src="/generated/img2.png" alt="Advanced Learning" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                     </div>
 
-                    <div className="animate-fade-in" style={{ width: '33.33%', height: '50vh', minHeight: '500px', overflow: 'hidden', animationDelay: '0.4s' }}>
+                    <div className="animate-fade-in" style={{ width: '33.33%', height: '40vh', minHeight: '350px', overflow: 'hidden', animationDelay: '0.4s' }}>
                         <img src="/generated/img3.png" alt="Future of Engineering" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                     </div>
                 </div>
             </section>
 
             {/* CourseZ Intro Paragraph Section */}
-            <section className="coursez-description-section" style={{ padding: '6rem 4rem 2rem', textAlign: 'center' }}>
+            <section className="coursez-description-section" style={{ padding: '3rem 4rem 1rem', textAlign: 'center' }}>
                 <div className="animate-slide-up" style={{ maxWidth: '1200px', margin: '0 auto' }}>
                     <p className="hero-subtitle" style={{ fontSize: '1rem', lineHeight: '1.8', color: 'var(--text-main)', margin: 0 }}>
                         <span className="brand-course">Course</span><span className="brand-z">Z</span> is an online learning platform designed to provide high-quality, structured education in a flexible and
                         accessible way. It enables learners to gain knowledge, develop practical skills, and improve professional
                         competence through well-organized digital courses.
-                        <br /><br />
+
                         The platform offers courses across technology, management, entrepreneurship, and professional development.
                         Each course is created by academic experts and includes video lectures, assessments, and certificates to ensure clear
                         and measurable learning outcomes.
-                        <br /><br />
+
                         Blending proven educational methods with modern digital tools, <span className="brand-course">Course</span><span className="brand-z">Z</span> enables learners to build practical
                         skills, enhance professional competence, and advance their careers with confidence.
                     </p>
@@ -126,8 +126,8 @@ const LandingPage = () => {
             </section>
 
             {/* Buttons and Stats Section */}
-            <section className="hero-cta-section" style={{ padding: '2rem 4rem 6rem', textAlign: 'center' }}>
-                <div className="hero-buttons animate-slide-up" style={{ justifyContent: 'center', display: 'flex', gap: '1.5rem', marginBottom: '5rem', animationDelay: '0.2s' }}>
+            <section className="hero-cta-section" style={{ padding: '1rem 4rem 4rem', textAlign: 'center' }}>
+                <div className="hero-buttons animate-slide-up" style={{ justifyContent: 'center', display: 'flex', gap: '1.5rem', marginBottom: '3rem', animationDelay: '0.2s' }}>
                     <button
                         className="btn-primary btn-large"
                         onClick={() => handleNavigation('/login')}

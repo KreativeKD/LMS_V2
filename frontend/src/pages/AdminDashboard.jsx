@@ -266,9 +266,9 @@ const AdminDashboard = () => {
 
     return (
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <h1 className="gradient-text">Admin Control Center</h1>
-                <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ display: 'flex', gap: '0.8rem' }}>
                     <button
                         className={view === 'courses' ? 'btn-primary' : 'btn-secondary'}
                         onClick={() => setView('courses')}

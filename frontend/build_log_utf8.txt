@@ -1,0 +1,35 @@
+﻿
+> frontend@0.0.0 build
+> vite build
+
+[36mvite v7.3.0 [32mbuilding client environment for production...[36m[39m
+transforming...
+[32mΓ£ô[39m 1732 modules transformed.
+node.exe : [31mΓ£ù[39m Build failed in 2.01s
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([31mΓ£ù[39m Build failed in 2.01s:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[31merror during build:
+[31msrc/pages/StudentCourseView.jsx (3:22): "toggleHiddenContent" is not exported by "src/api/api.js", imported by "src/pages/StudentCourseView.jsx".[31m
+file: [36mD:/HOME/Explore/LMS-WebsiteV2/frontend/src/pages/StudentCourseView.jsx:3:22[31m
+[33m
+1: import React, { useState, useEffect } from 'react';
+2: import { useParams, useNavigate } from 'react-router-dom';
+3: import { fetchCourse, toggleHiddenContent } from '../api/api';
+                         ^
+4: import { ArrowLeft, PlayCircle, FileText, FileType, HelpCircle, ChevronRight, Menu, Eye, EyeOff } from 'lucide-react';
+5: import { useAuth } from '../context/AuthContext';
+[31m
+    at getRollupError (file:///D:/HOME/Explore/LMS-WebsiteV2/frontend/node_modules/rollup/dist/es/shared/parseAst.js:401:41)
+    at error (file:///D:/HOME/Explore/LMS-WebsiteV2/frontend/node_modules/rollup/dist/es/shared/parseAst.js:397:42)
+    at Module.error (file:///D:/HOME/Explore/LMS-WebsiteV2/frontend/node_modules/rollup/dist/es/shared/node-entry.js:17022:16)
+    at Module.traceVariable (file:///D:/HOME/Explore/LMS-WebsiteV2/frontend/node_modules/rollup/dist/es/shared/node-entry.js:17478:29)
+    at ModuleScope.findVariable (file:///D:/HOME/Explore/LMS-WebsiteV2/frontend/node_modules/rollup/dist/es/shared/node-entry.js:15141:39)
+    at ReturnValueScope.findVariable (file:///D:/HOME/Explore/LMS-WebsiteV2/frontend/node_modules/rollup/dist/es/shared/node-entry.js:5688:38)
+    at FunctionBodyScope.findVariable (file:///D:/HOME/Explore/LMS-WebsiteV2/frontend/node_modules/rollup/dist/es/shared/node-entry.js:5688:38)
+    at ReturnValueScope.findVariable (file:///D:/HOME/Explore/LMS-WebsiteV2/frontend/node_modules/rollup/dist/es/shared/node-entry.js:5688:38)
+    at FunctionBodyScope.findVariable (file:///D:/HOME/Explore/LMS-WebsiteV2/frontend/node_modules/rollup/dist/es/shared/node-entry.js:5688:38)
+    at BlockScope.findVariable (file:///D:/HOME/Explore/LMS-WebsiteV2/frontend/node_modules/rollup/dist/es/shared/node-entry.js:5688:38)[39m
