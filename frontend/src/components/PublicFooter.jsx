@@ -43,7 +43,7 @@ const PublicFooter = () => {
                         <div className="footer-column">
                             <h4>Resources</h4>
                             <ul>
-                                <li><a href="https://www.youtube.com/@midnight-masterclass" target="_blank" rel="noopener noreferrer">YouTube Channel</a></li>
+                                <li><a href="https://www.youtube.com/@kirantalele8875" target="_blank" rel="noopener noreferrer">YouTube Channel</a></li>
                                 <li><a href="https://www.talelesir.com" target="_blank" rel="noopener noreferrer">Official Website</a></li>
                                 <li><a href="/#help">Help Center</a></li>
                                 <li><a href="/#blog">Blog & Updates</a></li>
@@ -79,7 +79,7 @@ const PublicFooter = () => {
                                     <Facebook size={20} />
                                     <span>Facebook</span>
                                 </a>
-                                <a href="https://www.youtube.com/@midnight-masterclass" target="_blank" rel="noopener noreferrer" className="social-link-large">
+                                <a href="https://www.youtube.com/@kirantalele8875" target="_blank" rel="noopener noreferrer" className="social-link-large">
                                     <Play size={20} />
                                     <span>YouTube</span>
                                 </a>
