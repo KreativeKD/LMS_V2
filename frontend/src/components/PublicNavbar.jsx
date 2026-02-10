@@ -12,7 +12,7 @@ const PublicNavbar = ({ scrolled }) => {
         <>
             <nav className={`nav-bar ${scrolled ? 'scrolled' : ''}`}>
                 <div className="nav-logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-                    <img src="/logo.jpeg" alt="CourseZ Logo" style={{ height: '60px', width: 'auto' }} />
+                    <img src="/logo.jpeg" alt="CourseZ Logo" style={{ height: '40px', width: 'auto' }} />
                 </div>
                 <div className="nav-links">
                     <Link to="/" className="nav-link">Home</Link>
@@ -47,7 +47,7 @@ const PublicNavbar = ({ scrolled }) => {
                 letterSpacing: '0.1em',
                 color: 'var(--primary)',
                 position: 'sticky',
-                top: scrolled ? '92px' : '108px',
+                top: scrolled ? '72px' : '88px',
                 zIndex: 99,
                 marginTop: '0'
             }}>

@@ -19,7 +19,7 @@ const ContactPage = () => {
         <div className="landing-page">
             <PublicNavbar scrolled={scrolled} />
 
-            <section id="contact" className="contact-section" style={{ paddingTop: '8rem' }}>
+            <section id="contact" className="contact-section" style={{ paddingTop: '5rem' }}>
                 <div className="contact-container">
                     <div className="section-header">
                         <div className="section-badge">

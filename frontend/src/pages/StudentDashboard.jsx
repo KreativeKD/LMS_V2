@@ -209,11 +209,11 @@ const StudentDashboard = () => {
                         <div key={course._id} className="card" style={{ transition: 'transform 0.3s', display: 'flex', flexDirection: 'column' }}>
                             <div style={{
                                 background: 'linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)',
-                                padding: '1.5rem',
+                                padding: '1rem',
                                 borderRadius: '12px 12px 0 0',
                                 marginBottom: '1rem'
                             }}>
-                                <BookOpen size={32} color="rgba(255, 255, 255, 0.9)" />
+                                <BookOpen size={28} color="rgba(255, 255, 255, 0.9)" />
                             </div>
 
                             <div style={{ padding: '0 1rem', flex: 1 }}>

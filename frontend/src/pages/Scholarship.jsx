@@ -21,7 +21,7 @@ const Scholarship = () => {
         <div className="landing-page">
             <PublicNavbar scrolled={scrolled} />
 
-            <section className="scholarship-hero" style={{ paddingTop: '10rem', paddingBottom: '6rem' }}>
+            <section className="scholarship-hero" style={{ paddingTop: '6rem', paddingBottom: '6rem' }}>
                 <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 2rem' }}>
                     <div className="scholarship-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '4rem', alignItems: 'center' }}>
                         <div className="hero-text animate-slide-left">

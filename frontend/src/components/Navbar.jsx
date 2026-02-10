@@ -30,7 +30,7 @@ const Navbar = () => {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                padding: '1rem 2rem',
+                padding: '0.5rem 1.5rem',
                 background: 'rgba(255, 255, 255, 0.8)',
                 backdropFilter: 'blur(10px)',
                 borderBottom: '1px solid var(--border)',
@@ -42,7 +42,7 @@ const Navbar = () => {
                     <img
                         src="/logo.jpeg"
                         alt="CourseZ Logo"
-                        style={{ height: '60px', width: 'auto', cursor: 'pointer' }}
+                        style={{ height: '40px', width: 'auto', cursor: 'pointer' }}
                         onClick={() => navigate(getDashboardPath())}
                     />
                 </div>
@@ -85,7 +85,7 @@ const Navbar = () => {
                 letterSpacing: '0.1em',
                 color: 'var(--primary)',
                 position: 'sticky',
-                top: '92px',
+                top: '72px',
                 zIndex: 99,
                 marginTop: '0'
             }}>

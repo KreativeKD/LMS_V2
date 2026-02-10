@@ -36,10 +36,10 @@ const Login = () => {
     // Shared styles for inputs
     const inputStyle = {
         width: '100%',
-        padding: '0.85rem 1rem',
+        padding: '0.6rem 0.8rem',
         border: '1px solid #e2e8f0',
         borderRadius: '8px',
-        fontSize: '0.95rem',
+        fontSize: '0.9rem',
         outline: 'none',
         transition: 'all 0.2s',
         boxSizing: 'border-box',
@@ -75,7 +75,7 @@ const Login = () => {
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'center',
-                    padding: '4rem',
+                    padding: '2rem',
                     position: 'relative',
                     overflow: 'hidden'
                 }}>
@@ -86,7 +86,7 @@ const Login = () => {
                     }}></div>
 
                     <div style={{ position: 'relative', zIndex: 2 }}>
-                        <h1 style={{ fontSize: '3rem', fontWeight: '700', lineHeight: '1.2', marginBottom: '1.5rem' }}>
+                        <h1 style={{ fontSize: '2rem', fontWeight: '700', lineHeight: '1.2', marginBottom: '1rem' }}>
                             Empowering the <br />
                             <span style={{ color: '#60a5fa' }}>Next Generation</span>
                         </h1>

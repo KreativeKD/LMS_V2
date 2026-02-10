@@ -67,15 +67,15 @@ const LandingPage = () => {
             <PublicNavbar scrolled={scrolled} />
 
             {/* Title Section */}
-            <section className="hero-title-section" style={{ padding: '5rem 4rem 2rem', textAlign: 'center', background: 'var(--background)' }}>
+            <section className="hero-title-section" style={{ padding: '3rem 2rem 1rem', textAlign: 'center', background: 'var(--background)' }}>
                 <div className="animate-slide-up">
-                    <div className="badge-container" style={{ justifyContent: 'center', marginBottom: '1.0rem' }}>
+                    <div className="badge-container" style={{ justifyContent: 'center', marginBottom: '0.5rem' }}>
                         <span className="badge badge-premium">
                             <Sparkles size={16} />
                             <span>Brought to you by Academic Experts</span>
                         </span>
                     </div>
-                    <h1 className="hero-title" style={{ fontSize: '4rem', maxWidth: '1200px', margin: '0 auto', lineHeight: '1.0' }}>
+                    <h1 className="hero-title" style={{ fontSize: '3rem', maxWidth: '1000px', margin: '0 auto', lineHeight: '1.1' }}>
                         Launch Your Engineering Career with <span className="brand-course">Course</span><span className="brand-z">Z</span>
                     </h1>
                 </div>
@@ -105,7 +105,7 @@ const LandingPage = () => {
             </section>
 
             {/* CourseZ Intro Paragraph Section */}
-            <section className="coursez-description-section" style={{ padding: '3rem 4rem 1rem', textAlign: 'center' }}>
+            <section className="coursez-description-section" style={{ padding: '2rem 2rem 1rem', textAlign: 'center' }}>
                 <div className="animate-slide-up" style={{ maxWidth: '1200px', margin: '0 auto' }}>
                     <p className="hero-subtitle" style={{ fontSize: '1rem', lineHeight: '1.8', color: 'var(--text-main)', margin: 0 }}>
                         <span className="brand-course">Course</span><span className="brand-z">Z</span> is an online learning platform designed to provide high-quality, structured education in a flexible and
@@ -126,27 +126,27 @@ const LandingPage = () => {
             </section>
 
             {/* Buttons and Stats Section */}
-            <section className="hero-cta-section" style={{ padding: '1rem 4rem 4rem', textAlign: 'center' }}>
-                <div className="hero-buttons animate-slide-up" style={{ justifyContent: 'center', display: 'flex', gap: '1.5rem', marginBottom: '3rem', animationDelay: '0.2s' }}>
+            <section className="hero-cta-section" style={{ padding: '1rem 2rem 2rem', textAlign: 'center' }}>
+                <div className="hero-buttons animate-slide-up" style={{ justifyContent: 'center', display: 'flex', gap: '1rem', marginBottom: '2rem', animationDelay: '0.2s' }}>
                     <button
                         className="btn-primary btn-large"
                         onClick={() => handleNavigation('/login')}
-                        style={{ fontSize: '1.2rem', padding: '18px 40px' }}
+                        style={{ fontSize: '1rem', padding: '12px 24px' }}
                     >
                         <span>Start Learning Today</span>
-                        <ArrowRight size={22} />
+                        <ArrowRight size={20} />
                     </button>
                     <button
                         className="btn-outline btn-large"
                         onClick={() => handleNavigation('/professor')}
-                        style={{ fontSize: '1.2rem', padding: '18px 40px' }}
+                        style={{ fontSize: '1rem', padding: '12px 24px' }}
                     >
-                        <Users size={20} />
+                        <Users size={18} />
                         <span>Meet the Faculty</span>
                     </button>
                 </div>
 
-                <div className="hero-stats animate-slide-up" style={{ justifyContent: 'center', display: 'flex', gap: '3rem', flexWrap: 'wrap', animationDelay: '0.4s' }}>
+                <div className="hero-stats animate-slide-up" style={{ justifyContent: 'center', display: 'flex', gap: '2rem', flexWrap: 'wrap', animationDelay: '0.4s' }}>
                     <div className="stat-card" style={{ minWidth: '200px' }}>
                         <div className="stat-icon">
                             <Users size={32} />
@@ -178,7 +178,7 @@ const LandingPage = () => {
             </section>
 
             {/* Faculty Preview Section */}
-            <section className="faculty-preview-section" style={{ padding: '3rem 4rem', background: 'var(--background)' }}>
+            <section className="faculty-preview-section" style={{ padding: '2rem 2rem', background: 'var(--background)' }}>
                 <div className="section-header" style={{ textAlign: 'center', marginBottom: '3rem' }}>
                     <h2 className="section-title">Meet Your Expert Faculty</h2>
                     <p className="section-subtitle">Learn from industry veterans with decades of experience</p>
@@ -349,7 +349,7 @@ const LandingPage = () => {
             </section>
 
             {/* Courses Section */}
-            <section className="courses-section" style={{ padding: '3rem 4rem', background: 'linear-gradient(180deg, transparent 0%, rgba(16, 185, 129, 0.02) 50%, transparent 100%)' }}>
+            <section className="courses-section" style={{ padding: '2rem 2rem', background: 'linear-gradient(180deg, transparent 0%, rgba(16, 185, 129, 0.02) 50%, transparent 100%)' }}>
                 <div className="section-header" style={{ textAlign: 'center', marginBottom: '3rem' }}>
                     <h2 className="section-title">Be First to Access Premium Engineering Courses</h2>
                     <p className="section-subtitle">Secure your spot for exclusive courses launching Q1 2025. Led by SPIT faculty with industry experience.</p>
@@ -407,7 +407,7 @@ const LandingPage = () => {
             </section>
 
             {/* Testimonials Section */}
-            <section id="testimonials" className="testimonials-section" style={{ padding: '3rem 4rem' }}>
+            <section id="testimonials" className="testimonials-section" style={{ padding: '2rem 2rem' }}>
                 <div className="testimonials-container">
                     <div className="section-header">
                         <h2 className="section-title">Student Success Stories</h2>
@@ -652,7 +652,7 @@ const LandingPage = () => {
             </section>
 
             {/* CTA Section */}
-            <section className="cta-section" style={{ padding: '3rem 4rem' }}>
+            <section className="cta-section" style={{ padding: '2rem 2rem' }}>
                 <div className="cta-card">
                     <div className="cta-content">
                         <h2>Launch Your Engineering Career Today</h2>

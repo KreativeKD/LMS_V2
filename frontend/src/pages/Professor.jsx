@@ -54,7 +54,7 @@ const Professor = () => {
         <div className="landing-page">
             <PublicNavbar scrolled={scrolled} />
 
-            <div className={`professor-page-layout ${isCollapsed ? 'collapsed' : ''}`}>
+            <div className={`professor-page-layout ${isCollapsed ? 'collapsed' : ''}`} style={{ paddingTop: '5.5rem' }}>
                 {/* Left Sidebar */}
                 <aside className={`professor-sidebar animate-slide-left ${isCollapsed ? 'collapsed' : ''}`}>
                     <button

@@ -49,7 +49,7 @@ const CoursesPage = () => {
             <PublicNavbar scrolled={scrolled} />
 
             {/* Courses Section */}
-            <section style={{ padding: '8rem 2rem 4rem' }}>
+            <section style={{ padding: '5rem 2rem 4rem' }}>
                 <div className="section-header" style={{ textAlign: 'center', marginBottom: '4rem' }}>
                     <h2 className="section-title">Academic Courses</h2>
                     <p className="section-subtitle">Choose your learning path and start building expertise</p>
@@ -132,7 +132,7 @@ const CoursesPage = () => {
                     <div style={{ flex: 1 }}>
                         <div className="courses-page-grid" style={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', // Fits approx 4 on desktop
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', // Fits approx 4-5 on desktop
                             gap: '1.5rem'
                         }}>
                             {filteredCourses.map((course, index) => {
