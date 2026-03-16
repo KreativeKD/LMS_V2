@@ -100,7 +100,7 @@ const StudentCourseView = () => {
 
                     {/* Teacher Visibility */}
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-                        <strong>Teachers: </strong>
+                        <strong>Teacher: </strong>
                         {[
                             course.instructor?.username?.split('@')[0],
                             ...(course.assignedTeachers?.map(t => t.username?.split('@')[0]) || [])
