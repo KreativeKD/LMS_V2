@@ -1,26 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { ExternalLink, GraduationCap, Coins, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
-import PublicNavbar from '../components/PublicNavbar';
 import PublicFooter from '../components/PublicFooter';
 
 const Scholarship = () => {
-    const [scrolled, setScrolled] = useState(false);
-
     useEffect(() => {
-        const handleScroll = () => {
-            setScrolled(window.scrollY > 50);
-        };
-        window.addEventListener('scroll', handleScroll);
         window.scrollTo(0, 0);
-        return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
     const scholarshipLink = "https://www.anudaanjagruti.com/#/pages/myschemes";
 
     return (
         <div className="landing-page">
-            <PublicNavbar scrolled={scrolled} />
-
             <section className="scholarship-hero" style={{ paddingTop: '6rem', paddingBottom: '6rem' }}>
                 <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 2rem' }}>
                     <div className="scholarship-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '4rem', alignItems: 'center' }}>

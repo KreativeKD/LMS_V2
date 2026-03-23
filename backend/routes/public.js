@@ -2,14 +2,48 @@ const express = require('express');
 const router = express.Router();
 const Professor = require('../models/Professor');
 const AcademicCourse = require('../models/AcademicCourse');
+const Course = require('../models/Course');
+const User = require('../models/User');
+const Announcement = require('../models/Announcement');
+const GeneralTestimonial = require('../models/GeneralTestimonial');
 const { auth, authorize } = require('../middleware/auth');
 
 // --- Public Routes ---
 
+const PUBLIC_PROFESSOR_EXCLUDE_REGEX = /michael chen/i;
+const getPublicProfessorQuery = () => ({
+    name: { $not: PUBLIC_PROFESSOR_EXCLUDE_REGEX }
+});
+
+const serializeGeneralTestimonial = (item) => {
+    const fullName = [item.user?.firstName, item.user?.lastName].filter(Boolean).join(' ').trim();
+    const fallbackName = item.user?.username ? item.user.username.split('@')[0] : 'Anonymous';
+    const authorName = fullName || fallbackName;
+    const initials = authorName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0].toUpperCase())
+        .join('') || 'U';
+
+    return {
+        _id: item._id,
+        text: item.text,
+        rating: item.rating,
+        status: item.status,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+        approvedAt: item.approvedAt,
+        author: authorName,
+        initials,
+        role: item.user?.role === 'teacher' ? 'Teacher' : item.user?.role === 'admin' ? 'Admin' : 'Student',
+    };
+};
+
 // Get all professors
 router.get('/professors', async (req, res) => {
     try {
-        const professors = await Professor.find({});
+        const professors = await Professor.find(getPublicProfessorQuery());
         res.send(professors);
     } catch (err) {
         res.status(500).send(err);
@@ -20,9 +54,233 @@ router.get('/professors', async (req, res) => {
 router.get('/academic-courses', async (req, res) => {
     try {
         const courses = await AcademicCourse.find({}).populate('linkedCourse', 'students');
-        res.send(courses);
+        const sanitized = courses.map((courseDoc) => {
+            const course = courseDoc.toObject ? courseDoc.toObject() : courseDoc;
+            if (!course.linkedCourse) return course;
+
+            const studentsCount = Array.isArray(course.linkedCourse.students)
+                ? course.linkedCourse.students.length
+                : 0;
+
+            return {
+                ...course,
+                linkedCourse: {
+                    ...course.linkedCourse,
+                    studentsCount,
+                    students: undefined
+                }
+            };
+        });
+
+        res.send(sanitized);
     } catch (err) {
         res.status(500).send(err);
+    }
+});
+
+// Get latest active announcements for landing panel
+router.get('/announcements', async (req, res) => {
+    try {
+        const limit = Math.max(1, Math.min(20, parseInt(req.query.limit, 10) || 8));
+        const announcements = await Announcement.find({ isActive: true })
+            .select('title message createdAt type tickerText isTicker courseId')
+            .sort({ createdAt: -1 })
+            .limit(limit)
+            .lean();
+
+        res.send(announcements);
+    } catch (err) {
+        res.status(500).send({ error: 'Failed to fetch announcements' });
+    }
+});
+
+// Get active ticker announcements
+router.get('/ticker', async (req, res) => {
+    try {
+        const limit = Math.max(1, Math.min(30, parseInt(req.query.limit, 10) || 12));
+        const tickerItems = await Announcement.find({ isActive: true, isTicker: true })
+            .select('title message tickerText createdAt')
+            .sort({ createdAt: -1 })
+            .limit(limit)
+            .lean();
+
+        res.send(tickerItems);
+    } catch (err) {
+        res.status(500).send({ error: 'Failed to fetch ticker updates' });
+    }
+});
+
+// Get dynamic platform stats for landing page cards
+router.get('/stats', async (req, res) => {
+    try {
+        const [studentsEnrolled, liveCoursesCount, academicCoursesCount, expertProfessors] = await Promise.all([
+            User.countDocuments({ role: 'student', 'enrolledCourses.status': 'approved' }),
+            Course.countDocuments({}),
+            AcademicCourse.countDocuments({}),
+            Professor.countDocuments(getPublicProfessorQuery())
+        ]);
+
+        res.send({
+            studentsEnrolled,
+            coursesPlanned: liveCoursesCount || academicCoursesCount,
+            expertProfessors
+        });
+    } catch (err) {
+        res.status(500).send({ error: 'Failed to fetch public stats' });
+    }
+});
+
+router.get('/testimonials', async (req, res) => {
+    try {
+        const limit = Math.max(1, Math.min(12, parseInt(req.query.limit, 10) || 3));
+        const testimonials = await GeneralTestimonial.find({ status: 'approved' })
+            .sort({ updatedAt: -1, createdAt: -1 })
+            .limit(limit)
+            .populate('user', 'firstName lastName username role')
+            .lean();
+
+        res.send(testimonials.map(serializeGeneralTestimonial));
+    } catch (err) {
+        res.status(500).send({ error: 'Failed to fetch testimonials' });
+    }
+});
+
+router.get('/testimonials/me', auth, authorize('student'), async (req, res) => {
+    try {
+        const testimonial = await GeneralTestimonial.findOne({ user: req.user._id })
+            .populate('user', 'firstName lastName username role')
+            .lean();
+
+        res.send({
+            testimonial: testimonial ? serializeGeneralTestimonial(testimonial) : null
+        });
+    } catch (err) {
+        res.status(500).send({ error: 'Failed to fetch your testimonial' });
+    }
+});
+
+router.post('/testimonials', auth, authorize('student'), async (req, res) => {
+    try {
+        const text = String(req.body?.text || '').trim();
+        const rating = Number(req.body?.rating);
+
+        if (text.length < 12) {
+            return res.status(400).send({ error: 'Testimonial must be at least 12 characters long.' });
+        }
+        if (text.length > 600) {
+            return res.status(400).send({ error: 'Testimonial must be 600 characters or less.' });
+        }
+        if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+            return res.status(400).send({ error: 'Rating must be an integer between 1 and 5.' });
+        }
+
+        const testimonial = await GeneralTestimonial.findOneAndUpdate(
+            { user: req.user._id },
+            {
+                $set: {
+                    user: req.user._id,
+                    text,
+                    rating,
+                    status: 'pending',
+                    approvedAt: null,
+                    reviewedAt: null
+                }
+            },
+            {
+                upsert: true,
+                new: true,
+                setDefaultsOnInsert: true
+            }
+        ).populate('user', 'firstName lastName username role');
+
+        res.status(201).send({
+            testimonial: serializeGeneralTestimonial(testimonial),
+            message: 'Testimonial submitted for admin approval.'
+        });
+    } catch (err) {
+        res.status(500).send({ error: 'Failed to submit testimonial' });
+    }
+});
+
+router.get('/admin/testimonials', auth, authorize('admin'), async (req, res) => {
+    try {
+        const testimonials = await GeneralTestimonial.find({})
+            .sort({ createdAt: -1 })
+            .populate('user', 'firstName lastName username role')
+            .lean();
+
+        res.send({
+            testimonials: testimonials.map(serializeGeneralTestimonial)
+        });
+    } catch (err) {
+        res.status(500).send({ error: 'Failed to fetch testimonial requests' });
+    }
+});
+
+router.patch('/admin/testimonials/:id/approve', auth, authorize('admin'), async (req, res) => {
+    try {
+        const testimonial = await GeneralTestimonial.findByIdAndUpdate(
+            req.params.id,
+            {
+                $set: {
+                    status: 'approved',
+                    approvedAt: new Date(),
+                    reviewedAt: new Date()
+                }
+            },
+            { new: true }
+        ).populate('user', 'firstName lastName username role');
+
+        if (!testimonial) {
+            return res.status(404).send({ error: 'Testimonial not found' });
+        }
+
+        res.send({
+            testimonial: serializeGeneralTestimonial(testimonial),
+            message: 'Testimonial approved'
+        });
+    } catch (err) {
+        res.status(500).send({ error: 'Failed to approve testimonial' });
+    }
+});
+
+router.patch('/admin/testimonials/:id/reject', auth, authorize('admin'), async (req, res) => {
+    try {
+        const testimonial = await GeneralTestimonial.findByIdAndUpdate(
+            req.params.id,
+            {
+                $set: {
+                    status: 'rejected',
+                    reviewedAt: new Date(),
+                    approvedAt: null
+                }
+            },
+            { new: true }
+        ).populate('user', 'firstName lastName username role');
+
+        if (!testimonial) {
+            return res.status(404).send({ error: 'Testimonial not found' });
+        }
+
+        res.send({
+            testimonial: serializeGeneralTestimonial(testimonial),
+            message: 'Testimonial rejected'
+        });
+    } catch (err) {
+        res.status(500).send({ error: 'Failed to reject testimonial' });
+    }
+});
+
+router.delete('/admin/testimonials/:id', auth, authorize('admin'), async (req, res) => {
+    try {
+        const testimonial = await GeneralTestimonial.findByIdAndDelete(req.params.id);
+        if (!testimonial) {
+            return res.status(404).send({ error: 'Testimonial not found' });
+        }
+
+        res.send({ message: 'Testimonial deleted' });
+    } catch (err) {
+        res.status(500).send({ error: 'Failed to delete testimonial' });
     }
 });
 

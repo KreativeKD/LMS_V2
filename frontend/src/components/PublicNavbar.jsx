@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 
 const PublicNavbar = ({ scrolled }) => {
@@ -32,27 +32,11 @@ const PublicNavbar = ({ scrolled }) => {
                     <Link to="/contact" className="nav-link">Contact</Link>
                 </div>
                 <div className="nav-actions">
-                    <button className="btn-primary" onClick={() => handleNavigation('/login')}>
+                    <button className="btn-primary public-login-btn" onClick={() => handleNavigation('/login')}>
                         Login / Signup
                     </button>
                 </div>
             </nav>
-            <div style={{
-                textAlign: 'center',
-                padding: '0.75rem 0',
-                background: 'linear-gradient(135deg, rgba(0, 210, 255, 0.1), rgba(157, 80, 187, 0.1))',
-                borderBottom: '1px solid var(--border)',
-                fontSize: '1.1rem',
-                fontWeight: '600',
-                letterSpacing: '0.1em',
-                color: 'var(--primary)',
-                position: 'sticky',
-                top: scrolled ? '72px' : '88px',
-                zIndex: 99,
-                marginTop: '0'
-            }}>
-                Learn • Apply • Grow
-            </div>
         </>
     );
 };

@@ -16,15 +16,13 @@ const PublicFooter = () => {
                             <h3><span className="brand-course">Course</span><span className="brand-z">Z</span></h3>
                         </div>
                         <p className="footer-description">
-                            Empowering students and professionals worldwide with expert-led education
-                            from Dr. Kiran TALELE, Associate Professor at SPIT Mumbai.
+                            Empowering students and professionals worldwide with expert-led education.
                         </p>
                         <div className="footer-creator">
                             <Award size={18} />
                             <div>
                                 <strong>Created by Dr. Kiran TALELE</strong>
-                                <p>Associate Professor, EXTC Department</p>
-                                <p>Sardar Patel Institute of Technology</p>
+                                <p>Academician . Researcher . Guide . Mentor . Coach</p>
                             </div>
                         </div>
                     </div>
@@ -34,7 +32,6 @@ const PublicFooter = () => {
                             <h4>Platform</h4>
                             <ul>
                                 <li><Link to="/#features">Features</Link></li>
-                                <li><Link to="/#pricing">Pricing</Link></li>
                                 <li><Link to="/#testimonials">Testimonials</Link></li>
                                 <li><Link to="/professor">About Professor</Link></li>
                             </ul>
@@ -90,7 +87,7 @@ const PublicFooter = () => {
 
                 <div className="footer-bottom">
                     <div className="footer-bottom-content">
-                        <p>&copy; 2025 <span className="brand-course">Course</span><span className="brand-z">Z</span>. Created by Dr. Kiran TALELE. All rights reserved.</p>
+                        <p>&copy; 2026 <span className="brand-course">Course</span><span className="brand-z">Z</span>. Created by Dr. Kiran TALELE. All rights reserved.</p>
                         <div className="footer-bottom-links">
                             <a href="/#privacy">Privacy Policy</a>
                             <span>•</span>

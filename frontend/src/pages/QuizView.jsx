@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { fetchQuizzes, fetchCourses } from '../api/api';
+import { fetchQuizById } from '../api/api';
 import { CheckCircle, XCircle, ArrowLeft, Loader } from 'lucide-react';
 
 const QuizView = () => {
@@ -17,9 +17,8 @@ const QuizView = () => {
 
     const loadQuiz = async () => {
         try {
-            const data = await fetchQuizzes();
-            const found = data.find(q => q._id === id);
-            setQuiz(found);
+            const data = await fetchQuizById(id);
+            setQuiz(data);
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
     };

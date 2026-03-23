@@ -1,24 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Mail, Phone, Globe, Linkedin, Facebook, Play, MessageCircle, Rocket } from 'lucide-react';
-import PublicNavbar from '../components/PublicNavbar';
 import PublicFooter from '../components/PublicFooter';
 
 const ContactPage = () => {
-    const [scrolled, setScrolled] = useState(false);
-
     useEffect(() => {
-        const handleScroll = () => {
-            setScrolled(window.scrollY > 50);
-        };
-        window.addEventListener('scroll', handleScroll);
         window.scrollTo(0, 0);
-        return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
     return (
         <div className="landing-page">
-            <PublicNavbar scrolled={scrolled} />
-
             <section id="contact" className="contact-section" style={{ paddingTop: '5rem' }}>
                 <div className="contact-container">
                     <div className="section-header">

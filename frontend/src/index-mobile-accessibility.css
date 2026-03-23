@@ -1,0 +1,466 @@
+/* ========================================
+   MOBILE RESPONSIVENESS & ACCESSIBILITY
+   ======================================== */
+
+/* ===== FOCUS MANAGEMENT (Accessibility) ===== */
+/* Visible focus indicator for keyboard users */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+  outline: 3px solid var(--text-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Improved focus visibility */
+*:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+*:focus-visible {
+  outline: 3px solid var(--text-accent);
+  outline-offset: 2px;
+}
+
+/* Skip to main content link (for screen reader users) */
+.skip-to-main {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--text-accent);
+  color: white;
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  z-index: 100;
+}
+
+.skip-to-main:focus {
+  top: 0;
+}
+
+/* ===== FORM ACCESSIBILITY ===== */
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="url"],
+textarea,
+select {
+  font-family: inherit;
+  font-size: inherit;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: more) {
+  button,
+  input,
+  select,
+  textarea {
+    border-width: 2px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ===== MOBILE RESPONSIVENESS ===== */
+
+/* Extra small devices (mobile phones) */
+@media (max-width: 480px) {
+  /* Improve touch targets on mobile */
+  button,
+  a,
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.75rem 1rem;
+  }
+
+  /* Larger tap targets for forms */
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+    padding: 0.75rem;
+  }
+
+  /* Readable font size on mobile */
+  body {
+    font-size: 16px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  h2 {
+    font-size: 1.3rem;
+  }
+
+  h3 {
+    font-size: 1.1rem;
+  }
+
+  /* Full-width containers on mobile */
+  [style*="maxWidth"]:not(.modal) {
+    max-width: 100% !important;
+    padding: 1rem;
+  }
+
+  /* Stack flex layouts vertically */
+  header[style*="display: flex"] {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* Responsive buttons */
+  button[style*="display: flex"] {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Hide desktop-only elements */
+  .desktop-only {
+    display: none !important;
+  }
+
+  /* Single column layouts */
+  [style*="gridTemplateColumns"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  [style*="display: grid"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Better spacing on mobile */
+  .navbar,
+  .sidebar,
+  main,
+  [role="main"] {
+    padding: 1rem;
+  }
+
+  /* Touchable modals */
+  .modal {
+    inset: 0;
+    padding: 1rem;
+    border-radius: 12px 12px 0 0;
+  }
+
+  /* Responsive images */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Tables scroll on mobile */
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* Better textarea on mobile */
+  textarea {
+    min-height: 120px;
+  }
+
+  /* List items tap-friendly */
+  li {
+    padding: 0.5rem 0;
+  }
+}
+
+/* Small devices (landscape mobile, small tablets) */
+@media (max-width: 768px) {
+  /* Improved navbar on tablet */
+  .navbar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  /* Better dashboard layout */
+  [style*="display: grid"] {
+    grid-auto-columns: minmax(0, 1fr);
+  }
+
+  /* Readable tap targets */
+  button {
+    min-height: 40px;
+    padding: 0.6rem 1rem;
+  }
+
+  /* Better responsive text */
+  h1 {
+    font-size: 1.75rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  /* Improved form layout */
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* Better modals on tablet */
+  .modal {
+    width: 90vw;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  /* Responsive course cards */
+  .course-card,
+  [class*="card"] {
+    min-height: 200px;
+  }
+
+  /* Two-column layout on small tablets */
+  [style*="gridTemplateColumns: repeat(3"]:not([style*="repeat(2"]) {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Horizontal scroll for tables */
+  table {
+    font-size: 0.85rem;
+  }
+
+  /* Better list styling */
+  ul,
+  ol {
+    padding-left: 1.5rem;
+  }
+}
+
+/* Medium devices (tablets) */
+@media (max-width: 1024px) {
+  /* Optimize layouts for tablets */
+  [style*="display: grid"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Better spacing on tablets */
+  .container {
+    padding: 1.5rem;
+  }
+
+  /* Readable text on tablets */
+  body {
+    font-size: 15px;
+  }
+
+  /* Comfortable button size */
+  button {
+    padding: 0.7rem 1.2rem;
+  }
+
+  /* Better card layout */
+  [class*="grid"] {
+    gap: 1rem;
+  }
+}
+
+/* Large devices (desktops) */
+@media (min-width: 1200px) {
+  /* Optimize for large screens */
+  [style*="maxWidth"] {
+    width: 100%;
+  }
+
+  /* Multi-column layouts */
+  [style*="gridTemplateColumns: repeat(3"]:not(.mobile-hidden) {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+  }
+}
+
+/* ===== DARK MODE SUPPORT ===== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #111827;
+    --card-bg: #1f2937;
+    --text-main: #f3f4f6;
+    --text-muted: #9ca3af;
+    --border: rgba(255, 255, 255, 0.1);
+    --glass: rgba(255, 255, 255, 0.05);
+  }
+}
+
+/* ===== EMPTY STATE STYLES ===== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+  min-height: 300px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.02);
+  border: 2px dashed #e5e7eb;
+}
+
+.empty-state__icon {
+  width: 60px;
+  height: 60px;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+  color: #9ca3af;
+}
+
+.empty-state__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 0.5rem;
+}
+
+.empty-state__message {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+  max-width: 400px;
+}
+
+/* ===== FORM INPUT ACCESSIBILITY ===== */
+.form-input {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.25rem;
+}
+
+.form-input__label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 0.5rem;
+}
+
+.form-input__required {
+  color: #ef4444;
+  margin-left: 0.25rem;
+}
+
+.form-input__field {
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.form-input__field:hover {
+  border-color: var(--text-accent);
+}
+
+.form-input__field:focus-visible {
+  outline-offset: 2px;
+  border-color: var(--text-accent);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.form-input__field[aria-invalid="true"] {
+  border-color: #ef4444;
+}
+
+.form-input__error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #ef4444;
+  margin-top: 0.4rem;
+}
+
+.form-input__help {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-top: 0.4rem;
+}
+
+/* ===== LOADING STATES ===== */
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(79, 70, 229, 0.2);
+  border-top-color: var(--text-accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===== TOAST NOTIFICATIONS MOBILE ===== */
+@media (max-width: 480px) {
+  [role="status"],
+  [role="alert"] {
+    max-width: 90%;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  body {
+    background: white;
+  }
+
+  button,
+  [href],
+  form,
+  .no-print {
+    display: none;
+  }
+
+  .print-visible {
+    display: block !important;
+  }
+}

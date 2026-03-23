@@ -4,37 +4,133 @@ import {
     BookOpen, Award, BarChart2, Shield, Users, Globe,
     Star, Check, Target, TrendingUp, Sparkles,
     Clock, Trophy, Rocket, Heart, Zap,
-    GraduationCap, FileText, Mail, Phone,
-    CheckCircle, ArrowRight, Building, MessageCircle
+    GraduationCap, FileText, Mail, Phone, Megaphone, CalendarDays,
+    ArrowRight, Building, MessageCircle
 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
-import PublicNavbar from '../components/PublicNavbar';
+import { showToast } from '../utils/toast';
 import PublicFooter from '../components/PublicFooter';
-import { fetchPublicProfessors, fetchAcademicCourses } from '../api/api';
+import {
+    fetchAcademicCourses,
+    fetchPublicAnnouncements,
+    fetchPublicTestimonials,
+    fetchPublicTicker,
+    fetchPublicStats
+} from '../api/api';
+
+const FALLBACK_ANNOUNCEMENTS = [
+    { date: '10-Mar-2026', text: 'New module description PDFs are now available in course outlines.' },
+    { date: '08-Mar-2026', text: 'Student self-registration is live. No admin approval required for signup.' },
+    { date: '05-Mar-2026', text: 'Course access now follows 6-month validity from your enrollment date.' },
+    { date: '01-Mar-2026', text: 'Drag-and-drop curriculum ordering for chapters and subchapters is enabled.' }
+];
+
+const FALLBACK_BREAKING_UPDATES = [
+    'New batch enrollment opens on 15-Mar-2026',
+    'Seminar registrations are now live for April faculty sessions',
+    'Course outline now supports module description PDFs',
+    'Student self-registration is active with instant account creation'
+];
+
+const FALLBACK_TESTIMONIALS = [
+    {
+        _id: 'fallback-1',
+        text: "Dr. TALELE's courses are exceptional. The curriculum is industry-aligned, and his teaching style makes complex concepts easy to understand.",
+        rating: 5,
+        author: 'Sanika Chandorkar',
+        initials: 'SC',
+        role: 'Student',
+        courseTitle: 'Digital Signal Processing'
+    },
+    {
+        _id: 'fallback-2',
+        text: 'The best investment in my education. The structure and depth of the modules helped me move from theory to real implementation confidently.',
+        rating: 5,
+        author: 'Rahul Patil',
+        initials: 'RP',
+        role: 'Student',
+        courseTitle: 'Digital Image Processing'
+    },
+    {
+        _id: 'fallback-3',
+        text: 'CourseZ transformed my understanding of signal processing. The lessons bridge theory and practice in a way that actually sticks.',
+        rating: 5,
+        author: 'Priya Mehta',
+        initials: 'PM',
+        role: 'Student',
+        courseTitle: 'Digital Signal Processing'
+    }
+];
 
 const LandingPage = () => {
     const navigate = useNavigate();
-    const [scrolled, setScrolled] = useState(false);
-    const [publicProfessors, setPublicProfessors] = useState([]);
     const [publicCourses, setPublicCourses] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [activeSlide, setActiveSlide] = useState(0);
+    const [announcements, setAnnouncements] = useState([]);
+    const [breakingUpdates, setBreakingUpdates] = useState([]);
+    const [publicTestimonials, setPublicTestimonials] = useState([]);
+    const [platformStats, setPlatformStats] = useState({
+        studentsEnrolled: null,
+        coursesPlanned: null,
+        expertProfessors: null
+    });
+
+    const showcaseSlides = [
+        {
+            image: '/generated/img1.png',
+            title: 'Launch Your Engineering Career',
+            subtitle: 'Industry-ready learning pathways with guided progress.'
+        },
+        {
+            image: '/generated/img2.png',
+            title: 'Learn from Academic Experts',
+            subtitle: 'Structured modules designed by experienced faculty.'
+        },
+        {
+            image: '/generated/img3.png',
+            title: 'Build Skills That Matter',
+            subtitle: 'From foundations to advanced topics, all in one place.'
+        }
+    ];
 
     useEffect(() => {
-        const handleScroll = () => {
-            setScrolled(window.scrollY > 50);
-        };
-        window.addEventListener('scroll', handleScroll);
-
         const loadData = async () => {
             try {
-                const [profs, courses] = await Promise.all([
-                    fetchPublicProfessors(),
-                    fetchAcademicCourses()
+                const [courses, announcementData, tickerData, stats, testimonials] = await Promise.all([
+                    fetchAcademicCourses(),
+                    fetchPublicAnnouncements(),
+                    fetchPublicTicker(),
+                    fetchPublicStats(),
+                    fetchPublicTestimonials(12)
                 ]);
-                setPublicProfessors(profs);
                 setPublicCourses(courses);
+                setPublicTestimonials(Array.isArray(testimonials) ? testimonials : []);
+                setPlatformStats({
+                    studentsEnrolled: Number.isFinite(stats?.studentsEnrolled) ? stats.studentsEnrolled : null,
+                    coursesPlanned: Number.isFinite(stats?.coursesPlanned) ? stats.coursesPlanned : null,
+                    expertProfessors: Number.isFinite(stats?.expertProfessors) ? stats.expertProfessors : null
+                });
+                setAnnouncements(
+                    (announcementData || []).map((item) => ({
+                        date: item.createdAt
+                            ? new Date(item.createdAt).toLocaleDateString('en-GB', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric'
+                            })
+                            : 'Latest',
+                        text: item.message
+                    }))
+                );
+                setBreakingUpdates(
+                    (tickerData || []).map((item) => item.tickerText || item.title || item.message).filter(Boolean)
+                );
             } catch (err) {
                 console.error("Failed to load landing page data", err);
+                setAnnouncements(FALLBACK_ANNOUNCEMENTS);
+                setBreakingUpdates(FALLBACK_BREAKING_UPDATES);
+                setPublicTestimonials([]);
             } finally {
                 setLoading(false);
             }
@@ -48,12 +144,22 @@ const LandingPage = () => {
                 element.scrollIntoView({ behavior: 'smooth' });
             }
         }
-
-        return () => window.removeEventListener('scroll', handleScroll);
     }, []);
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setActiveSlide((prev) => (prev + 1) % showcaseSlides.length);
+        }, 4500);
+        return () => clearInterval(timer);
+    }, [showcaseSlides.length]);
 
     const handleNavigation = (path) => {
         navigate(path);
+    };
+
+    const formatStatValue = (value, withPlus = false) => {
+        if (!Number.isFinite(value)) return '--';
+        return withPlus && value > 0 ? `${value}+` : String(value);
     };
 
     return (
@@ -63,51 +169,90 @@ const LandingPage = () => {
             <div className="bg-gradient-orb bg-gradient-orb-2"></div>
             <div className="bg-gradient-orb bg-gradient-orb-3"></div>
 
-            {/* Navigation */}
-            <PublicNavbar scrolled={scrolled} />
-
-            {/* Title Section */}
-            <section className="hero-title-section" style={{ padding: '3rem 2rem 1rem', textAlign: 'center', background: 'var(--background)' }}>
-                <div className="animate-slide-up">
-                    <div className="badge-container" style={{ justifyContent: 'center', marginBottom: '0.5rem' }}>
-                        <span className="badge badge-premium">
+            {/* Home Showcase: Slider + Announcements */}
+            <section className="home-showcase-section">
+                <div className="home-showcase-grid">
+                    <div className="home-showcase-slider">
+                        <div className="showcase-badge">
                             <Sparkles size={16} />
-                            <span>Brought to you by Academic Experts</span>
-                        </span>
+                            Brought to you by Academic Experts
+                        </div>
+                        <div className="showcase-image-wrap">
+                            {showcaseSlides.map((slide, index) => (
+                                <img
+                                    key={slide.image}
+                                    src={slide.image}
+                                    alt={slide.title}
+                                    className={`showcase-image ${index === activeSlide ? 'active' : ''}`}
+                                />
+                            ))}
+                            <div className="showcase-overlay">
+                                <h1>
+                                    {showcaseSlides[activeSlide].title} with <span className="brand-course">Course</span><span className="brand-z">Z</span>
+                                </h1>
+                                <p>{showcaseSlides[activeSlide].subtitle}</p>
+                            </div>
+                        </div>
+                        <div className="showcase-dots">
+                            {showcaseSlides.map((_, index) => (
+                                <button
+                                    key={`dot-${index}`}
+                                    type="button"
+                                    className={`showcase-dot ${activeSlide === index ? 'active' : ''}`}
+                                    onClick={() => setActiveSlide(index)}
+                                    aria-label={`Go to slide ${index + 1}`}
+                                />
+                            ))}
+                        </div>
                     </div>
-                    <h1 className="hero-title" style={{ fontSize: '3rem', maxWidth: '1000px', margin: '0 auto', lineHeight: '1.1' }}>
-                        Launch Your Engineering Career with <span className="brand-course">Course</span><span className="brand-z">Z</span>
-                    </h1>
+
+                    <aside className="home-announcements-panel">
+                        <div className="announcements-header">
+                            <Megaphone size={20} />
+                            <h3>Announcements</h3>
+                        </div>
+                        <div className="announcements-list">
+                            {(announcements.length ? announcements : FALLBACK_ANNOUNCEMENTS).map((item, idx) => (
+                                <div className="announcement-item" key={`${item.date}-${idx}`}>
+                                    <div className="announcement-date">
+                                        <CalendarDays size={14} />
+                                        {item.date}
+                                    </div>
+                                    <p>{item.text}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </aside>
                 </div>
             </section>
 
-            {/* Top Banner Images (Stacked Vertically) */}
-            <section className="top-banner-images" style={{ width: '100%', padding: '0' }}>
-                <div style={{
-                    display: 'flex',
-                    flexDirection: 'row', // Changed from column to row
-                    width: '100%',
-                    gap: '1rem'
-                }}>
-                    {/* Width changed to 33.33% so three items fit in one row */}
-                    <div className="animate-fade-in" style={{ width: '33.33%', height: '40vh', minHeight: '350px', overflow: 'hidden' }}>
-                        <img src="/generated/img1.png" alt="Engineering Hub" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            <section className="breaking-ticker-wrap" aria-label="Breaking updates">
+                <div className="breaking-label">
+                    <Megaphone size={16} />
+                    <span>Breaking</span>
+                </div>
+                <div className="breaking-track">
+                    <div className="breaking-content">
+                        {(breakingUpdates.length ? breakingUpdates : FALLBACK_BREAKING_UPDATES).map((item, idx) => (
+                            <span key={`breaking-a-${idx}`} className="breaking-item">
+                                {item}
+                            </span>
+                        ))}
                     </div>
-
-                    <div className="animate-fade-in" style={{ width: '33.33%', height: '40vh', minHeight: '350px', overflow: 'hidden', animationDelay: '0.2s' }}>
-                        <img src="/generated/img2.png" alt="Advanced Learning" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                    </div>
-
-                    <div className="animate-fade-in" style={{ width: '33.33%', height: '40vh', minHeight: '350px', overflow: 'hidden', animationDelay: '0.4s' }}>
-                        <img src="/generated/img3.png" alt="Future of Engineering" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    <div className="breaking-content" aria-hidden="true">
+                        {(breakingUpdates.length ? breakingUpdates : FALLBACK_BREAKING_UPDATES).map((item, idx) => (
+                            <span key={`breaking-b-${idx}`} className="breaking-item">
+                                {item}
+                            </span>
+                        ))}
                     </div>
                 </div>
             </section>
 
             {/* CourseZ Intro Paragraph Section */}
-            <section className="coursez-description-section" style={{ padding: '2rem 2rem 1rem', textAlign: 'center' }}>
-                <div className="animate-slide-up" style={{ maxWidth: '1200px', margin: '0 auto' }}>
-                    <p className="hero-subtitle" style={{ fontSize: '1rem', lineHeight: '1.8', color: 'var(--text-main)', margin: 0 }}>
+            <section className="coursez-description-section" style={{ textAlign: 'left' }}>
+                <div className="animate-slide-up" style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 1.25rem' }}>
+                    <p className="hero-subtitle" style={{ fontSize: '1.18rem', lineHeight: '1.75', color: 'var(--text-main)', margin: 0 }}>
                         <span className="brand-course">Course</span><span className="brand-z">Z</span> is an online learning platform designed to provide high-quality, structured education in a flexible and
                         accessible way. It enables learners to gain knowledge, develop practical skills, and improve professional
                         competence through well-organized digital courses.
@@ -119,15 +264,15 @@ const LandingPage = () => {
                         Blending proven educational methods with modern digital tools, <span className="brand-course">Course</span><span className="brand-z">Z</span> enables learners to build practical
                         skills, enhance professional competence, and advance their careers with confidence.
                     </p>
-                    <p className="hero-subtitle" style={{ fontStyle: 'italic', marginTop: '2rem', color: 'var(--primary)', fontWeight: '600', fontSize: '1.25rem' }}>
+                    <p className="hero-subtitle" style={{ fontStyle: 'italic', marginTop: '1.25rem', color: 'var(--primary)', fontWeight: '600', fontSize: '1.02rem' }}>
                         Don't just study engineering—become the engineer companies fight to hire.
                     </p>
                 </div>
             </section>
 
             {/* Buttons and Stats Section */}
-            <section className="hero-cta-section" style={{ padding: '1rem 2rem 2rem', textAlign: 'center' }}>
-                <div className="hero-buttons animate-slide-up" style={{ justifyContent: 'center', display: 'flex', gap: '1rem', marginBottom: '2rem', animationDelay: '0.2s' }}>
+            <section className="hero-cta-section" style={{ textAlign: 'center' }}>
+                <div className="hero-buttons animate-slide-up" style={{ justifyContent: 'center', display: 'flex', gap: '1rem', marginBottom: '1.5rem', animationDelay: '0.2s' }}>
                     <button
                         className="btn-primary btn-large"
                         onClick={() => handleNavigation('/login')}
@@ -152,7 +297,7 @@ const LandingPage = () => {
                             <Users size={32} />
                         </div>
                         <div className="stat-content">
-                            <h3 style={{ fontSize: '2rem' }}>500+</h3>
+                            <h3 style={{ fontSize: '2rem' }}>{formatStatValue(platformStats.studentsEnrolled, true)}</h3>
                             <p>Students Enrolled</p>
                         </div>
                     </div>
@@ -161,7 +306,7 @@ const LandingPage = () => {
                             <BookOpen size={32} />
                         </div>
                         <div className="stat-content">
-                            <h3 style={{ fontSize: '2rem' }}>6+</h3>
+                            <h3 style={{ fontSize: '2rem' }}>{formatStatValue(platformStats.coursesPlanned, true)}</h3>
                             <p>Courses Planned</p>
                         </div>
                     </div>
@@ -170,47 +315,12 @@ const LandingPage = () => {
                             <Award size={32} />
                         </div>
                         <div className="stat-content">
-                            <h3 style={{ fontSize: '2rem' }}>3</h3>
+                            <h3 style={{ fontSize: '2rem' }}>{formatStatValue(platformStats.expertProfessors)}</h3>
                             <p>Expert Professors</p>
                         </div>
                     </div>
                 </div>
             </section>
-
-            {/* Faculty Preview Section */}
-            <section className="faculty-preview-section" style={{ padding: '2rem 2rem', background: 'var(--background)' }}>
-                <div className="section-header" style={{ textAlign: 'center', marginBottom: '3rem' }}>
-                    <h2 className="section-title">Meet Your Expert Faculty</h2>
-                    <p className="section-subtitle">Learn from industry veterans with decades of experience</p>
-                </div>
-                <div className="faculty-preview-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', maxWidth: '1400px', margin: '0 auto' }}>
-                    {publicProfessors.map((prof, index) => (
-                        <div key={prof._id} className="faculty-preview-card" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '16px', padding: '2rem', textAlign: 'center', transition: 'all 0.3s ease', cursor: 'pointer' }} onClick={() => handleNavigation('/professor')}>
-                            <img src={prof.photo || '/default-prof.png'} alt={prof.name} style={{ width: '80px', height: '80px', borderRadius: '50%', marginBottom: '1rem', border: '3px solid var(--primary)' }} />
-                            <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{prof.name}</h3>
-                            <p style={{ color: 'var(--primary)', marginBottom: '1rem' }}>{prof.designation}</p>
-                            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
-                                {prof.stats?.experience} experience • {prof.stats?.publications} publications • {prof.stats?.patents} patents
-                            </p>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'center' }}>
-                                {(prof.expertise || []).slice(0, 3).map((exp, i) => (
-                                    <span key={i} style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--primary)', padding: '0.25rem 0.75rem', borderRadius: '12px', fontSize: '0.8rem' }}>{exp}</span>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                    {!loading && publicProfessors.length === 0 && (
-                        <p style={{ gridColumn: '1/-1', textAlign: 'center' }}>Keep checking for our faculty updates!</p>
-                    )}
-                </div>
-                <div style={{ textAlign: 'center', marginTop: '3rem' }}>
-                    <button className="btn-secondary" onClick={() => handleNavigation('/professor')}>
-                        <Users size={18} />
-                        <span>View All Faculty</span>
-                    </button>
-                </div>
-            </section>
-
             {/* How It Works Section */}
             <section className="how-it-works-section">
                 <div className="section-header">
@@ -349,7 +459,7 @@ const LandingPage = () => {
             </section>
 
             {/* Courses Section */}
-            <section className="courses-section" style={{ padding: '2rem 2rem', background: 'linear-gradient(180deg, transparent 0%, rgba(16, 185, 129, 0.02) 50%, transparent 100%)' }}>
+            <section className="courses-section" style={{ background: 'linear-gradient(180deg, transparent 0%, rgba(16, 185, 129, 0.02) 50%, transparent 100%)' }}>
                 <div className="section-header" style={{ textAlign: 'center', marginBottom: '3rem' }}>
                     <h2 className="section-title">Be First to Access Premium Engineering Courses</h2>
                     <p className="section-subtitle">Secure your spot for exclusive courses launching Q1 2025. Led by SPIT faculty with industry experience.</p>
@@ -394,7 +504,7 @@ const LandingPage = () => {
                     <div className="email-capture" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '16px', padding: '2rem', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.05)' }}>
                         <h3 style={{ marginBottom: '1rem' }}>Join 500+ Students on the Waitlist</h3>
                         <p style={{ marginBottom: '2rem', color: 'var(--text-muted)' }}>Get notified when courses launch and receive exclusive early access.</p>
-                        <form onSubmit={(e) => { e.preventDefault(); alert('Thank you! We\'ll notify you when courses launch.'); }} style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                        <form onSubmit={(e) => { e.preventDefault(); showToast.success("Thank you! We'll notify you when courses launch."); }} style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
                             <input type="email" placeholder="Enter your email" required style={{ flex: '1', minWidth: '250px' }} />
                             <button type="submit" className="btn-primary" style={{ whiteSpace: 'nowrap' }}>
                                 <Mail size={18} />
@@ -407,78 +517,42 @@ const LandingPage = () => {
             </section>
 
             {/* Testimonials Section */}
-            <section id="testimonials" className="testimonials-section" style={{ padding: '2rem 2rem' }}>
+            <section id="testimonials" className="testimonials-section">
                 <div className="testimonials-container">
                     <div className="section-header">
-                        <h2 className="section-title">Student Success Stories</h2>
+                        <h2 className="section-title">Testimonials</h2>
                         <p className="section-subtitle">Real results from real students</p>
                     </div>
 
                     <div className="testimonials-grid">
-                        <div className="testimonial-card">
-                            <div className="testimonial-rating">
-                                {[...Array(5)].map((_, i) => (
-                                    <Star key={i} size={18} fill="currentColor" />
-                                ))}
-                            </div>
-                            <p className="testimonial-text">
-                                "Dr. TALELE's courses are exceptional. The curriculum is industry-aligned,
-                                and his teaching style makes complex concepts easy to understand. Landed my
-                                dream job at a top tech company!"
-                            </p>
-                            <div className="testimonial-author">
-                                <div className="author-avatar">SC</div>
-                                <div>
-                                    <h4>Sanika Chandorkar</h4>
-                                    <p>Software Engineer, Google</p>
+                        {(publicTestimonials.length ? publicTestimonials : FALLBACK_TESTIMONIALS).map((testimonial) => (
+                            <div className="testimonial-card" key={testimonial._id}>
+                                <div className="testimonial-rating">
+                                    {[...Array(5)].map((_, i) => (
+                                        <Star
+                                            key={i}
+                                            size={18}
+                                            fill={i < (testimonial.rating || 0) ? 'currentColor' : 'none'}
+                                        />
+                                    ))}
+                                </div>
+                                <p className="testimonial-text">
+                                    "{testimonial.text}"
+                                </p>
+                                <div className="testimonial-author">
+                                    <div className="author-avatar">{testimonial.initials}</div>
+                                    <div>
+                                        <h4>{testimonial.author}</h4>
+                                        <p>{testimonial.courseTitle ? `${testimonial.role} | ${testimonial.courseTitle}` : testimonial.role}</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-
-                        <div className="testimonial-card">
-                            <div className="testimonial-rating">
-                                {[...Array(5)].map((_, i) => (
-                                    <Star key={i} size={18} fill="currentColor" />
-                                ))}
-                            </div>
-                            <p className="testimonial-text">
-                                "The best investment in my education. Dr. TALELE's real-world experience
-                                and mentorship helped me transition from student to professional seamlessly.
-                                Highly recommend!"
-                            </p>
-                            <div className="testimonial-author">
-                                <div className="author-avatar">RP</div>
-                                <div>
-                                    <h4>Rahul Patil</h4>
-                                    <p>ML Engineer, Microsoft</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="testimonial-card">
-                            <div className="testimonial-rating">
-                                {[...Array(5)].map((_, i) => (
-                                    <Star key={i} size={18} fill="currentColor" />
-                                ))}
-                            </div>
-                            <p className="testimonial-text">
-                                "<span className="brand-course">Course</span><span className="brand-z">Z</span> transformed my understanding of signal processing. Dr. TALELE's
-                                teaching methodology bridges theory and practice perfectly. Now working on
-                                cutting-edge AI projects!"
-                            </p>
-                            <div className="testimonial-author">
-                                <div className="author-avatar">PM</div>
-                                <div>
-                                    <h4>Priya Mehta</h4>
-                                    <p>Data Scientist, Amazon</p>
-                                </div>
-                            </div>
-                        </div>
+                        ))}
                     </div>
                 </div>
             </section>
 
-            {/* Pricing Section */}
+            {false && (
             <section id="pricing" className="pricing-section">
                 <div className="section-header">
                     <h2 className="section-title">Choose Your Plan</h2>
@@ -558,6 +632,7 @@ const LandingPage = () => {
 
 
             </section>
+            )}
 
             {/* FAQ Section */}
             <section className="faq-section">
@@ -641,42 +716,9 @@ const LandingPage = () => {
                         </div>
                     </div>
 
-                    <div className="faq-cta">
-                        <p>Still have questions?</p>
-                        <button className="btn-primary" onClick={() => window.location.href = 'mailto:talelesir@gmail.com'}>
-                            <Mail size={18} />
-                            <span>Contact Dr. TALELE</span>
-                        </button>
-                    </div>
                 </div>
             </section>
 
-            {/* CTA Section */}
-            <section className="cta-section" style={{ padding: '2rem 2rem' }}>
-                <div className="cta-card">
-                    <div className="cta-content">
-                        <h2>Launch Your Engineering Career Today</h2>
-                        <p>
-                            Join 500+ ambitious students learning from SPIT's elite faculty.
-                            Transform theory into industry-ready skills that companies demand.
-                        </p>
-                        <div className="cta-buttons">
-                            <button className="btn-accent" onClick={() => handleNavigation('/login')}>
-                                <span>Create Account</span>
-                                <ArrowRight size={20} />
-                            </button>
-
-                        </div>
-                        <div className="cta-trust">
-                            <CheckCircle size={16} />
-                            <span>No credit card required</span>
-                            <span>•</span>
-                            <CheckCircle size={16} />
-                            <span>Start learning in minutes</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
 
 
             {/* Footer */}
@@ -686,3 +728,6 @@ const LandingPage = () => {
 };
 
 export default LandingPage;
+
+
+

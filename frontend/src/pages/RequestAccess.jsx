@@ -1,129 +1,122 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { registerStudent } from '../api/api';
-import { useAuth } from '../context/AuthContext';
+import { requestAccess } from '../api/api';
+import { validateName } from '../utils/authFormValidation';
+import { Button } from '../components/Button';
+import { Input } from '../components/Input';
+import { Card } from '../components/Card';
+import { borderRadius, colors, spacing, typography } from '../theme';
 
 const RequestAccess = () => {
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        city: '',
-        country: '',
-        username: '',
-        password: ''
-    });
-    const [status, setStatus] = useState(''); // 'success', 'error'
-    const [message, setMessage] = useState('');
-    const { login } = useAuth();
-    const navigate = useNavigate();
+  const [formData, setFormData] = useState({ firstName: '', lastName: '' });
+  const [fieldErrors, setFieldErrors] = useState({ firstName: '', lastName: '' });
+  const [status, setStatus] = useState('');
+  const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+  const validateForm = () => {
+    const nextErrors = {
+      firstName: validateName(formData.firstName, 'First name'),
+      lastName: validateName(formData.lastName, 'Last name')
     };
+    setFieldErrors(nextErrors);
+    return !nextErrors.firstName && !nextErrors.lastName;
+  };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            const data = await registerStudent(formData);
-            setStatus('success');
-            login(data.user, data.token);
-            setMessage('Registration successful! Redirecting...');
-            setTimeout(() => {
-                navigate('/student');
-            }, 2000);
-        } catch (err) {
-            setStatus('error');
-            setMessage(err.message);
-        }
-    };
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => ({ ...prev, [name]: '' }));
+    }
+  };
 
-    const inputStyle = {
-        width: '100%', padding: '0.8rem', borderRadius: '6px', border: '1px solid var(--border)',
-        background: '#f9fafb', color: 'var(--text-main)', outline: 'none'
-    };
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setStatus('');
+    setMessage('');
+    if (!validateForm()) return;
 
-    return (
-        <div style={{
-            display: 'flex', minHeight: '100vh', justifyContent: 'center', alignItems: 'center',
-            background: 'var(--background)', color: 'var(--text-main)', padding: '2rem'
-        }}>
-            <div style={{
-                background: 'white', padding: '2rem', borderRadius: '12px',
-                width: '100%', maxWidth: '500px', border: '1px solid var(--border)',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.05)'
-            }}>
-                <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>Student Registration</h2>
+    setIsSubmitting(true);
+    try {
+      const data = await requestAccess(formData.firstName.trim(), formData.lastName.trim());
+      setStatus('success');
+      setMessage(data.message || 'Request submitted successfully. Wait for admin approval, then complete setup.');
+    } catch (err) {
+      setStatus('error');
+      setMessage(err.message || 'Failed to submit request');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-                {status === 'success' ? (
-                    <div style={{ textAlign: 'center' }}>
-                        <div style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--text-accent)', padding: '1rem', borderRadius: '8px', marginBottom: '1rem' }}>
-                            {message}
-                        </div>
-                    </div>
-                ) : (
-                    <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>First Name</label>
-                            <input name="firstName" style={inputStyle} value={formData.firstName} onChange={handleChange} required />
-                        </div>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Last Name (Surname)</label>
-                            <input name="lastName" style={inputStyle} value={formData.lastName} onChange={handleChange} required />
-                        </div>
-                        <div style={{ gridColumn: 'span 2' }}>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Email ID</label>
-                            <input name="email" type="email" style={inputStyle} value={formData.email} onChange={handleChange} required />
-                        </div>
-                        <div style={{ gridColumn: 'span 2' }}>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Phone Number</label>
-                            <input name="phone" style={inputStyle} value={formData.phone} onChange={handleChange} required />
-                        </div>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>City</label>
-                            <input name="city" style={inputStyle} value={formData.city} onChange={handleChange} required />
-                        </div>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Country</label>
-                            <input name="country" style={inputStyle} value={formData.country} onChange={handleChange} required />
-                        </div>
-                        <div style={{ gridColumn: 'span 2' }}>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Choose Username</label>
-                            <input name="username" style={inputStyle} value={formData.username} onChange={handleChange} required />
-                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>Your login will be: <strong>{formData.username}@student</strong></div>
-                        </div>
-                        <div style={{ gridColumn: 'span 2' }}>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Password</label>
-                            <input name="password" type="password" style={inputStyle} value={formData.password} onChange={handleChange} required />
-                        </div>
-
-                        {status === 'error' && (
-                            <div style={{ gridColumn: 'span 2', color: '#ef4444', background: 'rgba(239, 68, 68, 0.1)', padding: '0.5rem', borderRadius: '6px', fontSize: '0.9rem' }}>
-                                {message}
-                            </div>
-                        )}
-
-                        <button
-                            type="submit"
-                            style={{
-                                gridColumn: 'span 2', background: 'var(--primary)', color: 'white', border: 'none', padding: '0.9rem',
-                                borderRadius: '8px', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer', marginTop: '0.5rem'
-                            }}
-                        >
-                            Register Now
-                        </button>
-
-                        <div style={{ gridColumn: 'span 2', textAlign: 'center', marginTop: '1rem' }}>
-                            <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem', cursor: 'pointer' }} onClick={() => navigate('/login')}>
-                                Back to Login
-                            </span>
-                        </div>
-                    </form>
-                )}
-            </div>
+  return (
+    <div style={{ display: 'flex', minHeight: '100vh', justifyContent: 'center', alignItems: 'center', background: colors.background, color: colors.text, padding: spacing.xl }}>
+      <div style={{ width: '100%', maxWidth: '560px' }}>
+        <div style={{ textAlign: 'center', marginBottom: spacing.lg }}>
+          <h2 style={{ ...typography.h2, marginBottom: spacing.sm }}>Request Student Access</h2>
+          <p style={{ ...typography.bodySmall, color: colors.textMuted, margin: 0 }}>
+            Submit your name for admin approval. After approval, complete account setup.
+          </p>
         </div>
-    );
+
+        <Card style={{ padding: spacing.xl }}>
+          {status === 'success' ? (
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ background: 'rgba(16, 185, 129, 0.1)', color: colors.success, padding: spacing.md, borderRadius: borderRadius.md, marginBottom: spacing.lg }}>
+                {message}
+              </div>
+              <Button onClick={() => navigate('/complete-setup')}>
+                Check Status / Complete Setup
+              </Button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+              <Input
+                name="firstName"
+                label="First Name"
+                value={formData.firstName}
+                onChange={handleChange}
+                error={fieldErrors.firstName}
+                placeholder="Enter your first name"
+                fullWidth
+              />
+              <Input
+                name="lastName"
+                label="Last Name (Surname)"
+                value={formData.lastName}
+                onChange={handleChange}
+                error={fieldErrors.lastName}
+                placeholder="Enter your surname"
+                fullWidth
+              />
+
+              {status === 'error' && (
+                <div style={{ color: colors.danger, background: 'rgba(239, 68, 68, 0.1)', padding: spacing.sm, borderRadius: borderRadius.sm, ...typography.small }}>
+                  {message}
+                </div>
+              )}
+
+              <Button type="submit" loading={isSubmitting} fullWidth>
+                Submit Access Request
+              </Button>
+
+              <div style={{ textAlign: 'center', marginTop: spacing.sm }}>
+                <span style={{ color: colors.textMuted, ...typography.small, cursor: 'pointer' }} onClick={() => navigate('/login')}>
+                  Back to Login
+                </span>
+                <span style={{ margin: '0 0.5rem', color: colors.border }}>|</span>
+                <span style={{ color: colors.accent, ...typography.small, cursor: 'pointer' }} onClick={() => navigate('/complete-setup')}>
+                  Already approved? Complete setup
+                </span>
+              </div>
+            </form>
+          )}
+        </Card>
+      </div>
+    </div>
+  );
 };
 
 export default RequestAccess;

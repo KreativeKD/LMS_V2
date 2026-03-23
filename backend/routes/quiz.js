@@ -1,10 +1,14 @@
 const express = require('express');
 const Quiz = require('../models/Quiz');
+const Unit = require('../models/Unit');
+const Chapter = require('../models/Chapter');
+const Course = require('../models/Course');
 const { auth, authorize } = require('../middleware/auth');
+const { canAccessCourseContent } = require('../utils/accessControl');
 const router = express.Router();
 
-// Get all quizzes (Public/Student)
-router.get('/', async (req, res) => {
+// Get all quizzes (Admin/Teacher only)
+router.get('/', auth, authorize('admin', 'teacher'), async (req, res) => {
     try {
         const quizzes = await Quiz.find();
         res.send(quizzes);
@@ -14,10 +18,34 @@ router.get('/', async (req, res) => {
 });
 
 // Get single quiz
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth, async (req, res) => {
     try {
-        const quiz = await Quiz.findById(req.params.id);
+        const quiz = await Quiz.findById(req.params.id).lean();
         if (!quiz) return res.status(404).send({ error: 'Quiz not found' });
+
+        if (req.user.role !== 'admin') {
+            const quizUnit = await Unit.findOne({
+                type: 'quiz',
+                'content.quiz': quiz._id
+            }).select('chapterId').lean();
+
+            if (!quizUnit) {
+                return res.status(404).send({ error: 'Quiz is not linked to a course unit' });
+            }
+
+            const chapter = await Chapter.findById(quizUnit.chapterId).select('courseId').lean();
+            if (!chapter) return res.status(404).send({ error: 'Chapter not found' });
+
+            const course = await Course.findById(chapter.courseId)
+                .select('students instructor assignedTeachers')
+                .lean();
+            if (!course) return res.status(404).send({ error: 'Course not found' });
+
+            if (!canAccessCourseContent(course, req.user)) {
+                return res.status(403).send({ error: 'Access denied. You are not allowed to view this quiz.' });
+            }
+        }
+
         res.send(quiz);
     } catch (e) {
         res.status(500).send(e.message);

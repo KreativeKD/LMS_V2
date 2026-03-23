@@ -1,33 +1,48 @@
-const API_URL = 'http://localhost:5000/api';
+import { fetchWithRetry, safeJsonParse } from './interceptor';
 
-const getHeaders = () => ({
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${localStorage.getItem('token')}`
-});
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+const getHeaders = () => {
+    const token = localStorage.getItem('token');
+    return {
+        'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+};
 
 export const loginUser = async (username, password) => {
-    const response = await fetch(`${API_URL}/auth/login`, {
+    const response = await fetchWithRetry(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
     });
+
     if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Login failed');
+        const data = await safeJsonParse(response);
+        const detailsText = Array.isArray(data?.details) ? data.details.join('. ') : null;
+        const error = new Error(detailsText || data?.error || 'Login failed');
+        error.response = { status: response.status, data };
+        throw error;
     }
+
     return response.json();
 };
 
 export const registerStudent = async (data) => {
-    const response = await fetch(`${API_URL}/auth/register`, {
+    const response = await fetchWithRetry(`${API_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     });
+
     if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Registration failed');
+        const responseData = await safeJsonParse(response);
+        const detailsText = Array.isArray(responseData?.details) ? responseData.details.join('. ') : null;
+        const error = new Error(detailsText || responseData?.error || 'Registration failed');
+        error.response = { status: response.status, data: responseData };
+        throw error;
     }
+
     return response.json();
 };
 
@@ -60,9 +75,16 @@ export const deleteTeacher = async (teacherId) => {
     return response.json();
 };
 
-export const fetchCourses = async () => {
-    const response = await fetch(`${API_URL}/courses`);
-    if (!response.ok) throw new Error('Failed to fetch courses');
+export const fetchCourses = async (page = 1, limit = 20) => {
+    const response = await fetchWithRetry(`${API_URL}/courses?page=${page}&limit=${limit}`);
+
+    if (!response.ok) {
+        const data = await safeJsonParse(response);
+        const error = new Error(data?.error || 'Failed to fetch courses');
+        error.response = { status: response.status, data };
+        throw error;
+    }
+
     return response.json();
 };
 
@@ -72,7 +94,15 @@ export const createCourse = async (courseData) => {
         headers: getHeaders(),
         body: JSON.stringify(courseData)
     });
-    if (!response.ok) throw new Error('Failed to create course');
+
+    if (!response.ok) {
+        const data = await safeJsonParse(response);
+        const detailsText = Array.isArray(data?.details) ? data.details.join('. ') : null;
+        const error = new Error(detailsText || data?.error || 'Failed to create course');
+        error.response = { status: response.status, data };
+        throw error;
+    }
+
     return response.json();
 };
 
@@ -82,7 +112,13 @@ export const updateCourse = async (courseId, courseData) => {
         headers: getHeaders(),
         body: JSON.stringify(courseData)
     });
-    if (!response.ok) throw new Error('Failed to update course');
+    if (!response.ok) {
+        const data = await safeJsonParse(response);
+        const detailsText = Array.isArray(data?.details) ? data.details.join('. ') : null;
+        const error = new Error(detailsText || data?.error || 'Failed to update course');
+        error.response = { status: response.status, data };
+        throw error;
+    }
     return response.json();
 };
 
@@ -101,6 +137,19 @@ export const addChapter = async (courseId, chapterData) => {
         body: JSON.stringify(chapterData)
     });
     if (!response.ok) throw new Error('Failed to add chapter');
+    return response.json();
+};
+
+export const reorderChapters = async (courseId, chapterIds) => {
+    const response = await fetch(`${API_URL}/courses/${courseId}/chapters/reorder`, {
+        method: 'PATCH',
+        headers: getHeaders(),
+        body: JSON.stringify({ chapterIds })
+    });
+    if (!response.ok) {
+        const data = await safeJsonParse(response);
+        throw new Error(data?.error || 'Failed to reorder chapters');
+    }
     return response.json();
 };
 
@@ -127,8 +176,31 @@ export const enrollInCourse = async (courseId) => {
 };
 
 export const fetchQuizzes = async () => {
-    const response = await fetch(`${API_URL}/quizzes`);
+    const response = await fetch(`${API_URL}/quizzes`, {
+        headers: getHeaders()
+    });
     if (!response.ok) throw new Error('Failed to fetch quizzes');
+    return response.json();
+};
+
+export const reorderUnits = async (chapterId, unitIds) => {
+    const response = await fetch(`${API_URL}/courses/chapters/${chapterId}/units/reorder`, {
+        method: 'PATCH',
+        headers: getHeaders(),
+        body: JSON.stringify({ unitIds })
+    });
+    if (!response.ok) {
+        const data = await safeJsonParse(response);
+        throw new Error(data?.error || 'Failed to reorder units');
+    }
+    return response.json();
+};
+
+export const fetchQuizById = async (quizId) => {
+    const response = await fetch(`${API_URL}/quizzes/${quizId}`, {
+        headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to fetch quiz');
     return response.json();
 };
 
@@ -232,6 +304,63 @@ export const deleteStudent = async (studentId) => {
 export const fetchCourse = async (courseId) => {
     const response = await fetch(`${API_URL}/courses/${courseId}`);
     if (!response.ok) throw new Error('Failed to fetch course');
+    return response.json();
+};
+
+// Fetch course with full chapters and units data (for editing/viewing)
+export const fetchCourseFull = async (courseId) => {
+    const response = await fetch(`${API_URL}/courses/${courseId}/full`, {
+        headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to fetch course');
+    return response.json();
+};
+
+export const fetchCourseTestimonials = async (courseId) => {
+    const response = await fetch(`${API_URL}/courses/${courseId}/testimonials`, {
+        headers: getHeaders()
+    });
+    if (!response.ok) {
+        const data = await safeJsonParse(response);
+        throw new Error(data?.error || 'Failed to fetch feedback');
+    }
+    return response.json();
+};
+
+export const createCourseTestimonial = async (courseId, payload) => {
+    const response = await fetch(`${API_URL}/courses/${courseId}/testimonials`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(payload)
+    });
+    if (!response.ok) {
+        const data = await safeJsonParse(response);
+        throw new Error(data?.error || 'Failed to save feedback');
+    }
+    return response.json();
+};
+
+export const deleteCourseTestimonial = async (courseId) => {
+    const response = await fetch(`${API_URL}/courses/${courseId}/testimonials`, {
+        method: 'DELETE',
+        headers: getHeaders()
+    });
+    if (!response.ok) {
+        const data = await safeJsonParse(response);
+        throw new Error(data?.error || 'Failed to delete feedback');
+    }
+    return response.json();
+};
+
+export const deleteCourseFeedbackById = async (courseId, feedbackId) => {
+    const response = await fetch(`${API_URL}/courses/${courseId}/testimonials/${feedbackId}`, {
+        method: 'DELETE',
+        headers: getHeaders()
+    });
+    if (!response.ok) {
+        const data = await safeJsonParse(response);
+        throw new Error(data?.error || 'Failed to delete feedback');
+    }
     return response.json();
 };
 
@@ -358,11 +487,41 @@ export const assignTeacher = async (courseId, teacherId) => {
     return response.json();
 };
 
+export const unassignTeacher = async (courseId, teacherId) => {
+    const response = await fetch(`${API_URL}/courses/${courseId}/assigned-teachers/${teacherId}`, {
+        method: 'DELETE',
+        headers: getHeaders()
+    });
+    if (!response.ok) {
+        const data = await safeJsonParse(response);
+        throw new Error(data?.error || 'Failed to unassign teacher');
+    }
+    return response.json();
+};
+
 export const fetchCurrentUser = async () => {
     const response = await fetch(`${API_URL}/auth/me`, {
         headers: getHeaders()
     });
-    if (!response.ok) throw new Error('Failed to fetch user');
+    if (!response.ok) {
+        const data = await safeJsonParse(response);
+        const error = new Error(data?.error || 'Failed to fetch user');
+        error.response = { status: response.status, data };
+        throw error;
+    }
+    return response.json();
+};
+
+export const updateUserProfile = async (data) => {
+    const response = await fetch(`${API_URL}/auth/me`, {
+        method: 'PATCH',
+        headers: getHeaders(),
+        body: JSON.stringify(data)
+    });
+    if (!response.ok) {
+        const errorData = await safeJsonParse(response);
+        throw new Error(errorData?.error || 'Failed to update profile');
+    }
     return response.json();
 };
 
@@ -445,5 +604,345 @@ export const toggleHiddenContent = async (courseId, contentId) => {
         body: JSON.stringify({ courseId, contentId })
     });
     if (!response.ok) throw new Error('Failed to toggle content visibility');
+    return response.json();
+};
+
+export const likeUnit = async (courseId, unitId) => {
+    const response = await fetch(`${API_URL}/courses/${courseId}/unit/${unitId}/like`, {
+        method: 'POST',
+        headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to toggle like');
+    return response.json();
+};
+
+export const getLikes = async (courseId, unitId) => {
+    const response = await fetch(`${API_URL}/courses/${courseId}/unit/${unitId}/likes`, {
+        headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to fetch likes');
+    return response.json();
+};
+
+export const fetchPublicAnnouncements = async (limit = 8) => {
+    const response = await fetch(`${API_URL}/public/announcements?limit=${limit}`);
+    if (!response.ok) throw new Error('Failed to fetch announcements');
+    return response.json();
+};
+
+export const fetchPublicTicker = async (limit = 12) => {
+    const response = await fetch(`${API_URL}/public/ticker?limit=${limit}`);
+    if (!response.ok) throw new Error('Failed to fetch ticker updates');
+    return response.json();
+};
+
+export const fetchPublicStats = async () => {
+    const response = await fetch(`${API_URL}/public/stats`);
+    if (!response.ok) throw new Error('Failed to fetch public stats');
+    return response.json();
+};
+
+export const fetchPublicTestimonials = async (limit = 3) => {
+    const response = await fetch(`${API_URL}/public/testimonials?limit=${limit}`);
+    if (!response.ok) throw new Error('Failed to fetch testimonials');
+    return response.json();
+};
+
+export const fetchMyPublicTestimonial = async () => {
+    const response = await fetch(`${API_URL}/public/testimonials/me`, {
+        headers: getHeaders()
+    });
+    if (!response.ok) {
+        const data = await safeJsonParse(response);
+        throw new Error(data?.error || 'Failed to fetch your testimonial');
+    }
+    return response.json();
+};
+
+export const createPublicTestimonial = async (payload) => {
+    const response = await fetch(`${API_URL}/public/testimonials`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(payload)
+    });
+    if (!response.ok) {
+        const data = await safeJsonParse(response);
+        throw new Error(data?.error || 'Failed to submit testimonial');
+    }
+    return response.json();
+};
+
+export const fetchAdminTestimonials = async () => {
+    const response = await fetch(`${API_URL}/public/admin/testimonials`, {
+        headers: getHeaders()
+    });
+    if (!response.ok) {
+        const data = await safeJsonParse(response);
+        throw new Error(data?.error || 'Failed to fetch testimonial requests');
+    }
+    return response.json();
+};
+
+export const approveAdminTestimonial = async (testimonialId) => {
+    const response = await fetch(`${API_URL}/public/admin/testimonials/${testimonialId}/approve`, {
+        method: 'PATCH',
+        headers: getHeaders()
+    });
+    if (!response.ok) {
+        const data = await safeJsonParse(response);
+        throw new Error(data?.error || 'Failed to approve testimonial');
+    }
+    return response.json();
+};
+
+export const rejectAdminTestimonial = async (testimonialId) => {
+    const response = await fetch(`${API_URL}/public/admin/testimonials/${testimonialId}/reject`, {
+        method: 'PATCH',
+        headers: getHeaders()
+    });
+    if (!response.ok) {
+        const data = await safeJsonParse(response);
+        throw new Error(data?.error || 'Failed to reject testimonial');
+    }
+    return response.json();
+};
+
+export const deleteAdminTestimonial = async (testimonialId) => {
+    const response = await fetch(`${API_URL}/public/admin/testimonials/${testimonialId}`, {
+        method: 'DELETE',
+        headers: getHeaders()
+    });
+    if (!response.ok) {
+        const data = await safeJsonParse(response);
+        throw new Error(data?.error || 'Failed to delete testimonial');
+    }
+    return response.json();
+};
+
+export const fetchAdminAnnouncements = async () => {
+    const response = await fetch(`${API_URL}/announcements`, {
+        headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to fetch announcements');
+    return response.json();
+};
+
+export const createAnnouncement = async (data) => {
+    const response = await fetch(`${API_URL}/announcements`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(data)
+    });
+    if (!response.ok) {
+        const parsed = await safeJsonParse(response);
+        throw new Error(parsed?.error || 'Failed to create announcement');
+    }
+    return response.json();
+};
+
+export const updateAnnouncement = async (id, data) => {
+    const response = await fetch(`${API_URL}/announcements/${id}`, {
+        method: 'PATCH',
+        headers: getHeaders(),
+        body: JSON.stringify(data)
+    });
+    if (!response.ok) {
+        const parsed = await safeJsonParse(response);
+        throw new Error(parsed?.error || 'Failed to update announcement');
+    }
+    return response.json();
+};
+
+export const deleteAnnouncement = async (id) => {
+    const response = await fetch(`${API_URL}/announcements/${id}`, {
+        method: 'DELETE',
+        headers: getHeaders()
+    });
+    if (!response.ok) {
+        const parsed = await safeJsonParse(response);
+        throw new Error(parsed?.error || 'Failed to delete announcement');
+    }
+    return response.json();
+};
+
+export const fetchUnitComments = async (courseId, unitId) => {
+    const response = await fetch(`${API_URL}/courses/${courseId}/unit/${unitId}/comments`, {
+        headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to fetch comments');
+    return response.json();
+};
+
+export const createUnitComment = async (courseId, unitId, text) => {
+    const response = await fetch(`${API_URL}/courses/${courseId}/unit/${unitId}/comments`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ text })
+    });
+    if (!response.ok) throw new Error('Failed to add comment');
+    return response.json();
+};
+
+export const updateUnitComment = async (courseId, unitId, commentId, text) => {
+    const response = await fetch(`${API_URL}/courses/${courseId}/unit/${unitId}/comments/${commentId}`, {
+        method: 'PATCH',
+        headers: getHeaders(),
+        body: JSON.stringify({ text })
+    });
+    if (!response.ok) throw new Error('Failed to update comment');
+    return response.json();
+};
+
+export const deleteUnitComment = async (courseId, unitId, commentId) => {
+    const response = await fetch(`${API_URL}/courses/${courseId}/unit/${unitId}/comments/${commentId}`, {
+        method: 'DELETE',
+        headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to delete comment');
+    return response.json();
+};
+
+// Lazy Loading APIs - Fetch chapters only when needed
+export const fetchChapters = async (courseId) => {
+    const response = await fetch(`${API_URL}/courses/${courseId}/chapters`, {
+        headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to fetch chapters');
+    return response.json();
+};
+
+// Lazy Loading APIs - Fetch units for a chapter only when expanded
+export const fetchChapterUnits = async (chapterId) => {
+    const response = await fetch(`${API_URL}/courses/chapters/${chapterId}/units`, {
+        headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to fetch units');
+    return response.json();
+};
+
+// Password Reset APIs
+export const fetchPasswordResetRequests = async () => {
+    const response = await fetch(`${API_URL}/auth/admin/password-reset-requests`, {
+        headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to fetch password reset requests');
+    return response.json();
+};
+
+export const approvePasswordResetRequest = async (requestId) => {
+    const response = await fetch(`${API_URL}/auth/admin/password-reset-requests/${requestId}/approve`, {
+        method: 'PATCH',
+        headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to approve password reset request');
+    return response.json();
+};
+
+export const rejectPasswordResetRequest = async (requestId) => {
+    const response = await fetch(`${API_URL}/auth/admin/password-reset-requests/${requestId}/reject`, {
+        method: 'PATCH',
+        headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to reject password reset request');
+    return response.json();
+};
+
+export const deletePasswordResetRequest = async (requestId) => {
+    const response = await fetch(`${API_URL}/auth/admin/password-reset-requests/${requestId}`, {
+        method: 'DELETE',
+        headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to delete password reset request');
+    return response.json();
+};
+
+export const requestPasswordReset = async (username) => {
+    const response = await fetch(`${API_URL}/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username })
+    });
+
+    const data = await safeJsonParse(response);
+    if (!response.ok) {
+        const error = new Error(data?.error || 'Failed to submit request');
+        error.response = { status: response.status, data };
+        throw error;
+    }
+
+    return data;
+};
+
+export const fetchPasswordResetStatusByUsername = async (username) => {
+    const response = await fetch(`${API_URL}/auth/password-reset-status/${encodeURIComponent(username)}`);
+
+    const data = await safeJsonParse(response);
+    if (!response.ok) {
+        const error = new Error(data?.error || 'Failed to check status');
+        error.response = { status: response.status, data };
+        throw error;
+    }
+
+    return data;
+};
+
+export const submitPasswordReset = async ({ username, newPassword, requestId }) => {
+    const response = await fetch(`${API_URL}/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, newPassword, requestId })
+    });
+
+    const data = await safeJsonParse(response);
+    if (!response.ok) {
+        const error = new Error(data?.error || 'Failed to reset password');
+        error.response = { status: response.status, data };
+        throw error;
+    }
+
+    return data;
+};
+
+// Notification APIs
+export const fetchNotifications = async (limit = 15) => {
+    const response = await fetch(`${API_URL}/notifications?limit=${limit}`, {
+        headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to fetch notifications');
+    return response.json();
+};
+
+export const fetchUnreadNotificationCount = async () => {
+    const response = await fetch(`${API_URL}/notifications/unread-count`, {
+        headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to fetch unread count');
+    return response.json();
+};
+
+export const markNotificationRead = async (notificationId) => {
+    const response = await fetch(`${API_URL}/notifications/${notificationId}/read`, {
+        method: 'PATCH',
+        headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to mark notification as read');
+    return response.json();
+};
+
+export const markAllNotificationsRead = async () => {
+    const response = await fetch(`${API_URL}/notifications/read-all`, {
+        method: 'PATCH',
+        headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to mark all notifications as read');
+    return response.json();
+};
+
+export const deleteNotification = async (notificationId) => {
+    const response = await fetch(`${API_URL}/notifications/${notificationId}`, {
+        method: 'DELETE',
+        headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to delete notification');
     return response.json();
 };

@@ -34,7 +34,8 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true
+        required: true,
+        select: false
     },
     role: {
         type: String,
@@ -54,6 +55,10 @@ const userSchema = new mongoose.Schema({
     unfrozenByAdmin: {
         type: Boolean,
         default: false
+    },
+    profilePhoto: {
+        type: String,
+        default: null
     },
     lastLogin: {
         type: Date

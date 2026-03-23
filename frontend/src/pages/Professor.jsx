@@ -1,30 +1,77 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    Award, Briefcase, Star, Lightbulb, Building, CheckCircle,
-    Mail, Phone, ExternalLink, Linkedin, ArrowRight, BarChart2, Zap, Users,
+    Award, Briefcase, Star, Lightbulb, Building,
+    Mail, Phone, ExternalLink, Linkedin, BarChart2, Zap, Users,
     ChevronLeft, ChevronRight, MoreHorizontal
 } from 'lucide-react';
-import PublicNavbar from '../components/PublicNavbar';
 import PublicFooter from '../components/PublicFooter';
-import { fetchPublicProfessors } from '../api/api';
+import { fetchCourses, fetchPublicProfessors } from '../api/api';
+import { showToast } from '../utils/toast';
 
 const Professor = () => {
     const navigate = useNavigate();
-    const [scrolled, setScrolled] = useState(false);
-    const [selectedCourse, setSelectedCourse] = useState(null);
     const [isCollapsed, setIsCollapsed] = useState(false);
 
     const [professorsData, setProfessorsData] = useState([]);
+    const [liveCourses, setLiveCourses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeProfId, setActiveProfId] = useState(null);
+
+    const normalizeCourseTitle = (title) =>
+        String(title || '')
+            .toLowerCase()
+            .replace(/\([^)]*\)/g, '')
+            .replace(/[^a-z0-9]+/g, ' ')
+            .trim();
+
+    const openPdfDocument = (pdfSource) => {
+        if (!pdfSource) {
+            showToast.error('Description PDF is not available');
+            return;
+        }
+
+        try {
+            if (typeof pdfSource === 'string' && pdfSource.startsWith('data:application/pdf')) {
+                const [meta, base64Data] = pdfSource.split(',');
+                if (!base64Data || !meta.includes(';base64')) {
+                    showToast.error('Invalid PDF data');
+                    return;
+                }
+
+                const byteChars = atob(base64Data);
+                const byteNumbers = new Array(byteChars.length);
+                for (let i = 0; i < byteChars.length; i += 1) {
+                    byteNumbers[i] = byteChars.charCodeAt(i);
+                }
+
+                const blob = new Blob([new Uint8Array(byteNumbers)], { type: 'application/pdf' });
+                const blobUrl = URL.createObjectURL(blob);
+                window.open(blobUrl, '_blank', 'noopener,noreferrer');
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 60 * 1000);
+                return;
+            }
+
+            window.open(pdfSource, '_blank', 'noopener,noreferrer');
+        } catch (error) {
+            console.error('Failed to open PDF:', error);
+            showToast.error('Failed to open description PDF');
+        }
+    };
 
     useEffect(() => {
         const load = async () => {
             try {
-                const data = await fetchPublicProfessors();
-                setProfessorsData(data);
-                if (data.length > 0) setActiveProfId(data[0]._id);
+                const [data, coursesResponse] = await Promise.all([
+                    fetchPublicProfessors(),
+                    fetchCourses(1, 100)
+                ]);
+                const filteredData = (data || []).filter(
+                    (prof) => !(prof?.name || '').toLowerCase().includes('michael chen')
+                );
+                setProfessorsData(filteredData);
+                setLiveCourses(coursesResponse?.courses || []);
+                if (filteredData.length > 0) setActiveProfId(filteredData[0]._id);
             } catch (err) {
                 console.error(err);
             } finally {
@@ -35,25 +82,34 @@ const Professor = () => {
     }, []);
 
     const selectedProf = professorsData.find(p => p._id === activeProfId) || professorsData[0];
+    const isKiranProfile = selectedProf?.name?.toLowerCase().includes('kiran');
+    const experienceStat = isKiranProfile ? '37+' : selectedProf?.stats?.experience;
+    const patentsStat = isKiranProfile ? '25' : selectedProf?.stats?.patents;
 
 
     useEffect(() => {
-        const handleScroll = () => {
-            setScrolled(window.scrollY > 50);
-        };
-        window.addEventListener('scroll', handleScroll);
         window.scrollTo(0, 0);
-        return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
     const handleNavigation = (path) => {
         navigate(path);
     };
 
+    const handleKnowMore = (course) => {
+        const matchedCourse = liveCourses.find(
+            (liveCourse) => normalizeCourseTitle(liveCourse.title) === normalizeCourseTitle(course.title)
+        );
+
+        if (!matchedCourse?.descriptionPdf) {
+            showToast.error('Description PDF is not available for this course');
+            return;
+        }
+
+        openPdfDocument(matchedCourse.descriptionPdf);
+    };
+
     return (
         <div className="landing-page">
-            <PublicNavbar scrolled={scrolled} />
-
             <div className={`professor-page-layout ${isCollapsed ? 'collapsed' : ''}`} style={{ paddingTop: '5.5rem' }}>
                 {/* Left Sidebar */}
                 <aside className={`professor-sidebar animate-slide-left ${isCollapsed ? 'collapsed' : ''}`}>
@@ -77,7 +133,6 @@ const Professor = () => {
                                 <img src={prof.photo || '/default-prof.png'} alt={prof.name} className="prof-nav-thumb" />
                                 <div className="prof-nav-info">
                                     <h4>{prof.name}</h4>
-                                    <p>{prof.designation}</p>
                                 </div>
                             </button>
                         ))}
@@ -93,10 +148,7 @@ const Professor = () => {
                                     <Award size={16} />
                                     <span>Professor Profile</span>
                                 </div>
-                                <h2 className="section-title">Meet {selectedProf.name}</h2>
-                                <p className="section-subtitle" style={{ margin: '0' }}>
-                                    {selectedProf.designation} at {selectedProf.institution}
-                                </p>
+                                <h2 className="section-title" style={{ fontSize: '2.3rem' }}>{selectedProf.name}</h2>
                             </div>
 
                             <div className="professor-card" style={{ padding: '2rem' }}>
@@ -107,21 +159,17 @@ const Professor = () => {
                                     </div>
 
                                     <div className="professor-quick-info">
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
-                                            <h3>{selectedProf.name}</h3>
-                                        </div>
-
-
                                         {/* Professor Information Paragraph */}
-                                        <div style={{ marginTop: '1.5rem', lineHeight: '1.6', color: '#555' }}>
+                                        <div style={{ marginTop: 0, lineHeight: '1.6', color: '#555' }}>
                                             {/* PROFESSOR INFORMATION HERE - Paste the professor's paragraph/bio here */}
                                             <p style={{ fontSize: '0.95rem' }}>
                                                 Dr. Kiran Talele is an academician, entrepreneur, and mentor dedicated to fostering innovation
                                                 and professional excellence. With a strong focus on student development and entrepreneurial mindset,
                                                 he has contributed significantly to academic programs, startups, and skill-building initiatives.
-                                                Dr. Talele combines 36+ years of experience with a passion for teaching, guiding students and
+                                                Dr. Talele combines 37+ years of experience with a passion for teaching, guiding students and
                                                 professionals to achieve meaningful growth and career success.
                                             </p>
+                                            <p>He serves as a Mentor for Startup Incubation and Intellectual Asset Creation, guiding innovation and entrepreneurial initiatives. He has authored more than 85 research papers published in reputed national and international conferences and journals. In addition, he holds over 25 patents filed and published in India, the United Kingdom, and Germany. He is also the co-founder of Vehiscrap, Serenitysphere, and Anudan Jagruti, contributing actively to technology-driven entrepreneurship and innovation.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -130,7 +178,7 @@ const Professor = () => {
                                 <div style={{ marginBottom: '2rem' }}>
                                     <div className="quick-stats">
                                         <div className="quick-stat">
-                                            <strong>{selectedProf.stats.experience}</strong>
+                                            <strong>{experienceStat}</strong>
                                             <span>Years Experience</span>
                                         </div>
                                         <div className="quick-stat">
@@ -138,12 +186,12 @@ const Professor = () => {
                                             <span>Publications</span>
                                         </div>
                                         <div className="quick-stat">
-                                            <strong>{selectedProf.stats.patents}</strong>
+                                            <strong>{patentsStat}</strong>
                                             <span>Patents</span>
                                         </div>
                                         <div className="quick-stat">
                                             <strong>{selectedProf.stats.startups}</strong>
-                                            <span>Number of Startups Mentored</span>
+                                            <span>Startups</span>
                                         </div>
                                     </div>
                                 </div>
@@ -182,7 +230,7 @@ const Professor = () => {
                                                     <p>{course.description.substring(0, 100)}...</p>
                                                     <button
                                                         className="know-more-btn"
-                                                        onClick={() => setSelectedCourse(course)}
+                                                        onClick={() => handleKnowMore(course)}
                                                     >
                                                         <ExternalLink size={16} />
                                                         Know More
@@ -238,43 +286,6 @@ const Professor = () => {
                     )}
                 </main>
             </div>
-
-            {/* Modal for Course Details */}
-            {selectedCourse && (
-                <div className="modal-overlay" onClick={() => setSelectedCourse(null)}>
-                    <div className="modal-content animate-fade-in" onClick={e => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2>{selectedCourse.title}</h2>
-                            <button className="close-btn" onClick={() => setSelectedCourse(null)}>×</button>
-                        </div>
-                        <div className="modal-body">
-                            <p className="course-full-description">{selectedCourse.description}</p>
-                            {selectedCourse.chapters && (
-                                <div className="chapters-section">
-                                    <h4>Course Chapters</h4>
-                                    <ul className="chapters-list">
-                                        {selectedCourse.chapters.map((chapter, index) => (
-                                            <li key={index}>
-                                                <CheckCircle size={16} className="check-icon" />
-                                                {chapter}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
-                            <div className="modal-actions">
-                                <button
-                                    className="btn-primary btn-large"
-                                    onClick={() => handleNavigation('/login')}
-                                >
-                                    Enroll Now
-                                    <ArrowRight size={20} />
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             <PublicFooter />
         </div>

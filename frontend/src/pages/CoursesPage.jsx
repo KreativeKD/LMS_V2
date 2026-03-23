@@ -1,30 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, BarChart2, Zap, Sparkles, Clock, Users, Award, ArrowRight } from 'lucide-react';
+import { BookOpen, Sparkles, ArrowRight } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
-import PublicNavbar from '../components/PublicNavbar';
 import PublicFooter from '../components/PublicFooter';
+import { Button, Card, Pagination } from '../components';
+import { spacing, colors, typography, borderRadius, shadows } from '../theme';
 import { fetchAcademicCourses } from '../api/api';
 
 const CoursesPage = () => {
     const navigate = useNavigate();
-    const [scrolled, setScrolled] = useState(false);
 
     useEffect(() => {
-        const handleScroll = () => {
-            setScrolled(window.scrollY > 50);
-        };
-        window.addEventListener('scroll', handleScroll);
         window.scrollTo(0, 0);
-        return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
     const [coursesData, setCoursesData] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedCourseType, setSelectedCourseType] = useState('all');
     const [selectedBranch, setSelectedBranch] = useState('All');
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
 
     const branches = ['All', 'EXTC', 'COMP', 'IT', 'MECH', 'CIVIL', 'AI-DS', 'Other'];
+    const itemsPerPage = 8;
 
     useEffect(() => {
         const load = async () => {
@@ -40,90 +38,131 @@ const CoursesPage = () => {
         load();
     }, []);
 
+    const normalizeCourseType = (courseType) => {
+        if (courseType === 'professional' || courseType === 'both') return courseType;
+        return 'academic';
+    };
+
+    const typeFilteredCourses = coursesData.filter((course) => {
+        const type = normalizeCourseType(course.courseType);
+        if (selectedCourseType === 'all') return true;
+        if (selectedCourseType === 'academic') return type === 'academic' || type === 'both';
+        return type === 'professional' || type === 'both';
+    });
+
     const filteredCourses = selectedBranch === 'All'
-        ? coursesData
-        : coursesData.filter(course => course.branch === selectedBranch);
+        ? typeFilteredCourses
+        : typeFilteredCourses.filter(course => course.branch === selectedBranch);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [selectedBranch, selectedCourseType]);
+
+    const totalPages = Math.max(1, Math.ceil(filteredCourses.length / itemsPerPage));
+    const paginatedCourses = filteredCourses.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
 
     return (
         <div className="landing-page">
-            <PublicNavbar scrolled={scrolled} />
-
             {/* Courses Section */}
-            <section style={{ padding: '5rem 2rem 4rem' }}>
-                <div className="section-header" style={{ textAlign: 'center', marginBottom: '4rem' }}>
-                    <h2 className="section-title">Academic Courses</h2>
+            <section style={{ padding: `${spacing['4xl']} ${spacing.xl} ${spacing['3xl']}` }}>
+                <div className="section-header" style={{ textAlign: 'center', marginBottom: spacing['4xl'] }}>
+                    <h2 className="section-title">
+                        {selectedCourseType === 'all'
+                            ? 'All Available Courses'
+                            : (selectedCourseType === 'academic' ? 'Academic Courses' : 'Professional Courses')}
+                    </h2>
                     <p className="section-subtitle">Choose your learning path and start building expertise</p>
+                    <div style={{ display: 'inline-flex', gap: spacing.sm, padding: spacing.xs, background: '#fff', border: `1px solid ${colors.border}`, borderRadius: 999, marginTop: spacing.md }}>
+                        <Button
+                            variant={selectedCourseType === 'all' ? 'primary' : 'ghost'}
+                            size="sm"
+                            style={{ textTransform: 'none' }}
+                            onClick={() => setSelectedCourseType('all')}
+                        >
+                            All
+                        </Button>
+                        <Button
+                            variant={selectedCourseType === 'academic' ? 'primary' : 'ghost'}
+                            size="sm"
+                            style={{ textTransform: 'none' }}
+                            onClick={() => setSelectedCourseType('academic')}
+                        >
+                            Academic
+                        </Button>
+                        <Button
+                            variant={selectedCourseType === 'professional' ? 'primary' : 'ghost'}
+                            size="sm"
+                            style={{ textTransform: 'none' }}
+                            onClick={() => setSelectedCourseType('professional')}
+                        >
+                            Professional
+                        </Button>
+                    </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '2rem', maxWidth: '1400px', margin: '0 auto', alignItems: 'flex-start' }}>
+                <div style={{ display: 'flex', gap: spacing.xl, maxWidth: '1400px', margin: '0 auto', alignItems: 'flex-start' }}>
                     {/* Sidebar Toggle Button */}
-                    <button
+                    <Button
                         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                        variant="secondary"
+                        size="sm"
                         style={{
                             position: 'sticky',
                             top: '100px',
                             zIndex: 10,
-                            padding: '0.5rem',
-                            background: 'white',
-                            border: '1px solid var(--border)',
+                            padding: spacing.sm,
                             borderRadius: '50%',
-                            cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             marginLeft: isSidebarOpen ? '-1rem' : '0',
-                            transition: 'all 0.3s ease',
-                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+                            minWidth: '40px',
+                            minHeight: '40px',
+                            boxShadow: shadows.md
                         }}
                     >
                         {isSidebarOpen ? <LucideIcons.ChevronLeft size={20} /> : <LucideIcons.ChevronRight size={20} />}
-                    </button>
+                    </Button>
 
                     {/* Sidebar */}
                     <aside style={{
                         width: isSidebarOpen ? '280px' : '0px',
                         flexShrink: 0,
-                        background: 'rgba(255, 255, 255, 0.8)',
+                        background: colors.background,
                         backdropFilter: 'blur(20px)',
-                        borderRadius: '20px',
-                        padding: isSidebarOpen ? '1.5rem' : '0',
-                        border: isSidebarOpen ? '1px solid var(--border)' : 'none',
+                        borderRadius: borderRadius.xl,
+                        padding: isSidebarOpen ? spacing.lg : '0',
+                        border: isSidebarOpen ? `1px solid ${colors.border}` : 'none',
                         position: 'sticky',
                         top: '100px',
-                        boxShadow: isSidebarOpen ? '0 8px 32px rgba(0, 0, 0, 0.05)' : 'none',
+                        boxShadow: isSidebarOpen ? shadows.md : 'none',
                         overflow: 'hidden',
                         transition: 'all 0.3s ease',
                         opacity: isSidebarOpen ? 1 : 0
                     }}>
-                        <h3 style={{ fontSize: '1rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1.5rem', paddingLeft: '0.5rem', whiteSpace: 'nowrap' }}>Branches</h3>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        <h3 style={{ ...typography.label, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: spacing.lg, paddingLeft: spacing.sm, whiteSpace: 'nowrap' }}>Branches</h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
                             {branches.map(branch => (
-                                <button
+                                <Button
                                     key={branch}
                                     onClick={() => setSelectedBranch(branch)}
+                                    variant={selectedBranch === branch ? 'primary' : 'ghost'}
                                     style={{
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: '0.75rem',
+                                        gap: spacing.sm,
                                         width: '100%',
-                                        padding: '0.8rem 1.2rem',
-                                        borderRadius: '12px',
-                                        border: 'none',
-                                        background: selectedBranch === branch ? 'var(--text-gradient)' : 'transparent',
-                                        color: selectedBranch === branch ? 'white' : 'var(--text-muted)',
-                                        fontSize: '0.95rem',
-                                        fontWeight: '600',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s ease',
                                         textAlign: 'left',
                                         textTransform: 'none',
-                                        boxShadow: selectedBranch === branch ? '0 4px 12px rgba(79, 70, 229, 0.2)' : 'none',
                                         whiteSpace: 'nowrap'
                                     }}
                                 >
                                     <Sparkles size={18} style={{ opacity: selectedBranch === branch ? 1 : 0.5 }} />
                                     {branch}
-                                </button>
+                                </Button>
                             ))}
                         </div>
                     </aside>
@@ -132,80 +171,101 @@ const CoursesPage = () => {
                     <div style={{ flex: 1 }}>
                         <div className="courses-page-grid" style={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', // Fits approx 4-5 on desktop
-                            gap: '1.5rem'
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                            gap: spacing.lg
                         }}>
-                            {filteredCourses.map((course, index) => {
+                            {paginatedCourses.map((course, index) => {
                                 const IconComponent = LucideIcons[course.iconName] || LucideIcons.Book;
                                 const colors = ['sticky-yellow', 'sticky-cyan', 'sticky-pink', 'sticky-lime'];
                                 const rotations = ['rotate-1', 'rotate-2', 'rotate-3'];
                                 const colorClass = colors[index % colors.length];
                                 const rotationClass = rotations[index % rotations.length];
+                                const courseCategory = normalizeCourseType(course.courseType);
+                                const categoryLabel = courseCategory === 'both'
+                                    ? 'Academic + Professional'
+                                    : (courseCategory === 'professional' ? 'Professional' : 'Academic');
 
                                 return (
-                                    <div key={course._id} className={`course-sticky-note ${colorClass} ${rotationClass}`} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                                    <Card key={course._id} className={`${colorClass} ${rotationClass}`} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: spacing.md, marginBottom: spacing.lg }}>
                                             <IconComponent size={32} className="sticky-icon" style={{ margin: 0 }} />
-                                            <h3 style={{ fontSize: '1.3rem', margin: 0, fontWeight: '700' }}>{course.title}</h3>
+                                            <h3 style={{ ...typography.h4, margin: 0 }}>{course.title}</h3>
                                         </div>
-                                        <p style={{ fontSize: '0.95rem', marginBottom: '1.5rem', flexGrow: 1 }}>{course.description}</p>
+                                        <p style={{ ...typography.bodySmall, marginBottom: spacing.lg, flexGrow: 1 }}>{course.description}</p>
 
                                         <div style={{
                                             background: 'rgba(255, 255, 255, 0.3)',
-                                            padding: '1rem',
-                                            borderRadius: '8px',
-                                            fontSize: '0.85rem',
-                                            marginBottom: '1.5rem',
+                                            padding: spacing.md,
+                                            borderRadius: borderRadius.sm,
+                                            ...typography.small,
+                                            marginBottom: spacing.lg,
                                             border: '1px solid rgba(0,0,0,0.05)'
                                         }}>
-                                            <p style={{ margin: '0.2rem 0' }}><strong>Professor:</strong> {course.professor}</p>
-                                            <p style={{ margin: '0.2rem 0', fontWeight: 'bold' }}>
+                                            <p style={{ margin: '0.2rem 0' }}><strong>Professor:</strong> {course.professor || '-'}</p>
+                                            <p style={{ margin: '0.2rem 0' }}><strong>Category:</strong> {categoryLabel}</p>
+                                            <p style={{ margin: '0.2rem 0', fontWeight: 700 }}>
                                                 Enrolled Students:
                                                 <span className="tag" style={{ marginLeft: '0.5rem' }}>
-                                                    {course.linkedCourse && course.linkedCourse.students ? course.linkedCourse.students.length : '-'}
+                                                    {course.linkedCourse && Number.isFinite(course.linkedCourse.studentsCount) ? course.linkedCourse.studentsCount : '-'}
                                                 </span>
                                             </p>
                                         </div>
 
-                                        <button
-                                            className="btn-primary"
+                                        <Button
+                                            variant="primary"
+                                            fullWidth
                                             style={{
-                                                width: '100%',
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                gap: '0.5rem',
+                                                gap: spacing.sm,
                                                 marginTop: 'auto'
                                             }}
                                             onClick={() => navigate('/login')}
                                         >
                                             <span>Enroll Now</span>
                                             <ArrowRight size={18} />
-                                        </button>
-                                    </div>
+                                        </Button>
+                                    </Card>
                                 );
                             })}
                             {filteredCourses.length === 0 && !loading && (
-                                <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem', background: 'rgba(255,255,255,0.5)', borderRadius: '20px', border: '1px dashed var(--border)' }}>
-                                    <BookOpen size={48} color="var(--accent)" style={{ marginBottom: '1rem', opacity: 0.5 }} />
+                                <Card style={{ gridColumn: '1/-1', textAlign: 'center', padding: spacing['4xl'], background: 'rgba(255,255,255,0.5)', borderRadius: borderRadius.xl, border: `1px dashed ${colors.border}` }}>
+                                    <BookOpen size={48} color={colors.accent} style={{ marginBottom: spacing.md, opacity: 0.5 }} />
                                     <h2>No Courses Found</h2>
-                                    <p style={{ color: 'var(--text-muted)' }}>We couldn't find any courses for the <strong>{selectedBranch}</strong> branch.</p>
-                                    <button
-                                        className="btn-secondary"
-                                        style={{ marginTop: '1.5rem', textTransform: 'none' }}
-                                        onClick={() => setSelectedBranch('All')}
+                                    <p style={{ color: colors.textMuted }}>
+                                        We couldn't find {selectedCourseType} courses for the <strong>{selectedBranch}</strong> branch.
+                                    </p>
+                                    <Button
+                                        variant="secondary"
+                                        style={{ marginTop: spacing.lg, textTransform: 'none' }}
+                                        onClick={() => {
+                                            setSelectedBranch('All');
+                                            setSelectedCourseType('all');
+                                        }}
                                     >
                                         View All Courses
-                                    </button>
-                                </div>
+                                    </Button>
+                                </Card>
                             )}
                             {loading && (
-                                <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem' }}>
+                                <Card style={{ gridColumn: '1/-1', textAlign: 'center', padding: spacing['4xl'] }}>
                                     <div className="loading-spinner"></div>
                                     <p>Loading course catalogue...</p>
-                                </div>
+                                </Card>
                             )}
                         </div>
+                        {!loading && filteredCourses.length > itemsPerPage && (
+                            <div style={{ marginTop: spacing.xl, display: 'flex', justifyContent: 'center' }}>
+                                <Pagination
+                                    current={currentPage}
+                                    total={totalPages}
+                                    onPageChange={setCurrentPage}
+                                    itemsPerPage={itemsPerPage}
+                                    totalItems={filteredCourses.length}
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
             </section>

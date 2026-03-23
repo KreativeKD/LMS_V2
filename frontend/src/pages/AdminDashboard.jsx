@@ -1,732 +1,486 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Book, Users, User, CheckSquare, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Users, Book, Trash2, Edit, X, Layout, User, Eye, CheckCircle, Settings, Calendar } from 'lucide-react';
-import { fetchCourses, createCourse, deleteCourse, addTeacher, fetchTeachers, deleteTeacher, updateCourse, fetchEnrolledStudents, fetchStudents, deleteStudent, fetchRegistrationRequests, approveRequest, fetchSettings, updateSettings, unfreezeStudent, freezeStudent, assignTeacher, fetchEnrollmentRequests, approveEnrollment } from '../api/api';
+import { spacing, colors, typography } from '../theme';
+import { Button } from '../components/Button';
+import { PageLayout } from '../components/PageLayout';
+import { AdminCoursesTab } from '../components/AdminCoursesTab';
+import { AdminTeachersTab } from '../components/AdminTeachersTab';
+import { AdminStudentsTab } from '../components/AdminStudentsTab';
+import { AdminRequestsTab } from '../components/AdminRequestsTab';
+import { AdminSettingsTab } from '../components/AdminSettingsTab';
+import {
+  fetchCourses,
+  fetchTeachers,
+  fetchStudents,
+  fetchRegistrationRequests,
+  fetchSettings,
+  approveRequest
+} from '../api/api';
+import { handleApiError, handleSuccess } from '../utils/toast';
+
+const TABS = {
+  courses: 'courses',
+  teachers: 'teachers',
+  students: 'students',
+  requests: 'requests',
+  settings: 'settings',
+};
 
 const AdminDashboard = () => {
-    const navigate = useNavigate();
-    const [courses, setCourses] = useState([]);
-    const [teachers, setTeachers] = useState([]);
-    const [students, setStudents] = useState([]);
-    const [view, setView] = useState('courses'); // 'courses', 'teachers', 'students', 'requests', 'settings'
-    const [showModal, setShowModal] = useState(false);
-    const [modalType, setModalType] = useState('course'); // 'course' or 'teacher'
+  const [activeTab, setActiveTab] = useState(TABS.courses);
+  const [loading, setLoading] = useState(true);
+  const [viewportWidth, setViewportWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
 
-    // Form States
-    const [courseForm, setCourseForm] = useState({ title: '', description: '' });
-    const [teacherForm, setTeacherForm] = useState({ name: '', password: '' });
-    const [loading, setLoading] = useState(false);
-    const [editingCourse, setEditingCourse] = useState(null);
-    const [showStudentsModal, setShowStudentsModal] = useState(false);
-    const [enrolledStudents, setEnrolledStudents] = useState([]);
-    const [showCourseRequestsModal, setShowCourseRequestsModal] = useState(false);
-    const [courseRequests, setCourseRequests] = useState([]);
-    const [showAssignTeacherModal, setShowAssignTeacherModal] = useState(false);
-    const [selectedTeacherId, setSelectedTeacherId] = useState('');
+  const [courses, setCourses] = useState([]);
+  const [teachers, setTeachers] = useState([]);
+  const [students, setStudents] = useState([]);
+  const [requests, setRequests] = useState([]);
+  const [semesterDate, setSemesterDate] = useState('');
+  const [commandQuery, setCommandQuery] = useState('');
+  const [isCommandOpen, setIsCommandOpen] = useState(false);
+  const [activeResultIndex, setActiveResultIndex] = useState(0);
 
-    // New States
-    const [requests, setRequests] = useState([]);
-    const [semesterDate, setSemesterDate] = useState('');
+  const commandRef = useRef(null);
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        loadCourses();
-        loadTeachers();
-        loadStudents();
-        loadRequests();
-        loadSettings();
-    }, []);
+  const [errors, setErrors] = useState({
+    courses: '',
+    teachers: '',
+    students: '',
+    requests: '',
+    settings: ''
+  });
 
-    const loadRequests = async () => {
-        try {
-            const data = await fetchRegistrationRequests();
-            setRequests(data || []);
-        } catch (err) {
-            console.error(err);
+  const loadCourses = async () => {
+    try {
+      const data = await fetchCourses();
+      setCourses(data?.courses || data || []);
+      setErrors((prev) => ({ ...prev, courses: '' }));
+    } catch (error) {
+      setErrors((prev) => ({ ...prev, courses: error?.message || 'Failed to load courses' }));
+    }
+  };
+
+  const loadTeachers = async () => {
+    try {
+      const data = await fetchTeachers();
+      setTeachers(data || []);
+      setErrors((prev) => ({ ...prev, teachers: '' }));
+    } catch (error) {
+      setErrors((prev) => ({ ...prev, teachers: error?.message || 'Failed to load teachers' }));
+    }
+  };
+
+  const loadStudents = async () => {
+    try {
+      const data = await fetchStudents();
+      setStudents(data || []);
+      setErrors((prev) => ({ ...prev, students: '' }));
+    } catch (error) {
+      setErrors((prev) => ({ ...prev, students: error?.message || 'Failed to load students' }));
+    }
+  };
+
+  const loadRequests = async () => {
+    try {
+      const data = await fetchRegistrationRequests();
+      setRequests(data || []);
+      setErrors((prev) => ({ ...prev, requests: '' }));
+    } catch (error) {
+      setErrors((prev) => ({ ...prev, requests: error?.message || 'Failed to load registration requests' }));
+    }
+  };
+
+  const loadSettings = async () => {
+    try {
+      const data = await fetchSettings();
+      setSemesterDate(data?.semesterCompletionDate || '');
+      setErrors((prev) => ({ ...prev, settings: '' }));
+    } catch (error) {
+      setErrors((prev) => ({ ...prev, settings: error?.message || 'Failed to load settings' }));
+    }
+  };
+
+  useEffect(() => {
+    const run = async () => {
+      setLoading(true);
+      await Promise.all([
+        loadCourses(),
+        loadTeachers(),
+        loadStudents(),
+        loadRequests(),
+        loadSettings(),
+      ]);
+      setLoading(false);
+    };
+
+    run();
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (commandRef.current && !commandRef.current.contains(event.target)) {
+        setIsCommandOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
+
+  const isMobile = viewportWidth < 768;
+
+  const tabs = useMemo(
+    () => [
+      { key: TABS.courses, label: 'Courses', icon: Book },
+      { key: TABS.teachers, label: 'Teachers', icon: Users },
+      { key: TABS.students, label: 'Students', icon: User },
+      { key: TABS.requests, label: 'Requests', icon: CheckSquare },
+      { key: TABS.settings, label: 'Settings', icon: Settings },
+    ],
+    []
+  );
+
+  const commandResults = useMemo(() => {
+    const q = commandQuery.trim().toLowerCase();
+    if (!q) return [];
+
+    const courseResults = (courses || [])
+      .filter((course) => (course.title || '').toLowerCase().includes(q))
+      .slice(0, 4)
+      .map((course) => ({
+        id: `course-${course._id}`,
+        type: 'course',
+        label: course.title,
+        subtitle: 'Open course editor',
+        onSelect: () => navigate(`/course/edit/${course._id}`)
+      }));
+
+    const studentResults = (students || [])
+      .filter((student) => (student.username || '').toLowerCase().includes(q))
+      .slice(0, 4)
+      .map((student) => ({
+        id: `student-${student._id}`,
+        type: 'student',
+        label: student.username,
+        subtitle: 'Jump to Students tab',
+        onSelect: () => setActiveTab(TABS.students)
+      }));
+
+    const teacherResults = (teachers || [])
+      .filter((teacher) => (teacher.username || '').toLowerCase().includes(q))
+      .slice(0, 4)
+      .map((teacher) => ({
+        id: `teacher-${teacher._id}`,
+        type: 'teacher',
+        label: teacher.username,
+        subtitle: 'Jump to Teachers tab',
+        onSelect: () => setActiveTab(TABS.teachers)
+      }));
+
+    const requestResults = (requests || [])
+      .filter((request) => `${request.firstName || ''} ${request.lastName || ''}`.toLowerCase().includes(q))
+      .slice(0, 4)
+      .map((request) => ({
+        id: `request-${request._id}`,
+        type: 'request',
+        label: `${request.firstName} ${request.lastName}`,
+        subtitle: 'Approve request from search',
+        onSelect: async () => {
+          try {
+            await approveRequest(request._id);
+            handleSuccess('Registration request approved');
+            await loadRequests();
+            setActiveTab(TABS.requests);
+          } catch (error) {
+            handleApiError(error);
+          }
         }
-    };
+      }));
 
-    const loadSettings = async () => {
-        try {
-            const data = await fetchSettings();
-            if (data.semesterCompletionDate) {
-                // Format for input type="date"
-                setSemesterDate(new Date(data.semesterCompletionDate).toISOString().split('T')[0]);
-            }
-        } catch (err) {
-            console.error(err);
-        }
-    };
+    return [...courseResults, ...studentResults, ...teacherResults, ...requestResults].slice(0, 8);
+  }, [commandQuery, courses, students, teachers, requests, navigate]);
 
-    const loadCourses = async () => {
-        try {
-            const data = await fetchCourses();
-            setCourses(data || []);
-        } catch (err) {
-            console.error(err);
-        }
-    };
+  const typeStyle = (type) => {
+    switch (type) {
+      case 'course':
+        return { bg: 'rgba(59,130,246,0.1)', color: '#1d4ed8', label: 'Course' };
+      case 'student':
+        return { bg: 'rgba(16,185,129,0.12)', color: '#047857', label: 'Student' };
+      case 'teacher':
+        return { bg: 'rgba(139,92,246,0.12)', color: '#6d28d9', label: 'Teacher' };
+      case 'request':
+        return { bg: 'rgba(245,158,11,0.16)', color: '#92400e', label: 'Request' };
+      default:
+        return { bg: colors.surface, color: colors.textSecondary, label: 'Item' };
+    }
+  };
 
-    const loadTeachers = async () => {
-        try {
-            const data = await fetchTeachers();
-            setTeachers(data || []);
-        } catch (err) {
-            console.error(err);
-        }
-    };
+  const onCommandKeyDown = async (event) => {
+    if (!isCommandOpen && (event.key === 'ArrowDown' || event.key === 'Enter')) {
+      setIsCommandOpen(true);
+      return;
+    }
 
-    const loadStudents = async () => {
-        try {
-            const data = await fetchStudents();
-            setStudents(data || []);
-        } catch (err) {
-            console.error(err);
-        }
-    };
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      setActiveResultIndex((prev) => Math.min(prev + 1, Math.max(commandResults.length - 1, 0)));
+    }
 
-    const handleCreateCourse = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        try {
-            await createCourse(courseForm);
-            setCourseForm({ title: '', description: '' });
-            setShowModal(false);
-            loadCourses();
-        } catch (err) {
-            alert(err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      setActiveResultIndex((prev) => Math.max(prev - 1, 0));
+    }
 
-    const handleAddTeacher = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        try {
-            await addTeacher(teacherForm.name, teacherForm.password);
-            setTeacherForm({ name: '', password: '' });
-            setShowModal(false);
-            alert('Teacher added successfully!');
-            loadTeachers();
-        } catch (err) {
-            alert(err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
+    if (event.key === 'Escape') {
+      setIsCommandOpen(false);
+    }
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Delete this course?')) {
-            try {
-                await deleteCourse(id);
-                loadCourses();
-            } catch (err) {
-                alert(err.message);
-            }
-        }
-    };
+    if (event.key === 'Enter' && commandResults[activeResultIndex]) {
+      event.preventDefault();
+      const action = commandResults[activeResultIndex];
+      await action.onSelect();
+      setIsCommandOpen(false);
+      setCommandQuery('');
+    }
+  };
 
-    const handleDeleteTeacher = async (id) => {
-        if (window.confirm('Delete this teacher? They will no longer be able to log in.')) {
-            try {
-                await deleteTeacher(id);
-                loadTeachers();
-            } catch (err) {
-                alert(err.message);
-            }
-        }
-    };
+  const renderActiveTab = () => {
+    switch (activeTab) {
+      case TABS.courses:
+        return (
+          <AdminCoursesTab
+            courses={courses}
+            teachers={teachers}
+            onCoursesUpdate={loadCourses}
+            loading={loading}
+            error={errors.courses}
+            onRetry={loadCourses}
+          />
+        );
+      case TABS.teachers:
+        return (
+          <AdminTeachersTab
+            teachers={teachers}
+            courses={courses}
+            onTeachersUpdate={loadTeachers}
+            loading={loading}
+            error={errors.teachers}
+            onRetry={loadTeachers}
+          />
+        );
+      case TABS.students:
+        return (
+          <AdminStudentsTab
+            students={students}
+            semesterDate={semesterDate}
+            onStudentsUpdate={loadStudents}
+            loading={loading}
+            error={errors.students}
+            onRetry={loadStudents}
+          />
+        );
+      case TABS.requests:
+        return (
+          <AdminRequestsTab
+            requests={requests}
+            onRequestsUpdate={loadRequests}
+            loading={loading}
+            error={errors.requests}
+            onRetry={loadRequests}
+          />
+        );
+      case TABS.settings:
+        return <AdminSettingsTab loading={loading} />;
+      default:
+        return null;
+    }
+  };
 
-    const handleDeleteStudent = async (id) => {
-        if (window.confirm('Delete this student account? This action cannot be undone.')) {
-            try {
-                await deleteStudent(id);
-                loadStudents();
-            } catch (err) {
-                alert(err.message);
-            }
-        }
-    };
+  const summaryItems = [
+    { label: 'Courses', value: courses?.length || 0 },
+    { label: 'Teachers', value: teachers?.length || 0 },
+    { label: 'Students', value: students?.length || 0 },
+    { label: 'Requests', value: requests?.length || 0 }
+  ];
 
-    const handleApprove = async (id) => {
-        try {
-            await approveRequest(id);
-            loadRequests();
-            alert('Student approved!');
-        } catch (err) {
-            alert(err.message);
-        }
-    };
+  const tabBar = (
+    <div
+      style={{
+        display: 'flex',
+        gap: spacing.sm,
+        overflowX: 'auto',
+        flexWrap: 'nowrap',
+        paddingBottom: spacing.xs
+      }}
+    >
+      {tabs.map((tab) => {
+        const Icon = tab.icon;
+        const isActive = activeTab === tab.key;
 
-    const handleUpdateSettings = async (e) => {
-        e.preventDefault();
-        try {
-            await updateSettings({ semesterCompletionDate: semesterDate });
-            alert('Settings updated successfully');
-        } catch (err) {
-            alert(err.message);
-        }
-    };
+        return (
+          <Button
+            key={tab.key}
+            variant={isActive ? 'primary' : 'secondary'}
+            size={isMobile ? 'md' : 'sm'}
+            onClick={() => setActiveTab(tab.key)}
+            style={{
+              minWidth: isMobile ? 124 : 112,
+              justifyContent: 'center'
+            }}
+          >
+            <Icon size={16} />
+            {tab.label}
+          </Button>
+        );
+      })}
+    </div>
+  );
 
-    const handleUnfreeze = async (id) => {
-        if (window.confirm('Unfreeze this student account? They will be able to login even if the semester is over.')) {
-            try {
-                await unfreezeStudent(id);
-                loadStudents();
-                alert('Student unfrozen successfully');
-            } catch (err) {
-                alert(err.message);
-            }
-        }
-    };
+  return (
+    <PageLayout
+      title="Admin Dashboard"
+      header={
+        <div
+          style={{
+            marginTop: spacing.md,
+            padding: isMobile ? spacing.md : spacing.lg,
+            border: `1px solid ${colors.border}`,
+            borderRadius: 16,
+            background: 'linear-gradient(180deg, rgba(79,70,229,0.05), rgba(255,255,255,0.92))'
+          }}
+        >
+          <p style={{ ...typography.bodySmall, color: colors.textMuted, margin: 0 }}>
+            Manage courses, users, requests, and system settings.
+          </p>
 
-    const handleFreeze = async (id) => {
-        if (window.confirm('Freeze this student account? They will no longer be able to login.')) {
-            try {
-                await freezeStudent(id);
-                loadStudents();
-                alert('Student frozen successfully');
-            } catch (err) {
-                alert(err.message);
-            }
-        }
-    };
+          <div ref={commandRef} style={{ marginTop: spacing.md, position: 'relative' }}>
+            <input
+              value={commandQuery}
+              onChange={(event) => {
+                setCommandQuery(event.target.value);
+                setIsCommandOpen(true);
+                setActiveResultIndex(0);
+              }}
+              onFocus={() => setIsCommandOpen(true)}
+              onKeyDown={onCommandKeyDown}
+              placeholder="Quick find: student, teacher, course, request..."
+              style={{
+                width: '100%',
+                border: `1px solid ${colors.border}`,
+                borderRadius: 12,
+                padding: '0.7rem 0.9rem',
+                background: '#fff',
+                fontSize: isMobile ? '0.9rem' : '0.95rem'
+              }}
+            />
 
-    const handleEditCourse = (course) => {
-        setEditingCourse(course);
-        setCourseForm({ title: course.title, description: course.description });
-        setModalType('course');
-        setShowModal(true);
-    };
+            {isCommandOpen && commandQuery.trim() && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 8px)',
+                  left: 0,
+                  width: '100%',
+                  maxHeight: 320,
+                  overflowY: 'auto',
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: 12,
+                  background: '#fff',
+                  boxShadow: '0 12px 30px rgba(0,0,0,0.12)',
+                  zIndex: 20
+                }}
+              >
+                {commandResults.length === 0 && (
+                  <div style={{ padding: spacing.md, color: colors.textMuted, ...typography.small }}>
+                    No match found. Try a different keyword.
+                  </div>
+                )}
 
-    const handleUpdateCourse = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        try {
-            await updateCourse(editingCourse._id, courseForm);
-            setCourseForm({ title: '', description: '' });
-            setEditingCourse(null);
-            setShowModal(false);
-            loadCourses();
-        } catch (err) {
-            alert(err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleViewStudents = async (courseId) => {
-        try {
-            const students = await fetchEnrolledStudents(courseId);
-            setEnrolledStudents(students);
-            setShowStudentsModal(true);
-        } catch (err) {
-            alert(err.message);
-        }
-    };
-
-    const handleViewCourseRequests = async (course) => {
-        try {
-            setEditingCourse(course);
-            const reqs = await fetchEnrollmentRequests(course._id);
-            setCourseRequests(reqs);
-            setShowCourseRequestsModal(true);
-        } catch (err) {
-            alert(err.message);
-        }
-    };
-
-    const handleApproveEnrollment = async (studentId, action) => {
-        try {
-            await approveEnrollment(editingCourse._id, studentId, action);
-            const reqs = await fetchEnrollmentRequests(editingCourse._id);
-            setCourseRequests(reqs);
-            loadCourses();
-        } catch (err) {
-            alert(err.message);
-        }
-    };
-
-    const handleOpenAssignTeacher = (course) => {
-        setEditingCourse(course);
-        setShowAssignTeacherModal(true);
-    };
-
-    const handleAssignTeacher = async (e) => {
-        e.preventDefault();
-        try {
-            await assignTeacher(editingCourse._id, selectedTeacherId);
-            alert('Teacher assigned successfully');
-            setShowAssignTeacherModal(false);
-            loadCourses();
-        } catch (err) {
-            alert(err.message);
-        }
-    };
-
-    return (
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                <h1 className="gradient-text">Admin Control Center</h1>
-                <div style={{ display: 'flex', gap: '0.8rem' }}>
+                {commandResults.map((result, index) => {
+                  const tag = typeStyle(result.type);
+                  const isActive = index === activeResultIndex;
+                  return (
                     <button
-                        className={view === 'courses' ? 'btn-primary' : 'btn-secondary'}
-                        onClick={() => setView('courses')}
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                      key={result.id}
+                      type="button"
+                      onMouseEnter={() => setActiveResultIndex(index)}
+                      onClick={async () => {
+                        await result.onSelect();
+                        setCommandQuery('');
+                        setIsCommandOpen(false);
+                      }}
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        textAlign: 'left',
+                        padding: `${spacing.sm} ${spacing.md}`,
+                        borderRadius: 0,
+                        borderBottom: `1px solid ${colors.borderLight}`,
+                        background: isActive ? 'rgba(79,70,229,0.06)' : '#fff',
+                        boxShadow: 'none',
+                        textTransform: 'none',
+                        minHeight: 54
+                      }}
                     >
-                        <Book size={18} /> Courses
+                      <div>
+                        <div style={{ ...typography.label, color: colors.text }}>{result.label}</div>
+                        <div style={{ ...typography.xsmall, color: colors.textMuted }}>{result.subtitle}</div>
+                      </div>
+                      <span
+                        style={{
+                          ...typography.xsmall,
+                          padding: `${spacing.xs} ${spacing.sm}`,
+                          borderRadius: 999,
+                          background: tag.bg,
+                          color: tag.color,
+                          fontWeight: 700
+                        }}
+                      >
+                        {tag.label}
+                      </span>
                     </button>
-                    <button
-                        className={view === 'teachers' ? 'btn-primary' : 'btn-secondary'}
-                        onClick={() => setView('teachers')}
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                    >
-                        <Users size={18} /> Teachers
-                    </button>
-                    <button
-                        className={view === 'students' ? 'btn-primary' : 'btn-secondary'}
-                        onClick={() => setView('students')}
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                    >
-                        <Users size={18} /> Students
-                    </button>
-                    <button
-                        className={view === 'requests' ? 'btn-primary' : 'btn-secondary'}
-                        onClick={() => setView('requests')}
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', position: 'relative' }}
-                    >
-                        <User size={18} /> Requests
-                        {requests.length > 0 && (
-                            <span style={{ position: 'absolute', top: -5, right: -5, background: 'red', color: 'white', fontSize: '0.7rem', borderRadius: '50%', padding: '2px 6px' }}>
-                                {requests.length}
-                            </span>
-                        )}
-                    </button>
-                    <button
-                        className={view === 'settings' ? 'btn-primary' : 'btn-secondary'}
-                        onClick={() => setView('settings')}
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                    >
-                        <Settings size={18} /> Settings
-                    </button>
-                    {view !== 'students' && (
-                        <button
-                            className="btn-accent"
-                            onClick={() => {
-                                setModalType(view === 'courses' ? 'course' : 'teacher');
-                                setShowModal(true);
-                            }}
-                            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                        >
-                            <Plus size={18} /> {view === 'courses' ? 'Add Course' : 'Add Teacher'}
-                        </button>
-                    )}
-                </div>
-            </header>
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
-            {view === 'courses' ? (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
-                    {courses.map(course => (
-                        <div key={course._id} className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                            <div>
-                                <h3 style={{ marginBottom: '0.5rem', color: 'var(--text-accent)' }}>{course.title}</h3>
-                                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1rem' }}>
-                                    {course.description}
-                                </p>
-                                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1rem', background: 'var(--glass)', padding: '0.5rem', borderRadius: '4px' }}>
-                                    <strong>Teachers: </strong>
-                                    {[
-                                        course.instructor?.username?.split('@')[0],
-                                        ...(course.assignedTeachers?.map(t => t.username?.split('@')[0]) || [])
-                                    ].filter(Boolean).join(', ')}
-                                </div>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', flexWrap: 'wrap' }}>
-                                <button
-                                    onClick={() => handleEditCourse(course)}
-                                    title="Edit Course Details"
-                                    style={{ background: 'var(--glass)', color: 'var(--text-accent)', padding: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}
-                                >
-                                    <Edit size={16} /> Edit
-                                </button>
-                                <button
-                                    onClick={() => navigate(`/course/read/${course._id}`)}
-                                    title="View Content"
-                                    style={{ background: 'var(--glass)', color: 'var(--text-main)', padding: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}
-                                >
-                                    <Eye size={16} /> Read
-                                </button>
-                                <button
-                                    onClick={() => handleViewStudents(course._id)}
-                                    title="View Students"
-                                    style={{ background: 'var(--glass)', color: 'var(--text-main)', padding: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}
-                                >
-                                    <Users size={16} /> Students
-                                </button>
-                                <button
-                                    onClick={() => navigate(`/course/edit/${course._id}`)}
-                                    title="Edit Curriculum"
-                                    style={{ background: 'var(--glass)', color: 'var(--text-accent)', padding: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}
-                                >
-                                    <Layout size={16} /> Edit Curriculum
-                                </button>
-                                <button
-                                    onClick={() => handleDelete(course._id)}
-                                    style={{ background: 'var(--glass)', color: '#ff4d4d', padding: '8px' }}
-                                >
-                                    <Trash2 size={16} />
-                                </button>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '0.5rem' }}>
-                                <button
-                                    onClick={() => handleOpenAssignTeacher(course)}
-                                    style={{ background: 'var(--glass)', color: 'var(--text-accent)', padding: '8px', fontSize: '0.8rem' }}
-                                >
-                                    Assign Teacher
-                                </button>
-                                <button
-                                    onClick={() => handleViewCourseRequests(course)}
-                                    style={{ background: 'var(--glass)', color: 'var(--text-accent)', padding: '8px', fontSize: '0.8rem' }}
-                                >
-                                    Enrollments
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-                    {courses.length === 0 && <p className="read-the-docs">No courses found. Start by creating one!</p>}
-                </div>
-            ) : view === 'teachers' ? (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
-                    {teachers.map(teacher => (
-                        <div key={teacher._id} className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', justifyContent: 'space-between' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                <div style={{ background: 'var(--glass)', padding: '1rem', borderRadius: '50%' }}>
-                                    <User size={24} color="var(--primary)" />
-                                </div>
-                                <div>
-                                    <h3 style={{ fontSize: '1.1rem' }}>{teacher.username?.split('@')[0] || 'Unknown'}</h3>
-                                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{teacher.username}</p>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => handleDeleteTeacher(teacher._id)}
-                                style={{ background: 'transparent', color: '#ff4d4d', padding: '8px' }}
-                                title="Delete teacher"
-                            >
-                                <Trash2 size={18} />
-                            </button>
-                        </div>
-                    ))}
-                    {teachers.length === 0 && (
-                        <div className="card" style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem' }}>
-                            <Users size={48} color="var(--secondary)" style={{ marginBottom: '1rem' }} />
-                            <h2>No Teachers Registered</h2>
-                            <p style={{ color: 'var(--text-muted)', marginTop: '1rem' }}>
-                                Use the "Add Teacher" button above to register your faculty.
-                            </p>
-                        </div>
-                    )}
-                </div>
-            ) : view === 'requests' ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <h2 className="gradient-text">Pending Registration Requests</h2>
-                    {requests.length === 0 ? (
-                        <p style={{ color: 'var(--text-muted)' }}>No pending requests.</p>
-                    ) : (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
-                            {requests.map(req => (
-                                <div key={req._id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div>
-                                        <h3 style={{ fontSize: '1.1rem' }}>{req.firstName} {req.lastName}</h3>
-                                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Requested: {new Date(req.createdAt).toLocaleDateString()}</p>
-                                    </div>
-                                    <button
-                                        onClick={() => handleApprove(req._id)}
-                                        style={{ background: '#22c55e', color: 'white', padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                                    >
-                                        <CheckCircle size={16} /> Approve
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            ) : view === 'settings' ? (
-                <div className="card" style={{ maxWidth: '600px', margin: '0 auto' }}>
-                    <h2 className="gradient-text" style={{ marginBottom: '1.5rem' }}>System Settings</h2>
-                    <form onSubmit={handleUpdateSettings}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            <div>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Semester Completion Date</label>
-                                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                                    After this date, student logins will be automatically frozen.
-                                </p>
-                                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                                    <input
-                                        type="date"
-                                        value={semesterDate}
-                                        onChange={e => setSemesterDate(e.target.value)}
-                                        style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--background)', color: 'black' }}
-                                    />
-                                    <button className="btn-primary" style={{ padding: '0.8rem 1.5rem' }}>
-                                        Save Date
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1.5rem' }}>
-                    {students.sort((a, b) => (a.isFrozen === b.isFrozen) ? 0 : a.isFrozen ? -1 : 1).map(student => {
-                        // Calculate Effective Freeze State
-                        const isManualFrozen = student.isFrozen;
-                        let isDateFrozen = false;
-                        if (semesterDate && !student.unfrozenByAdmin) {
-                            const completionDate = new Date(semesterDate);
-                            isDateFrozen = new Date() > completionDate;
-                        }
-                        const isEffectiveFrozen = isManualFrozen || isDateFrozen;
-
-                        return (
-                            <div key={student._id} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                    <div style={{ background: 'var(--glass)', padding: '1rem', borderRadius: '50%' }}>
-                                        <User size={24} color="var(--accent)" />
-                                    </div>
-                                    <div>
-                                        <h3 style={{ fontSize: '1.1rem' }}>{student.username?.split('@')[0] || 'Student'}</h3>
-                                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{student.username}</p>
-
-                                        {isEffectiveFrozen && (
-                                            <span style={{ color: '#ef4444', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                                                [FROZEN {isManualFrozen ? '(ADMIN)' : '(DATE)'}]
-                                            </span>
-                                        )}
-                                        {student.unfrozenByAdmin && !isManualFrozen && (
-                                            <span style={{ color: 'var(--text-accent)', fontSize: '0.8rem', fontWeight: 'bold', marginLeft: '0.5rem' }}>
-                                                [Active (Immune)]
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                                    {isEffectiveFrozen ? (
-                                        <button
-                                            onClick={() => handleUnfreeze(student._id)}
-                                            style={{ background: 'var(--glass)', color: '#1d4ed8', padding: '8px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}
-                                            title="Unfreeze Account"
-                                        >
-                                            Unfreeze
-                                        </button>
-                                    ) : (
-                                        <button
-                                            onClick={() => handleFreeze(student._id)}
-                                            style={{ background: 'var(--glass)', color: '#b45309', padding: '8px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}
-                                            title="Freeze Account"
-                                        >
-                                            Freeze
-                                        </button>
-                                    )}
-
-                                    <button
-                                        onClick={() => handleDeleteStudent(student._id)}
-                                        style={{ background: 'var(--glass)', color: '#ff4d4d', padding: '8px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}
-                                        title="Delete student"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
-                                </div>
-                            </div>
-                        )
-                    })}
-                    {students.length === 0 && (
-                        <div className="card" style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem' }}>
-                            <Users size={48} color="var(--accent)" style={{ marginBottom: '1rem' }} />
-                            <h2>No Students Registered</h2>
-                            <p style={{ color: 'var(--text-muted)', marginTop: '1rem' }}>
-                                Students can register themselves or you can add them.
-                            </p>
-                        </div>
-                    )}
-                </div>
-            )
-            }
-
-
-            {
-                showModal && (
-                    <div className="modal-overlay">
-                        <div className="modal-content animate-fade-in" style={{ maxWidth: '450px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
-                                <h2 className="gradient-text">
-                                    {modalType === 'course' ? (editingCourse ? 'Edit Course' : 'Create New Course') : 'Add Teacher Account'}
-                                </h2>
-                                <button onClick={() => { setShowModal(false); setEditingCourse(null); setCourseForm({ title: '', description: '' }); }} style={{ background: 'transparent', color: 'white' }}>
-                                    <X size={24} />
-                                </button>
-                            </div>
-
-                            <form onSubmit={modalType === 'course' ? (editingCourse ? handleUpdateCourse : handleCreateCourse) : handleAddTeacher} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                                {modalType === 'course' ? (
-                                    <>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                            <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Course Title</label>
-                                            <input
-                                                placeholder="e.g. Modern Web Development"
-                                                value={courseForm.title}
-                                                onChange={e => setCourseForm({ ...courseForm, title: e.target.value })}
-                                                required
-                                            />
-                                        </div>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                            <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Description</label>
-                                            <textarea
-                                                placeholder="What will students learn?"
-                                                style={{ background: '#f9fafb', color: 'var(--text-main)', border: '1px solid var(--border)', borderRadius: '10px', padding: '12px', minHeight: '120px', outline: 'none' }}
-                                                value={courseForm.description}
-                                                onChange={e => setCourseForm({ ...courseForm, description: e.target.value })}
-                                                required
-                                            />
-                                        </div>
-                                    </>
-                                ) : (
-                                    <>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                            <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Full Name</label>
-                                            <input
-                                                placeholder="e.g. Sarah Johnson"
-                                                value={teacherForm.name}
-                                                onChange={e => setTeacherForm({ ...teacherForm, name: e.target.value })}
-                                                required
-                                            />
-                                        </div>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                            <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Password</label>
-                                            <input
-                                                type="password"
-                                                placeholder="Set a secure password"
-                                                value={teacherForm.password}
-                                                onChange={e => setTeacherForm({ ...teacherForm, password: e.target.value })}
-                                                required
-                                            />
-                                            <p style={{ fontSize: '0.8rem', color: 'var(--text-accent)', marginTop: '0.5rem' }}>
-                                                Teacher can login using: <strong>{teacherForm.name || 'name'}@teacher</strong>
-                                            </p>
-                                        </div>
-                                    </>
-                                )}
-                                <button className="btn-primary" style={{ padding: '1rem', marginTop: '1rem' }} disabled={loading}>
-                                    {loading ? 'Processing...' : (modalType === 'course' && editingCourse ? 'Update Course' : 'Save Changes')}
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                )
-            }
-            {
-                showStudentsModal && (
-                    <div className="modal-overlay">
-                        <div className="modal-content animate-fade-in" style={{ maxWidth: '500px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-                                <h2 className="gradient-text">Enrolled Students</h2>
-                                <button onClick={() => setShowStudentsModal(false)} style={{ background: 'transparent', color: 'var(--text-main)' }}>
-                                    <X size={24} />
-                                </button>
-                            </div>
-
-                            {enrolledStudents.length > 0 ? (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                    {enrolledStudents.map(student => (
-                                        <div key={student._id} style={{
-                                            padding: '1rem',
-                                            background: 'var(--glass)',
-                                            borderRadius: '8px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '1rem'
-                                        }}>
-                                            <div style={{ background: 'var(--glass)', padding: '0.8rem', borderRadius: '50%' }}>
-                                                <Users size={20} color="var(--primary)" />
-                                            </div>
-                                            <div>
-                                                <h4 style={{ margin: 0 }}>{student.username.split('@')[0]}</h4>
-                                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{student.username}</span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
-                                    <Users size={48} style={{ marginBottom: '1rem', opacity: 0.5 }} />
-                                    <p>No students enrolled yet.</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )
-            }
-            {
-                showCourseRequestsModal && (
-                    <div className="modal-overlay">
-                        <div className="modal-content animate-fade-in" style={{ maxWidth: '600px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-                                <h2 className="gradient-text">Course Enrollment Requests</h2>
-                                <button onClick={() => setShowEnrollmentModal(false)} style={{ background: 'transparent', color: 'var(--text-main)' }}>
-                                    <X size={24} />
-                                </button>
-                            </div>
-                            {courseRequests.length > 0 ? (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                    {courseRequests.map(student => (
-                                        <div key={student._id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <span>{student.username}</span>
-                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                                <button onClick={() => handleApproveEnrollment(student._id, 'approve')} className="btn-primary" style={{ padding: '0.5rem' }}>Approve</button>
-                                                <button onClick={() => handleApproveEnrollment(student._id, 'reject')} className="btn-secondary" style={{ padding: '0.5rem', color: 'red', borderColor: 'red' }}>Reject</button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : <p>No pending requests.</p>}
-                        </div>
-                    </div>
-                )
-            }
-
-            {
-                showAssignTeacherModal && (
-                    <div className="modal-overlay">
-                        <div className="modal-content animate-fade-in" style={{ maxWidth: '400px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-                                <h2 className="gradient-text">Assign Teacher</h2>
-                                <button onClick={() => setShowAssignModal(false)} style={{ background: 'transparent', color: 'var(--text-main)' }}>
-                                    <X size={24} />
-                                </button>
-                            </div>
-                            <form onSubmit={handleAssignTeacher}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                    <label>Select Teacher</label>
-                                    <select
-                                        value={selectedTeacherId}
-                                        onChange={e => setSelectedTeacherId(e.target.value)}
-                                        style={{ padding: '0.8rem', borderRadius: '8px', background: '#f9fafb', border: '1px solid var(--border)', color: 'var(--text-main)' }}
-                                        required
-                                    >
-                                        <option value="">-- Select --</option>
-                                        {teachers.map(t => (
-                                            <option key={t._id} value={t._id}>{t.username}</option>
-                                        ))}
-                                    </select>
-                                    <button className="btn-primary">Assign</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                )
-            }
-        </div >
-    );
+          <div style={{ display: 'flex', gap: spacing.sm, flexWrap: 'wrap', marginTop: spacing.sm }}>
+            {summaryItems.map((item) => (
+              <div
+                key={item.label}
+                style={{
+                  padding: `${spacing.xs} ${spacing.sm}`,
+                  borderRadius: 999,
+                  border: `1px solid ${colors.border}`,
+                  background: '#fff',
+                  fontSize: typography.xsmall.fontSize,
+                  color: colors.textSecondary,
+                  fontWeight: 600
+                }}
+              >
+                {item.label}: <span style={{ color: colors.text }}>{item.value}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop: spacing.md }}>{tabBar}</div>
+        </div>
+      }
+      maxWidth="1400px"
+    >
+      {renderActiveTab()}
+    </PageLayout>
+  );
 };
 
 export default AdminDashboard;

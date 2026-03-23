@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const logger = require('./logger');
 
 const seedAdmin = async () => {
     try {
@@ -15,14 +16,14 @@ const seedAdmin = async () => {
                 role
             });
             await admin.save();
-            console.log(`Default Admin created: ${username} / ${password}`);
+            logger.info('Default Admin created', { username, password });
         } else {
-            console.log(`Admin account ${username} already exists.`);
+            logger.info('Admin account already exists', { username });
             // Optional: You could update the password here if you want to ensure it matches
             // but usually it's better to log that it exists.
         }
     } catch (e) {
-        console.error('Error seeding admin:', e);
+        logger.error('Error seeding admin', { error: e.message, stack: e.stack });
     }
 };
 

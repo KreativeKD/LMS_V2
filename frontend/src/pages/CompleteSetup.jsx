@@ -1,128 +1,114 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { checkStatus, completeRegistration } from '../api/api';
-import { useAuth } from '../context/AuthContext';
+import { checkStatus } from '../api/api';
+import { validateName } from '../utils/authFormValidation';
+import { Button } from '../components/Button';
+import { Input } from '../components/Input';
+import { Card } from '../components/Card';
+import { borderRadius, colors, spacing, typography } from '../theme';
 
 const CompleteSetup = () => {
-    const [step, setStep] = useState(1); // 1: Check, 2: Setup
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const { login } = useAuth();
-    const navigate = useNavigate();
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({ firstName: '', lastName: '' });
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
-    const handleCheck = async (e) => {
-        e.preventDefault();
-        setError('');
-        try {
-            const data = await checkStatus(firstName, lastName);
-            if (data.status === 'approved') {
-                setStep(2);
-                setUsername(firstName.toLowerCase() + lastName.toLowerCase()); // Default suggestion
-            } else if (data.status === 'pending') {
-                setError('Your request is still pending admin approval.');
-            } else if (data.status === 'completed') {
-                setError('Account already set up. Please login.');
-            } else {
-                setError(`Request status: ${data.status}`);
-            }
-        } catch (err) {
-            setError(err.message);
-        }
+  const validateForm = () => {
+    const nextErrors = {
+      firstName: validateName(firstName, 'First name'),
+      lastName: validateName(lastName, 'Last name')
     };
+    setFieldErrors(nextErrors);
+    return !nextErrors.firstName && !nextErrors.lastName;
+  };
 
-    const handleSetup = async (e) => {
-        e.preventDefault();
-        setError('');
-        try {
-            // username passed here is just the prefix
-            const data = await completeRegistration({ firstName, lastName, username, password });
-            login(data.user, data.token);
-            navigate('/student');
-        } catch (err) {
-            setError(err.message);
-        }
-    };
+  const handleCheck = async (event) => {
+    event.preventDefault();
+    setError('');
+    if (!validateForm()) return;
 
-    const inputStyle = {
-        width: '100%', padding: '0.8rem', borderRadius: '6px', border: '1px solid var(--border)',
-        background: '#f9fafb', color: 'var(--text-main)', outline: 'none'
-    };
+    setIsSubmitting(true);
+    try {
+      const data = await checkStatus(firstName.trim(), lastName.trim());
+      if (data.status === 'approved') {
+        navigate('/student-registration', {
+          state: { firstName: firstName.trim(), lastName: lastName.trim() }
+        });
+      } else if (data.status === 'pending') {
+        setError('Your request is still pending admin approval.');
+      } else if (data.status === 'completed') {
+        setError('Account already set up. Please login.');
+      } else {
+        setError(`Request status: ${data.status}`);
+      }
+    } catch (err) {
+      setError(err.message || 'Unable to verify status');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-    return (
-        <div style={{
-            display: 'flex', minHeight: '100vh', justifyContent: 'center', alignItems: 'center',
-            background: 'var(--background)', color: 'var(--text-main)'
-        }}>
-            <div style={{
-                background: 'white', padding: '2rem', borderRadius: '12px',
-                width: '100%', maxWidth: '400px', border: '1px solid var(--border)',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.05)'
-            }}>
-                <h2 style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
-                    {step === 1 ? 'Activate Account' : 'Finalize Setup'}
-                </h2>
-
-                {step === 1 && (
-                    <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-                        Enter your name to verify your admin approval.
-                    </p>
-                )}
-
-                {step === 1 ? (
-                    <form onSubmit={handleCheck} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>First Name</label>
-                            <input style={inputStyle} value={firstName} onChange={e => setFirstName(e.target.value)} required placeholder="Name used in request" />
-                        </div>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Last Name</label>
-                            <input style={inputStyle} value={lastName} onChange={e => setLastName(e.target.value)} required placeholder="Name used in request" />
-                        </div>
-
-                        {error && <div style={{ color: '#ef4444', background: 'rgba(239, 68, 68, 0.1)', padding: '0.5rem', borderRadius: '6px' }}>{error}</div>}
-
-                        <button type="submit" style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '0.9rem', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', marginTop: '0.5rem' }}>
-                            Verify & Continue
-                        </button>
-
-                        <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-                            <span style={{ color: 'var(--text-accent)', fontSize: '0.9rem', cursor: 'pointer' }} onClick={() => navigate('/request-access')}>
-                                I haven't requested yet
-                            </span>
-                            <span style={{ margin: '0 0.5rem', color: 'var(--border)' }}>|</span>
-                            <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem', cursor: 'pointer' }} onClick={() => navigate('/login')}>
-                                Login
-                            </span>
-                        </div>
-                    </form>
-                ) : (
-                    <form onSubmit={handleSetup} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '1rem', borderRadius: '8px', color: 'var(--text-accent)', fontSize: '0.9rem', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-                            <strong>Success!</strong> You are approved. Please create your credentials.
-                        </div>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Choose Username</label>
-                            <input style={inputStyle} value={username} onChange={e => setUsername(e.target.value)} required />
-                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>Your login will be: <strong>{username}@student</strong></div>
-                        </div>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Create Password</label>
-                            <input style={inputStyle} type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="New password" />
-                        </div>
-
-                        {error && <div style={{ color: '#ef4444', background: 'rgba(239, 68, 68, 0.1)', padding: '0.5rem', borderRadius: '6px' }}>{error}</div>}
-
-                        <button type="submit" style={{ background: 'var(--secondary)', color: 'white', border: 'none', padding: '0.9rem', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', marginTop: '0.5rem' }}>
-                            Complete & Login
-                        </button>
-                    </form>
-                )}
-            </div>
+  return (
+    <div style={{ display: 'flex', minHeight: '100vh', justifyContent: 'center', alignItems: 'center', background: colors.background, color: colors.text, padding: spacing.xl }}>
+      <div style={{ width: '100%', maxWidth: '460px' }}>
+        <div style={{ textAlign: 'center', marginBottom: spacing.lg }}>
+          <h2 style={{ ...typography.h2, marginBottom: spacing.sm }}>Activate Account</h2>
+          <p style={{ ...typography.bodySmall, color: colors.textMuted, margin: 0 }}>
+            Enter your requested name to verify approval.
+          </p>
         </div>
-    );
+
+        <Card style={{ padding: spacing.xl }}>
+          <form onSubmit={handleCheck} style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+            <Input
+              label="First Name"
+              value={firstName}
+              onChange={(event) => {
+                setFirstName(event.target.value);
+                if (fieldErrors.firstName) setFieldErrors((prev) => ({ ...prev, firstName: '' }));
+              }}
+              error={fieldErrors.firstName}
+              placeholder="Name used in request"
+              fullWidth
+            />
+            <Input
+              label="Last Name"
+              value={lastName}
+              onChange={(event) => {
+                setLastName(event.target.value);
+                if (fieldErrors.lastName) setFieldErrors((prev) => ({ ...prev, lastName: '' }));
+              }}
+              error={fieldErrors.lastName}
+              placeholder="Surname used in request"
+              fullWidth
+            />
+
+            {error && (
+              <div style={{ color: colors.danger, background: 'rgba(239, 68, 68, 0.1)', padding: spacing.sm, borderRadius: borderRadius.sm, ...typography.small }}>
+                {error}
+              </div>
+            )}
+
+            <Button type="submit" loading={isSubmitting} fullWidth>
+              Verify & Continue
+            </Button>
+
+            <div style={{ textAlign: 'center', marginTop: spacing.sm }}>
+              <span style={{ color: colors.accent, ...typography.small, cursor: 'pointer' }} onClick={() => navigate('/request-access')}>
+                I haven't requested yet
+              </span>
+              <span style={{ margin: '0 0.5rem', color: colors.border }}>|</span>
+              <span style={{ color: colors.textMuted, ...typography.small, cursor: 'pointer' }} onClick={() => navigate('/login')}>
+                Login
+              </span>
+            </div>
+          </form>
+        </Card>
+      </div>
+    </div>
+  );
 };
 
 export default CompleteSetup;

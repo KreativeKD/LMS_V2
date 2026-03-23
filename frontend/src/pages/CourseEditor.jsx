@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Plus, Trash2, ChevronDown, ChevronRight, FileText, Video as VideoIcon, HelpCircle, Save, ArrowLeft, X, Edit } from 'lucide-react';
-import { fetchCourses, addChapter, addUnit, deleteCourse, createQuiz, deleteChapter, deleteUnit, updateChapter, updateUnit, updateQuiz } from '../api/api';
+import { Plus, Trash2, ChevronDown, ChevronRight, FileText, Video as VideoIcon, HelpCircle, Save, ArrowLeft, X, Edit, GripVertical } from 'lucide-react';
+import { fetchCourseFull, addChapter, addUnit, createQuiz, deleteChapter, deleteUnit, updateChapter, updateUnit, updateQuiz, fetchQuizById, reorderChapters, reorderUnits, updateCourse } from '../api/api';
+import { showToast, handleApiError } from '../utils/toast';
+import { Button, Input, Card, PageLayout, Breadcrumb } from '../components';
+import { spacing, colors, typography, borderRadius } from '../theme';
 
 const CourseEditor = () => {
     const { id } = useParams();
@@ -23,28 +26,43 @@ const CourseEditor = () => {
     const [showUnitModal, setShowUnitModal] = useState(false);
     const [unitType, setUnitType] = useState('video');
     const [unitForm, setUnitForm] = useState({ title: '', contentValue: '' });
+    const [pdfFileName, setPdfFileName] = useState('');
 
     // Edit Modal States
     const [showEditChapterModal, setShowEditChapterModal] = useState(false);
     const [editingChapter, setEditingChapter] = useState(null);
+    const [editingChapterPdfFileName, setEditingChapterPdfFileName] = useState('');
     const [showEditUnitModal, setShowEditUnitModal] = useState(false);
     const [editingUnit, setEditingUnit] = useState(null);
+    const [editingPdfFileName, setEditingPdfFileName] = useState('');
     const [editingQuiz, setEditingQuiz] = useState(null);
 
     // Student Progress State
     const [showProgressModal, setShowProgressModal] = useState(false);
-    const [studentProgress, setStudentProgress] = useState([]);
+    const [studentProgress] = useState([]);
+    const [draggedChapterId, setDraggedChapterId] = useState(null);
+    const [dragOverChapterId, setDragOverChapterId] = useState(null);
+    const [isReorderingChapters, setIsReorderingChapters] = useState(false);
+    const [draggedUnitInfo, setDraggedUnitInfo] = useState(null);
+    const [dragOverUnitInfo, setDragOverUnitInfo] = useState(null);
+    const [isReorderingUnits, setIsReorderingUnits] = useState(false);
+    const [selectedCourseType, setSelectedCourseType] = useState('academic');
+    const [isSavingCourseMeta, setIsSavingCourseMeta] = useState(false);
 
     useEffect(() => {
         loadCourseData();
     }, [id]);
 
     const loadCourseData = async () => {
+        setLoading(true);
         try {
-            const data = await fetchCourses();
-            const found = data.find(c => c._id === id);
-            setCourse(found);
-        } catch (err) { console.error(err); }
+            const data = await fetchCourseFull(id);
+            setCourse(data);
+            setSelectedCourseType(data?.courseType || 'academic');
+        } catch (err) { 
+            console.error(err);
+            handleApiError(err, 'Failed to load course');
+        }
         finally { setLoading(false); }
     };
 
@@ -54,7 +72,124 @@ const CourseEditor = () => {
             await addChapter(id, { title: newChapterTitle });
             setNewChapterTitle('');
             loadCourseData();
-        } catch (err) { alert(err.message); }
+            showToast.success('Chapter added successfully!');
+        } catch (err) { handleApiError(err, 'Failed to add chapter'); }
+    };
+
+    const getReorderedChapters = (chapters, fromChapterId, toChapterId) => {
+        const fromIndex = chapters.findIndex((chapter) => chapter._id === fromChapterId);
+        const toIndex = chapters.findIndex((chapter) => chapter._id === toChapterId);
+        if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return chapters;
+
+        const updated = [...chapters];
+        const [movedChapter] = updated.splice(fromIndex, 1);
+        updated.splice(toIndex, 0, movedChapter);
+        return updated;
+    };
+
+    const handleChapterDragStart = (chapterId) => {
+        setDraggedChapterId(chapterId);
+    };
+
+    const handleChapterDrop = async (targetChapterId) => {
+        if (!course || !draggedChapterId || draggedChapterId === targetChapterId || isReorderingChapters) {
+            setDraggedChapterId(null);
+            setDragOverChapterId(null);
+            return;
+        }
+
+        const currentChapters = course.chapters || [];
+        const reordered = getReorderedChapters(currentChapters, draggedChapterId, targetChapterId);
+        if (reordered === currentChapters) {
+            setDraggedChapterId(null);
+            setDragOverChapterId(null);
+            return;
+        }
+
+        const previousChapters = currentChapters;
+        setCourse((prev) => ({ ...prev, chapters: reordered }));
+        setIsReorderingChapters(true);
+        try {
+            await reorderChapters(id, reordered.map((chapter) => chapter._id));
+            showToast.success('Chapter order updated');
+        } catch (err) {
+            setCourse((prev) => ({ ...prev, chapters: previousChapters }));
+            handleApiError(err, 'Failed to reorder chapters');
+        } finally {
+            setIsReorderingChapters(false);
+            setDraggedChapterId(null);
+            setDragOverChapterId(null);
+        }
+    };
+
+    const getReorderedUnits = (units, fromUnitId, toUnitId) => {
+        const fromIndex = units.findIndex((unit) => unit._id === fromUnitId);
+        const toIndex = units.findIndex((unit) => unit._id === toUnitId);
+        if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return units;
+
+        const updated = [...units];
+        const [movedUnit] = updated.splice(fromIndex, 1);
+        updated.splice(toIndex, 0, movedUnit);
+        return updated;
+    };
+
+    const handleUnitDragStart = (chapterId, unitId) => {
+        setDraggedUnitInfo({ chapterId, unitId });
+    };
+
+    const handleUnitDrop = async (chapterId, targetUnitId) => {
+        if (!course || !draggedUnitInfo || draggedUnitInfo.chapterId !== chapterId || isReorderingUnits) {
+            setDraggedUnitInfo(null);
+            setDragOverUnitInfo(null);
+            return;
+        }
+
+        if (draggedUnitInfo.unitId === targetUnitId) {
+            setDraggedUnitInfo(null);
+            setDragOverUnitInfo(null);
+            return;
+        }
+
+        const chapter = (course.chapters || []).find((item) => item._id === chapterId);
+        if (!chapter) {
+            setDraggedUnitInfo(null);
+            setDragOverUnitInfo(null);
+            return;
+        }
+
+        const currentUnits = chapter.units || [];
+        const reorderedUnits = getReorderedUnits(currentUnits, draggedUnitInfo.unitId, targetUnitId);
+        if (reorderedUnits === currentUnits) {
+            setDraggedUnitInfo(null);
+            setDragOverUnitInfo(null);
+            return;
+        }
+
+        const previousUnits = currentUnits;
+        setCourse((prev) => ({
+            ...prev,
+            chapters: (prev.chapters || []).map((item) =>
+                item._id === chapterId ? { ...item, units: reorderedUnits } : item
+            )
+        }));
+
+        setIsReorderingUnits(true);
+        try {
+            await reorderUnits(chapterId, reorderedUnits.map((unit) => unit._id));
+            showToast.success('Unit order updated');
+        } catch (err) {
+            setCourse((prev) => ({
+                ...prev,
+                chapters: (prev.chapters || []).map((item) =>
+                    item._id === chapterId ? { ...item, units: previousUnits } : item
+                )
+            }));
+            handleApiError(err, 'Failed to reorder units');
+        } finally {
+            setIsReorderingUnits(false);
+            setDraggedUnitInfo(null);
+            setDragOverUnitInfo(null);
+        }
     };
 
     const handleDeleteChapter = async (chapterId) => {
@@ -62,7 +197,8 @@ const CourseEditor = () => {
             try {
                 await deleteChapter(chapterId);
                 loadCourseData();
-            } catch (err) { alert(err.message); }
+                showToast.success('Chapter deleted successfully');
+            } catch (err) { handleApiError(err, 'Failed to delete chapter'); }
         }
     };
 
@@ -70,6 +206,7 @@ const CourseEditor = () => {
         setActiveChapterId(chapterId);
         setUnitType(type);
         setUnitForm({ title: '', contentValue: '' });
+        setPdfFileName('');
         if (type === 'quiz') {
             setQuizData({
                 title: '',
@@ -84,6 +221,11 @@ const CourseEditor = () => {
     const handleUnitSubmit = async (e) => {
         e.preventDefault();
         try {
+            if (unitType === 'pdf' && !unitForm.contentValue) {
+                showToast.error('Please upload a PDF file');
+                return;
+            }
+
             const content = {};
             if (unitType === 'video') content.videoUrl = unitForm.contentValue;
             else if (unitType === 'pdf') content.pdfUrl = unitForm.contentValue;
@@ -91,8 +233,10 @@ const CourseEditor = () => {
 
             await addUnit(activeChapterId, { title: unitForm.title, type: unitType, content });
             setShowUnitModal(false);
+            setPdfFileName('');
             loadCourseData();
-        } catch (err) { alert(err.message); }
+            showToast.success('Unit added successfully!');
+        } catch (err) { handleApiError(err, 'Failed to add unit'); }
     };
 
     const handleDeleteUnit = async (unitId) => {
@@ -100,23 +244,61 @@ const CourseEditor = () => {
             try {
                 await deleteUnit(unitId);
                 loadCourseData();
-            } catch (err) { alert(err.message); }
+                showToast.success('Unit deleted successfully');
+            } catch (err) { handleApiError(err, 'Failed to delete unit'); }
         }
     };
 
     const handleEditChapter = (chapter) => {
         setEditingChapter(chapter);
+        setEditingChapterPdfFileName(chapter.moduleDescriptionPdf ? 'Current uploaded PDF' : '');
         setShowEditChapterModal(true);
     };
 
     const handleUpdateChapter = async (e) => {
         e.preventDefault();
         try {
-            await updateChapter(editingChapter._id, { title: editingChapter.title });
+            await updateChapter(editingChapter._id, {
+                title: editingChapter.title,
+                moduleDescriptionPdf: editingChapter.moduleDescriptionPdf || ''
+            });
             setShowEditChapterModal(false);
             setEditingChapter(null);
+            setEditingChapterPdfFileName('');
             loadCourseData();
-        } catch (err) { alert(err.message); }
+            showToast.success('Chapter updated successfully!');
+        } catch (err) { handleApiError(err, 'Failed to update chapter'); }
+    };
+
+    const handleChapterPdfUpload = (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const isPdfMime = file.type === 'application/pdf';
+        const hasPdfExtension = file.name.toLowerCase().endsWith('.pdf');
+        if (!isPdfMime && !hasPdfExtension) {
+            showToast.error('Please upload a valid PDF file');
+            return;
+        }
+
+        const maxSizeBytes = 10 * 1024 * 1024;
+        if (file.size > maxSizeBytes) {
+            showToast.error('PDF must be smaller than 10MB');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            const fileDataUrl = reader.result;
+            if (typeof fileDataUrl !== 'string') {
+                showToast.error('Failed to read PDF file');
+                return;
+            }
+            setEditingChapter((prev) => ({ ...prev, moduleDescriptionPdf: fileDataUrl }));
+            setEditingChapterPdfFileName(file.name);
+        };
+        reader.onerror = () => showToast.error('Failed to read PDF file');
+        reader.readAsDataURL(file);
     };
 
     const handleEditUnit = (unit) => {
@@ -124,6 +306,7 @@ const CourseEditor = () => {
             ...unit,
             contentValue: unit.content?.videoUrl || unit.content?.pdfUrl || unit.content?.text || ''
         });
+        setEditingPdfFileName(unit.type === 'pdf' && unit.content?.pdfUrl ? 'Current uploaded PDF' : '');
         setShowEditUnitModal(true);
     };
 
@@ -138,8 +321,47 @@ const CourseEditor = () => {
             await updateUnit(editingUnit._id, { title: editingUnit.title, content });
             setShowEditUnitModal(false);
             setEditingUnit(null);
+            setEditingPdfFileName('');
             loadCourseData();
-        } catch (err) { alert(err.message); }
+            showToast.success('Unit updated successfully!');
+        } catch (err) { handleApiError(err, 'Failed to update unit'); }
+    };
+
+    const handlePdfFileUpload = (event, mode = 'create') => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const isPdfMime = file.type === 'application/pdf';
+        const hasPdfExtension = file.name.toLowerCase().endsWith('.pdf');
+        if (!isPdfMime && !hasPdfExtension) {
+            showToast.error('Please upload a valid PDF file');
+            return;
+        }
+
+        const maxSizeBytes = 10 * 1024 * 1024;
+        if (file.size > maxSizeBytes) {
+            showToast.error('PDF must be smaller than 10MB');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            const fileDataUrl = reader.result;
+            if (typeof fileDataUrl !== 'string') {
+                showToast.error('Failed to read PDF file');
+                return;
+            }
+
+            if (mode === 'create') {
+                setUnitForm((prev) => ({ ...prev, contentValue: fileDataUrl }));
+                setPdfFileName(file.name);
+            } else {
+                setEditingUnit((prev) => ({ ...prev, contentValue: fileDataUrl }));
+                setEditingPdfFileName(file.name);
+            }
+        };
+        reader.onerror = () => showToast.error('Failed to read PDF file');
+        reader.readAsDataURL(file);
     };
 
     const handleQuizSubmit = async (e) => {
@@ -153,13 +375,13 @@ const CourseEditor = () => {
             });
             setShowQuizModal(false);
             loadCourseData();
-        } catch (err) { alert(err.message); }
+            showToast.success('Quiz created successfully!');
+        } catch (err) { handleApiError(err, 'Failed to create quiz'); }
     };
 
     const handleEditQuiz = async (unit) => {
         try {
-            const response = await fetch(`http://localhost:5000/api/quizzes/${unit.content.quiz}`);
-            const quizData = await response.json();
+            const quizData = await fetchQuizById(unit.content.quiz);
 
             setEditingQuiz({ ...quizData, unitId: unit._id });
             setQuizData({
@@ -168,7 +390,7 @@ const CourseEditor = () => {
             });
             setShowQuizModal(true);
         } catch (err) {
-            alert('Failed to load quiz: ' + err.message);
+            handleApiError(err, 'Failed to load quiz');
         }
     };
 
@@ -183,7 +405,8 @@ const CourseEditor = () => {
                 questions: [{ questionText: '', options: ['', '', '', ''], correctAnswer: 0 }]
             });
             loadCourseData();
-        } catch (err) { alert(err.message); }
+            showToast.success('Quiz updated successfully!');
+        } catch (err) { handleApiError(err, 'Failed to update quiz'); }
     };
 
     const addQuestion = () => {
@@ -214,41 +437,137 @@ const CourseEditor = () => {
         setExpandedChapters(prev => ({ ...prev, [chapterId]: !prev[chapterId] }));
     };
 
-    if (loading) return <div className="read-the-docs">Loading Editor...</div>;
-    if (!course) return <div className="read-the-docs">Course not found.</div>;
+    const handleSaveCourseType = async () => {
+        if (!course) return;
+
+        setIsSavingCourseMeta(true);
+        try {
+            const payload = {
+                title: course.title || 'Untitled Course',
+                description: course.description || '',
+                descriptionPdf: course.descriptionPdf || '',
+                contentHours: Number.isFinite(course.contentHours) ? course.contentHours : 0,
+                image: course.image || '',
+                courseType: selectedCourseType
+            };
+
+            if (course.completionDate) {
+                payload.completionDate = course.completionDate;
+            }
+
+            const updated = await updateCourse(course._id, payload);
+            setCourse((prev) => ({ ...prev, ...updated }));
+            showToast.success('Course type updated');
+        } catch (err) {
+            handleApiError(err, 'Failed to update course type');
+        } finally {
+            setIsSavingCourseMeta(false);
+        }
+    };
+
+    if (loading) return <PageLayout title="Course Editor"><p style={{ ...typography.bodySmall, color: colors.textMuted }}>Loading Editor...</p></PageLayout>;
+    if (!course) return <PageLayout title="Course Editor"><p style={{ ...typography.bodySmall, color: colors.textMuted }}>Course not found.</p></PageLayout>;
+
+    const breadcrumbs = [
+        { label: 'Teacher Dashboard', onClick: () => navigate('/teacher') },
+        { label: course.title, current: true }
+    ];
 
     return (
-        <div style={{ maxWidth: '1000px', margin: '0 auto', paddingBottom: '4rem' }}>
-            <button
+        <PageLayout title="Course Editor" breadcrumbs={<Breadcrumb items={breadcrumbs} />}>
+        <div style={{ maxWidth: '1000px', margin: '0 auto', paddingBottom: spacing['3xl'] }}>
+            <Button
                 onClick={() => navigate(-1)}
-                style={{ background: 'transparent', color: 'var(--text-accent)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem' }}
+                variant="ghost"
+                style={{ color: colors.accent, display: 'flex', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.xl }}
             >
                 <ArrowLeft size={18} /> Back to Dashboard
-            </button>
+            </Button>
 
-            <header className="card" style={{ marginBottom: '2rem', borderLeft: '4px solid var(--primary)' }}>
-                <h1 className="gradient-text">{course.title}</h1>
-                <p style={{ color: 'var(--text-muted)', marginTop: '0.5rem' }}>{course.description}</p>
-            </header>
+            <Card style={{ marginBottom: spacing.xl, borderLeft: `4px solid ${colors.primary}` }}>
+                <h1 style={{ ...typography.h2, margin: 0 }}>{course.title}</h1>
+                <p style={{ ...typography.bodySmall, color: colors.textMuted, marginTop: spacing.sm }}>{course.description}</p>
+                <div style={{ marginTop: spacing.lg, display: 'flex', gap: spacing.md, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                    <div style={{ minWidth: '240px' }}>
+                        <label style={{ ...typography.label, display: 'block', marginBottom: spacing.sm }}>Course Type</label>
+                        <select
+                            value={selectedCourseType}
+                            onChange={(event) => setSelectedCourseType(event.target.value)}
+                            style={{
+                                width: '100%',
+                                padding: spacing.md,
+                                borderRadius: '10px',
+                                border: `1px solid ${colors.border}`,
+                                background: '#fff',
+                                color: colors.text,
+                                fontFamily: 'inherit'
+                            }}
+                        >
+                            <option value="academic">Academic</option>
+                            <option value="professional">Professional</option>
+                            <option value="both">Both</option>
+                        </select>
+                    </div>
+                    <Button
+                        onClick={handleSaveCourseType}
+                        variant="primary"
+                        loading={isSavingCourseMeta}
+                        disabled={(course.courseType || 'academic') === selectedCourseType}
+                    >
+                        <Save size={16} /> Save Type
+                    </Button>
+                </div>
+            </Card>
 
             <section>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.lg, flexWrap: 'wrap', gap: spacing.sm }}>
                     <h2>Curriculum (Chapters & Units)</h2>
-                    <form onSubmit={handleAddChapter} style={{ display: 'flex', gap: '0.5rem' }}>
-                        <input
+                    <form onSubmit={handleAddChapter} style={{ display: 'flex', gap: spacing.sm }}>
+                        <Input
                             placeholder="New Chapter Title"
-                            style={{ padding: '8px', fontSize: '0.9rem' }}
                             value={newChapterTitle}
                             onChange={e => setNewChapterTitle(e.target.value)}
                             required
                         />
-                        <button className="btn-accent" style={{ padding: '8px 16px' }}><Plus size={16} /> Add</button>
+                        <Button type="submit" variant="primary"><Plus size={16} /> Add</Button>
                     </form>
                 </div>
+                <p style={{ ...typography.small, color: colors.textMuted, marginBottom: spacing.md }}>
+                    Drag chapters up or down to reorder them.
+                    {isReorderingChapters ? ' Saving new order...' : ''}
+                </p>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     {course.chapters?.map((chapter, idx) => (
-                        <div key={chapter._id} className="card" style={{ padding: '0' }}>
+                        <Card
+                            key={chapter._id}
+                            draggable={!isReorderingChapters}
+                            onDragStart={() => handleChapterDragStart(chapter._id)}
+                            onDragOver={(e) => {
+                                e.preventDefault();
+                                if (dragOverChapterId !== chapter._id) {
+                                    setDragOverChapterId(chapter._id);
+                                }
+                            }}
+                            onDragEnd={() => {
+                                setDraggedChapterId(null);
+                                setDragOverChapterId(null);
+                            }}
+                            onDrop={(e) => {
+                                e.preventDefault();
+                                handleChapterDrop(chapter._id);
+                            }}
+                            style={{
+                                padding: 0,
+                                border: dragOverChapterId === chapter._id
+                                    ? `1px solid ${colors.accent}`
+                                    : `1px solid ${colors.border}`,
+                                boxShadow: dragOverChapterId === chapter._id
+                                    ? '0 0 0 3px rgba(79,70,229,0.12)'
+                                    : undefined,
+                                opacity: draggedChapterId === chapter._id ? 0.6 : 1
+                            }}
+                        >
                             <div
                                 onClick={() => toggleChapter(chapter._id)}
                                 style={{
@@ -257,38 +576,81 @@ const CourseEditor = () => {
                                     display: 'flex',
                                     justifyContent: 'space-between',
                                     alignItems: 'center',
-                                    background: '#f9fafb',
-                                    borderRadius: '8px',
-                                    borderBottom: expandedChapters[chapter._id] ? '1px solid var(--border)' : 'none'
+                                    background: colors.surfaceHover,
+                                    borderRadius: borderRadius.sm,
+                                    borderBottom: expandedChapters[chapter._id] ? `1px solid ${colors.border}` : 'none'
                                 }}
                             >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                    <GripVertical size={16} color={colors.textMuted} />
                                     <span style={{ color: 'gray', fontWeight: 'bold' }}>{idx + 1}</span>
                                     <h3 style={{ fontSize: '1.1rem' }}>{chapter.title}</h3>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                    <button
+                                    <Button
                                         onClick={(e) => { e.stopPropagation(); handleEditChapter(chapter); }}
-                                        style={{ background: 'transparent', color: 'var(--text-accent)', padding: '4px' }}
+                                        variant="ghost"
+                                        size="sm"
                                         title="Edit chapter"
                                     >
                                         <Edit size={18} />
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
                                         onClick={(e) => { e.stopPropagation(); handleDeleteChapter(chapter._id); }}
-                                        style={{ background: 'transparent', color: '#ff4d4d', padding: '4px' }}
+                                        variant="ghost"
+                                        size="sm"
+                                        style={{ color: colors.danger }}
                                     >
                                         <Trash2 size={18} />
-                                    </button>
+                                    </Button>
                                     {expandedChapters[chapter._id] ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
                                 </div>
                             </div>
 
                             {expandedChapters[chapter._id] && (
                                 <div style={{ padding: '1.5rem', borderTop: '1px solid var(--border)' }}>
+                                    <p style={{ ...typography.xsmall, color: colors.textMuted, marginBottom: spacing.sm }}>
+                                        Drag units within this chapter to reorder.
+                                        {isReorderingUnits ? ' Saving unit order...' : ''}
+                                    </p>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginBottom: '1.5rem' }}>
                                         {chapter.units?.map(unit => (
-                                            <div key={unit._id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.8rem', background: 'var(--glass)', borderRadius: '6px', border: '1px solid var(--border)' }}>
+                                            <div
+                                                key={unit._id}
+                                                draggable={!isReorderingUnits}
+                                                onDragStart={() => handleUnitDragStart(chapter._id, unit._id)}
+                                                onDragOver={(e) => {
+                                                    e.preventDefault();
+                                                    const dragKey = `${chapter._id}:${unit._id}`;
+                                                    if (dragOverUnitInfo?.key !== dragKey) {
+                                                        setDragOverUnitInfo({ key: dragKey, chapterId: chapter._id, unitId: unit._id });
+                                                    }
+                                                }}
+                                                onDragEnd={() => {
+                                                    setDraggedUnitInfo(null);
+                                                    setDragOverUnitInfo(null);
+                                                }}
+                                                onDrop={(e) => {
+                                                    e.preventDefault();
+                                                    handleUnitDrop(chapter._id, unit._id);
+                                                }}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '1rem',
+                                                    padding: '0.8rem',
+                                                    background: 'var(--glass)',
+                                                    borderRadius: '6px',
+                                                    border: dragOverUnitInfo?.chapterId === chapter._id && dragOverUnitInfo?.unitId === unit._id
+                                                        ? `1px solid ${colors.accent}`
+                                                        : '1px solid var(--border)',
+                                                    boxShadow: dragOverUnitInfo?.chapterId === chapter._id && dragOverUnitInfo?.unitId === unit._id
+                                                        ? '0 0 0 2px rgba(79,70,229,0.12)'
+                                                        : 'none',
+                                                    opacity: draggedUnitInfo?.unitId === unit._id ? 0.6 : 1
+                                                }}
+                                            >
+                                                <GripVertical size={14} color={colors.textMuted} />
                                                 {unit.type === 'video' ? <VideoIcon size={16} color="var(--primary)" /> :
                                                     unit.type === 'pdf' ? <FileText size={16} color="var(--secondary)" /> :
                                                         <HelpCircle size={16} color="var(--accent)" />}
@@ -325,15 +687,15 @@ const CourseEditor = () => {
                                         )}
                                     </div>
 
-                                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                                        <button onClick={() => openUnitModal(chapter._id, 'video')} className="btn-secondary" style={{ fontSize: '0.8rem', padding: '6px 12px' }}><VideoIcon size={14} /> +Video</button>
-                                        <button onClick={() => openUnitModal(chapter._id, 'pdf')} className="btn-secondary" style={{ fontSize: '0.8rem', padding: '6px 12px' }}><FileText size={14} /> +PDF</button>
-                                        <button onClick={() => openUnitModal(chapter._id, 'text')} className="btn-secondary" style={{ fontSize: '0.8rem', padding: '6px 12px' }}><Save size={14} /> +Text</button>
-                                        <button onClick={() => openUnitModal(chapter._id, 'quiz')} className="btn-accent" style={{ fontSize: '0.8rem', padding: '6px 12px' }}><HelpCircle size={14} /> +Quiz</button>
+                                    <div style={{ display: 'flex', gap: spacing.sm, flexWrap: 'wrap' }}>
+                                        <Button onClick={() => openUnitModal(chapter._id, 'video')} variant="secondary" size="sm"><VideoIcon size={14} /> +Video</Button>
+                                        <Button onClick={() => openUnitModal(chapter._id, 'pdf')} variant="secondary" size="sm"><FileText size={14} /> +PDF</Button>
+                                        <Button onClick={() => openUnitModal(chapter._id, 'text')} variant="secondary" size="sm"><Save size={14} /> +Text</Button>
+                                        <Button onClick={() => openUnitModal(chapter._id, 'quiz')} variant="primary" size="sm"><HelpCircle size={14} /> +Quiz</Button>
                                     </div>
                                 </div>
                             )}
-                        </div>
+                        </Card>
                     ))}
                     {(!course.chapters || course.chapters.length === 0) && (
                         <p className="read-the-docs" style={{ textAlign: 'center', marginTop: '2rem' }}>No chapters created yet. Start building your curriculum!</p>
@@ -347,23 +709,22 @@ const CourseEditor = () => {
                     <div className="modal-content animate-fade-in" style={{ maxWidth: '450px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
                             <h2 className="gradient-text">Add {unitType.charAt(0).toUpperCase() + unitType.slice(1)} Unit</h2>
-                            <button onClick={() => setShowUnitModal(false)} style={{ background: 'transparent', color: 'var(--text-main)' }}>
+                            <Button onClick={() => { setShowUnitModal(false); setPdfFileName(''); }} variant="ghost" size="sm">
                                 <X size={24} />
-                            </button>
+                            </Button>
                         </div>
                         <form onSubmit={handleUnitSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Unit Title</label>
-                                <input
-                                    placeholder="Enter unit title"
-                                    value={unitForm.title}
-                                    onChange={e => setUnitForm({ ...unitForm, title: e.target.value })}
-                                    required
-                                />
-                            </div>
+                            <Input
+                                label="Unit Title"
+                                placeholder="Enter unit title"
+                                value={unitForm.title}
+                                onChange={e => setUnitForm({ ...unitForm, title: e.target.value })}
+                                required
+                                fullWidth
+                            />
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                                 <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                                    {unitType === 'video' ? 'YouTube/Video URL' : unitType === 'pdf' ? 'PDF URL' : 'Content Text'}
+                                    {unitType === 'video' ? 'YouTube/Video URL' : unitType === 'pdf' ? 'PDF File' : 'Content Text'}
                                 </label>
                                 {unitType === 'text' ? (
                                     <textarea
@@ -373,18 +734,38 @@ const CourseEditor = () => {
                                         onChange={e => setUnitForm({ ...unitForm, contentValue: e.target.value })}
                                         required
                                     />
+                                ) : unitType === 'pdf' ? (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
+                                        <input
+                                            type="file"
+                                            accept="application/pdf"
+                                            onChange={(event) => handlePdfFileUpload(event, 'create')}
+                                            required
+                                            style={{
+                                                background: '#f9fafb',
+                                                color: 'var(--text-main)',
+                                                border: '1px dashed var(--border)',
+                                                borderRadius: '10px',
+                                                padding: '12px'
+                                            }}
+                                        />
+                                        <span style={{ ...typography.small, color: colors.textMuted }}>
+                                            {pdfFileName ? `Selected: ${pdfFileName}` : 'No PDF selected'}
+                                        </span>
+                                    </div>
                                 ) : (
-                                    <input
+                                    <Input
                                         placeholder={`Enter ${unitType} link`}
                                         value={unitForm.contentValue}
                                         onChange={e => setUnitForm({ ...unitForm, contentValue: e.target.value })}
                                         required
+                                        fullWidth
                                     />
                                 )}
                             </div>
-                            <button className="btn-primary" style={{ padding: '1rem', marginTop: '1rem' }}>
+                            <Button type="submit" variant="primary" fullWidth style={{ marginTop: spacing.md }}>
                                 Add Unit
-                            </button>
+                            </Button>
                         </form>
                     </div>
                 </div>
@@ -396,16 +777,17 @@ const CourseEditor = () => {
                     <div className="modal-content animate-fade-in">
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
                             <h2 className="gradient-text">{editingQuiz ? 'Edit MCQ Quiz' : 'Create MCQ Quiz'}</h2>
-                            <button onClick={() => { setShowQuizModal(false); setEditingQuiz(null); setQuizData({ title: '', questions: [{ questionText: '', options: ['', '', '', ''], correctAnswer: 0 }] }); }} style={{ background: 'none' }}><X color="var(--text-main)" /></button>
+                            <Button onClick={() => { setShowQuizModal(false); setEditingQuiz(null); setQuizData({ title: '', questions: [{ questionText: '', options: ['', '', '', ''], correctAnswer: 0 }] }); }} variant="ghost" size="sm"><X color={colors.text} /></Button>
                         </div>
 
                         <form onSubmit={editingQuiz ? handleUpdateQuiz : handleQuizSubmit}>
-                            <input
+                            <Input
                                 placeholder="Quiz Title"
                                 style={{ width: '100%', marginBottom: '1.5rem' }}
                                 value={quizData.title}
                                 onChange={e => setQuizData({ ...quizData, title: e.target.value })}
                                 required
+                                fullWidth
                             />
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '2rem' }}>
@@ -422,12 +804,13 @@ const CourseEditor = () => {
                                                 <Trash2 size={16} />
                                             </button>
                                         </div>
-                                        <input
+                                        <Input
                                             placeholder="Question Text"
                                             style={{ width: '100%', marginBottom: '1rem' }}
                                             value={q.questionText}
                                             onChange={e => updateQuestion(qIdx, 'questionText', e.target.value)}
                                             required
+                                            fullWidth
                                         />
                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
                                             {q.options.map((opt, oIdx) => (
@@ -438,7 +821,7 @@ const CourseEditor = () => {
                                                         checked={q.correctAnswer === oIdx}
                                                         onChange={() => updateQuestion(qIdx, 'correctAnswer', oIdx)}
                                                     />
-                                                    <input
+                                                    <Input
                                                         placeholder={`Option ${oIdx + 1}`}
                                                         style={{ flex: 1, padding: '8px' }}
                                                         value={opt}
@@ -452,9 +835,9 @@ const CourseEditor = () => {
                                 ))}
                             </div>
 
-                            <div style={{ display: 'flex', gap: '1rem' }}>
-                                <button type="button" onClick={addQuestion} className="btn-secondary" style={{ flex: 1 }}>+ Add Question</button>
-                                <button type="submit" className="btn-primary" style={{ flex: 1 }}>{editingQuiz ? 'Update Quiz' : 'Save Quiz'}</button>
+                            <div style={{ display: 'flex', gap: spacing.md }}>
+                                <Button type="button" onClick={addQuestion} variant="secondary" style={{ flex: 1 }}>+ Add Question</Button>
+                                <Button type="submit" variant="primary" style={{ flex: 1 }}>{editingQuiz ? 'Update Quiz' : 'Save Quiz'}</Button>
                             </div>
                         </form>
                     </div>
@@ -467,23 +850,51 @@ const CourseEditor = () => {
                     <div className="modal-content animate-fade-in" style={{ maxWidth: '450px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
                             <h2 className="gradient-text">Edit Chapter</h2>
-                            <button onClick={() => setShowEditChapterModal(false)} style={{ background: 'transparent', color: 'var(--text-main)' }}>
+                            <Button
+                                onClick={() => {
+                                    setShowEditChapterModal(false);
+                                    setEditingChapterPdfFileName('');
+                                }}
+                                variant="ghost"
+                                size="sm"
+                            >
                                 <X size={24} />
-                            </button>
+                            </Button>
                         </div>
                         <form onSubmit={handleUpdateChapter} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Chapter Title</label>
+                            <Input
+                                label="Chapter Title"
+                                placeholder="Enter chapter title"
+                                value={editingChapter.title}
+                                onChange={e => setEditingChapter({ ...editingChapter, title: e.target.value })}
+                                required
+                                fullWidth
+                            />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
+                                <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                                    Module Description PDF (Optional)
+                                </label>
                                 <input
-                                    placeholder="Enter chapter title"
-                                    value={editingChapter.title}
-                                    onChange={e => setEditingChapter({ ...editingChapter, title: e.target.value })}
-                                    required
+                                    type="file"
+                                    accept="application/pdf"
+                                    onChange={handleChapterPdfUpload}
+                                    style={{
+                                        background: '#f9fafb',
+                                        color: 'var(--text-main)',
+                                        border: '1px dashed var(--border)',
+                                        borderRadius: '10px',
+                                        padding: '12px'
+                                    }}
                                 />
+                                <span style={{ ...typography.small, color: colors.textMuted }}>
+                                    {editingChapterPdfFileName
+                                        ? `Selected: ${editingChapterPdfFileName}`
+                                        : (editingChapter.moduleDescriptionPdf ? 'Using existing PDF' : 'No PDF selected')}
+                                </span>
                             </div>
-                            <button className="btn-primary" style={{ padding: '1rem', marginTop: '1rem' }}>
+                            <Button type="submit" variant="primary" fullWidth style={{ marginTop: spacing.md }}>
                                 Update Chapter
-                            </button>
+                            </Button>
                         </form>
                     </div>
                 </div>
@@ -495,23 +906,22 @@ const CourseEditor = () => {
                     <div className="modal-content animate-fade-in" style={{ maxWidth: '450px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
                             <h2 className="gradient-text">Edit {editingUnit.type.charAt(0).toUpperCase() + editingUnit.type.slice(1)} Unit</h2>
-                            <button onClick={() => setShowEditUnitModal(false)} style={{ background: 'transparent', color: 'var(--text-main)' }}>
+                            <Button onClick={() => { setShowEditUnitModal(false); setEditingUnit(null); setEditingPdfFileName(''); }} variant="ghost" size="sm">
                                 <X size={24} />
-                            </button>
+                            </Button>
                         </div>
                         <form onSubmit={handleUpdateUnit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Unit Title</label>
-                                <input
-                                    placeholder="Enter unit title"
-                                    value={editingUnit.title}
-                                    onChange={e => setEditingUnit({ ...editingUnit, title: e.target.value })}
-                                    required
-                                />
-                            </div>
+                            <Input
+                                label="Unit Title"
+                                placeholder="Enter unit title"
+                                value={editingUnit.title}
+                                onChange={e => setEditingUnit({ ...editingUnit, title: e.target.value })}
+                                required
+                                fullWidth
+                            />
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                                 <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                                    {editingUnit.type === 'video' ? 'YouTube/Video URL' : editingUnit.type === 'pdf' ? 'PDF URL' : 'Content Text'}
+                                    {editingUnit.type === 'video' ? 'YouTube/Video URL' : editingUnit.type === 'pdf' ? 'PDF File' : 'Content Text'}
                                 </label>
                                 {editingUnit.type === 'text' ? (
                                     <textarea
@@ -521,18 +931,37 @@ const CourseEditor = () => {
                                         onChange={e => setEditingUnit({ ...editingUnit, contentValue: e.target.value })}
                                         required
                                     />
+                                ) : editingUnit.type === 'pdf' ? (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
+                                        <input
+                                            type="file"
+                                            accept="application/pdf"
+                                            onChange={(event) => handlePdfFileUpload(event, 'edit')}
+                                            style={{
+                                                background: '#f9fafb',
+                                                color: 'var(--text-main)',
+                                                border: '1px dashed var(--border)',
+                                                borderRadius: '10px',
+                                                padding: '12px'
+                                            }}
+                                        />
+                                        <span style={{ ...typography.small, color: colors.textMuted }}>
+                                            {editingPdfFileName ? `Selected: ${editingPdfFileName}` : 'No new PDF selected (keeps current PDF)'}
+                                        </span>
+                                    </div>
                                 ) : (
-                                    <input
+                                    <Input
                                         placeholder={`Enter ${editingUnit.type} link`}
                                         value={editingUnit.contentValue}
                                         onChange={e => setEditingUnit({ ...editingUnit, contentValue: e.target.value })}
                                         required
+                                        fullWidth
                                     />
                                 )}
                             </div>
-                            <button className="btn-primary" style={{ padding: '1rem', marginTop: '1rem' }}>
+                            <Button type="submit" variant="primary" fullWidth style={{ marginTop: spacing.md }}>
                                 Update Unit
-                            </button>
+                            </Button>
                         </form>
                     </div>
                 </div>
@@ -544,9 +973,9 @@ const CourseEditor = () => {
                     <div className="modal-content animate-fade-in" style={{ maxWidth: '800px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
                             <h2 className="gradient-text">Student Progress</h2>
-                            <button onClick={() => setShowProgressModal(false)} style={{ background: 'transparent', color: 'var(--text-main)' }}>
+                            <Button onClick={() => setShowProgressModal(false)} variant="ghost" size="sm">
                                 <X size={24} />
-                            </button>
+                            </Button>
                         </div>
 
                         {studentProgress.length === 0 ? (
@@ -594,6 +1023,7 @@ const CourseEditor = () => {
                 </div>
             )}
         </div>
+        </PageLayout>
     );
 };
 

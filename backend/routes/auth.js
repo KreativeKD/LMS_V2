@@ -2,37 +2,82 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const RegistrationRequest = require('../models/RegistrationRequest');
+const PasswordResetRequest = require('../models/PasswordResetRequest');
 const SystemSetting = require('../models/SystemSetting');
 const Course = require('../models/Course');
+const Notification = require('../models/Notification');
+const { createNotification, createNotificationsForRecipients } = require('../utils/notifications');
+const logger = require('../utils/logger');
 const { auth, authorize } = require('../middleware/auth');
+const { validate, loginSchema, requestAccessSchema, completeRegistrationSchema, registerSchema, updateProfileSchema } = require('../middleware/validation');
+const { loginLimiter, registrationLimiter, authLimiter } = require('../middleware/rateLimiters');
 const router = express.Router();
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '12h';
+
+const normalizeUsernameAlias = (value = '') => {
+    const trimmed = String(value || '').trim();
+    const atIndex = trimmed.lastIndexOf('@');
+
+    if (atIndex === -1) {
+        return trimmed.toLowerCase().replace(/\s+/g, '');
+    }
+
+    const localPart = trimmed.slice(0, atIndex).toLowerCase().replace(/\s+/g, '');
+    const rolePart = trimmed.slice(atIndex + 1).toLowerCase().replace(/\s+/g, '');
+    return `${localPart}@${rolePart}`;
+};
+
+const findUserByUsernameAlias = async (username, projection = '') => {
+    const trimmed = String(username || '').trim();
+    if (!trimmed) return null;
+
+    let query = User.findOne({ username: trimmed });
+    if (projection) {
+        query = query.select(projection);
+    }
+    let user = await query;
+    if (user) return user;
+
+    const atIndex = trimmed.lastIndexOf('@');
+    if (atIndex === -1) return null;
+
+    const role = trimmed.slice(atIndex + 1).trim().toLowerCase();
+    if (!['admin', 'teacher', 'student'].includes(role)) return null;
+
+    let candidatesQuery = User.find({ role });
+    if (projection) {
+        candidatesQuery = candidatesQuery.select(projection);
+    }
+    const candidates = await candidatesQuery;
+    const normalizedInput = normalizeUsernameAlias(trimmed);
+
+    return candidates.find((candidate) => normalizeUsernameAlias(candidate.username) === normalizedInput) || null;
+};
 
 // Login route with name@role logic
 router.post('/toggle-hidden-content', auth, async (req, res) => {
     try {
         const { courseId, contentId } = req.body;
-        console.log(`Toggle hidden content: course=${courseId}, content=${contentId}`);
+        logger.debug('Toggle hidden content', { courseId, contentId });
 
         const user = await User.findById(req.user._id);
 
         if (!user) {
-            console.log('User not found in toggle');
+            logger.error('User not found in toggle-hidden-content', { userId: req.user._id });
             return res.status(404).send({ error: 'User not found' });
         }
 
         // Check if enrolledCourses exists
         if (!user.enrolledCourses) {
-            console.log('No enrolledCourses for user');
+            logger.error('No enrolledCourses for user', { userId: user._id });
             return res.status(404).send({ error: 'No enrollments found' });
         }
 
         const enrollment = user.enrolledCourses.find(e => e.course && e.course.toString() === courseId);
 
         if (!enrollment) {
-            console.log(`Enrollment not found for course: ${courseId}`);
-            // Log available courses to debug
             const available = user.enrolledCourses.map(e => e.course ? e.course.toString() : 'null').join(', ');
-            console.log(`Available enrollments: ${available}`);
+            logger.error('Enrollment not found for course', { courseId, available });
             return res.status(404).send({ error: 'Course enrollment not found' });
         }
 
@@ -46,43 +91,49 @@ router.post('/toggle-hidden-content', auth, async (req, res) => {
 
         if (index > -1) {
             // Unhide
-            console.log('Unhiding content');
+            logger.debug('Unhiding content', { courseId, contentId });
             enrollment.hiddenContent.splice(index, 1);
         } else {
             // Hide
-            console.log('Hiding content');
+            logger.debug('Hiding content', { courseId, contentId });
             enrollment.hiddenContent.push(contentId);
         }
 
         await user.save();
 
         // Return fully populated user to keep frontend state consistent
-        const populatedUser = await User.findById(user._id).populate('enrolledCourses.course');
+        const populatedUser = await User.findById(user._id).select('-password').populate('enrolledCourses.course');
         res.send(populatedUser);
 
     } catch (e) {
-        console.error('Error in toggle-hidden-content:', e);
+        logger.error('Error in toggle-hidden-content', { error: e.message, stack: e.stack });
         res.status(500).send({ error: e.message });
     }
 });
 
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, validate(loginSchema), async (req, res) => {
     try {
         const { username, password } = req.body;
-        console.log(`Login attempt for: ${username}`);
+        logger.info('Login attempt', { username });
 
         // The username is expected to be name@role
         const parts = username.split('@');
         if (parts.length !== 2) {
-            console.log(`Invalid format for: ${username}`);
+            logger.error('Invalid username format', { username });
             return res.status(400).send({ error: 'Invalid username format. Use name@role' });
         }
 
         const [name, role] = parts;
-        const user = await User.findOne({ username, role });
+        const user = await findUserByUsernameAlias(username, '+password');
 
-        if (!user) {
-            console.log(`User not found: ${username} with role ${role}`);
+        if (!user || user.role !== role) {
+            logger.error('User authentication failed', { username, role });
+            return res.status(400).send({ error: 'Invalid login credentials' });
+        }
+
+        const isPasswordValid = await user.comparePassword(password);
+        if (!isPasswordValid) {
+            logger.error('User authentication failed: invalid password', { username, role });
             return res.status(400).send({ error: 'Invalid login credentials' });
         }
 
@@ -94,14 +145,15 @@ router.post('/login', async (req, res) => {
         user.lastLogin = Date.now();
         await user.save();
 
-        console.log(`Login successful: ${username}`);
+        logger.info('User login successful', { username, role: user.role });
         const token = jwt.sign(
             { _id: user._id.toString() },
-            process.env.JWT_SECRET || 'fallback_secret_key_123'
+            process.env.JWT_SECRET,
+            { expiresIn: JWT_EXPIRES_IN }
         );
         res.send({ user: { _id: user._id, username: user.username, role: user.role }, token });
     } catch (e) {
-        console.error('Login error:', e);
+        logger.error('Login error', { error: e.message, stack: e.stack });
         res.status(500).send(e.message);
     }
 });
@@ -109,15 +161,38 @@ router.post('/login', async (req, res) => {
 // Get Current User Profile
 router.get('/me', auth, async (req, res) => {
     try {
-        const user = await User.findById(req.user._id).populate('enrolledCourses.course');
+        const user = await User.findById(req.user._id).select('-password').populate('enrolledCourses.course');
         res.send(user);
     } catch (e) {
         res.status(500).send(e.message);
     }
 });
 
+// Update User Profile
+router.patch('/me', auth, validate(updateProfileSchema), async (req, res) => {
+    try {
+        const allowedUpdates = ['firstName', 'lastName', 'email', 'phone', 'city', 'country', 'profilePhoto'];
+        const updates = Object.keys(req.body).filter(key => allowedUpdates.includes(key));
+        
+        const user = await User.findById(req.user._id);
+        if (!user) return res.status(404).send({ error: 'User not found' });
+
+        updates.forEach(update => {
+            user[update] = req.body[update];
+        });
+
+        await user.save();
+        
+        const populatedUser = await User.findById(user._id).select('-password').populate('enrolledCourses.course');
+        res.send(populatedUser);
+    } catch (e) {
+        console.error('Profile update error:', e);
+        res.status(400).send({ error: e.message || 'Failed to update profile' });
+    }
+});
+
 // NEW: Request Access (Step 1)
-router.post('/request-access', async (req, res) => {
+router.post('/request-access', registrationLimiter, validate(requestAccessSchema), async (req, res) => {
     try {
         const { firstName, lastName } = req.body;
         if (!firstName || !lastName) {
@@ -182,7 +257,7 @@ router.post('/check-status', async (req, res) => {
 });
 
 // NEW: Complete Registration (Step 3b)
-router.post('/complete-registration', async (req, res) => {
+router.post('/complete-registration', authLimiter, validate(completeRegistrationSchema), async (req, res) => {
     try {
         const { firstName, lastName, username, password } = req.body; // username is just the part before @
 
@@ -216,7 +291,7 @@ router.post('/complete-registration', async (req, res) => {
         request.userId = user._id;
         await request.save();
 
-        const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET || 'fallback_secret_key_123');
+        const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
         res.status(201).send({ user, token });
 
     } catch (e) {
@@ -225,7 +300,7 @@ router.post('/complete-registration', async (req, res) => {
 });
 
 // Direct Registration (Skip Approval)
-router.post('/register', async (req, res) => {
+router.post('/register', registrationLimiter, validate(registerSchema), async (req, res) => {
     try {
         const { firstName, lastName, email, phone, city, country, username, password } = req.body;
 
@@ -252,7 +327,7 @@ router.post('/register', async (req, res) => {
         });
         await user.save();
 
-        const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET || 'fallback_secret_key_123');
+        const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
         res.status(201).send({ user: { _id: user._id, username: user.username, role: user.role }, token });
 
     } catch (e) {
@@ -280,6 +355,18 @@ router.post('/admin/approve-request/:id', auth, authorize('admin'), async (req, 
         request.status = 'approved';
         request.approvedAt = Date.now();
         await request.save();
+
+        const admins = await User.find({ role: 'admin' }).select('_id').lean();
+        await createNotificationsForRecipients({
+            recipientIds: admins.map((admin) => admin._id),
+            actorId: req.user._id,
+            type: 'registration_request_approved',
+            title: 'Registration Request Approved',
+            message: `${request.firstName} ${request.lastName}'s registration request was approved.`,
+            link: '/admin',
+            metadata: { requestId: request._id }
+        });
+
         res.send({ message: 'Request approved' });
     } catch (e) {
         res.status(500).send(e.message);
@@ -295,6 +382,27 @@ router.post('/admin/unfreeze-student/:id', auth, authorize('admin'), async (req,
         user.unfrozenByAdmin = true; // Grant immunity so they can login despite date
         user.isFrozen = false;
         await user.save();
+
+        await createNotification({
+            recipientId: user._id,
+            actorId: req.user._id,
+            type: 'account_unfrozen',
+            title: 'Account Unfrozen',
+            message: 'Your account has been unfrozen by admin. You can now continue learning.',
+            link: '/student'
+        });
+
+        const admins = await User.find({ role: 'admin' }).select('_id').lean();
+        await createNotificationsForRecipients({
+            recipientIds: admins.map((admin) => admin._id),
+            actorId: req.user._id,
+            type: 'student_unfrozen',
+            title: 'Student Unfrozen',
+            message: `${user.username} has been unfrozen.`,
+            link: '/admin',
+            metadata: { studentId: user._id }
+        });
+
         res.send({ message: 'Student account unfrozen' });
     } catch (e) {
         res.status(500).send(e.message);
@@ -310,6 +418,27 @@ router.post('/admin/freeze-student/:id', auth, authorize('admin'), async (req, r
         user.isFrozen = true;
         user.unfrozenByAdmin = false; // Reset this if manually frozen
         await user.save();
+
+        await createNotification({
+            recipientId: user._id,
+            actorId: req.user._id,
+            type: 'account_frozen',
+            title: 'Account Frozen',
+            message: 'Your account has been frozen by admin. Contact support for help.',
+            link: '/login'
+        });
+
+        const admins = await User.find({ role: 'admin' }).select('_id').lean();
+        await createNotificationsForRecipients({
+            recipientIds: admins.map((admin) => admin._id),
+            actorId: req.user._id,
+            type: 'student_frozen',
+            title: 'Student Frozen',
+            message: `${user.username} has been frozen.`,
+            link: '/admin',
+            metadata: { studentId: user._id }
+        });
+
         res.send({ message: 'Student account frozen' });
     } catch (e) {
         res.status(500).send(e.message);
@@ -364,6 +493,10 @@ router.delete('/admin/teachers/:id', auth, authorize('admin'), async (req, res) 
         if (!teacher) {
             return res.status(404).send({ error: 'Teacher not found' });
         }
+
+        await Notification.deleteMany({
+            $or: [{ recipient: teacher._id }, { actor: teacher._id }]
+        });
 
         res.send({ message: 'Teacher deleted successfully' });
     } catch (e) {
@@ -428,6 +561,10 @@ router.delete('/admin/students/:id', auth, authorize('admin'), async (req, res) 
             { $pull: { students: studentId } }
         );
 
+        await Notification.deleteMany({
+            $or: [{ recipient: studentId }, { actor: studentId }]
+        });
+
         res.send({ message: 'Student deleted successfully and associated data cleaned up' });
     } catch (e) {
         res.status(500).send({ error: e.message });
@@ -456,6 +593,329 @@ router.patch('/admin/students/:id', auth, authorize('admin'), async (req, res) =
         res.send(student);
     } catch (e) {
         res.status(400).send(e.message);
+    }
+});
+
+// Password Reset Request - User submits request
+router.post('/forgot-password', authLimiter, async (req, res) => {
+    try {
+        const { username } = req.body;
+
+        if (!username || !username.trim()) {
+            return res.status(400).send({ error: 'Username is required' });
+        }
+
+        const user = await findUserByUsernameAlias(username);
+
+        if (!user) {
+            // Don't reveal if user exists or not for security
+            return res.status(200).send({ 
+                message: 'If your account exists, a password reset request has been submitted to the admin.'
+            });
+        }
+
+        if (user.isFrozen) {
+            return res.status(403).send({
+                error: 'Your account is frozen by admin. Password reset is disabled while account is frozen.'
+            });
+        }
+
+        // Check if there's already a pending request
+        const existingRequest = await PasswordResetRequest.findOne({
+            userId: user._id,
+            status: { $in: ['pending', 'approved'] }
+        });
+
+        if (existingRequest) {
+            if (existingRequest.status === 'pending') {
+                return res.status(400).send({ 
+                    error: 'You already have a pending password reset request. Please wait for admin approval.' 
+                });
+            }
+            if (existingRequest.status === 'approved' && existingRequest.expiresAt > new Date()) {
+                return res.status(200).send({ 
+                    message: 'Your password reset request is already approved. You can reset your password now.',
+                    approved: true,
+                    requestId: existingRequest._id
+                });
+            }
+        }
+
+        // Create new password reset request
+        const resetRequest = new PasswordResetRequest({
+            username: user.username,
+            email: user.email || '',
+            userId: user._id,
+            status: 'pending'
+        });
+
+        await resetRequest.save();
+
+        const admins = await User.find({ role: 'admin' }).select('_id').lean();
+        await createNotificationsForRecipients({
+            recipientIds: admins.map((admin) => admin._id),
+            actorId: user._id,
+            type: 'password_reset_requested',
+            title: 'Password Reset Requested',
+            message: `${user.username} requested a password reset.`,
+            link: '/admin',
+            metadata: { requestId: resetRequest._id, username: user.username }
+        });
+
+        res.status(201).send({ 
+            message: 'Password reset request submitted successfully. Please wait for admin approval.',
+            requestId: resetRequest._id
+        });
+    } catch (e) {
+        logger.error('Forgot password error', { error: e.message, stack: e.stack });
+        res.status(500).send({ error: 'Failed to submit password reset request' });
+    }
+});
+
+// Get all password reset requests - Admin only
+router.get('/admin/password-reset-requests', auth, authorize('admin'), async (req, res) => {
+    try {
+        const requests = await PasswordResetRequest.find()
+            .populate('userId', 'username firstName lastName email role')
+            .sort({ createdAt: -1 });
+        res.send(requests);
+    } catch (e) {
+        res.status(500).send({ error: e.message });
+    }
+});
+
+// Approve password reset request - Admin only
+router.patch('/admin/password-reset-requests/:id/approve', auth, authorize('admin'), async (req, res) => {
+    try {
+        const request = await PasswordResetRequest.findById(req.params.id);
+
+        if (!request) {
+            return res.status(404).send({ error: 'Password reset request not found' });
+        }
+
+        if (request.status !== 'pending') {
+            return res.status(400).send({ error: 'Request has already been processed' });
+        }
+
+        request.status = 'approved';
+        request.approvedAt = new Date();
+        // expiresAt will be set by the pre-save hook (24 hours)
+        
+        await request.save();
+
+        await createNotification({
+            recipientId: request.userId,
+            actorId: req.user._id,
+            type: 'password_reset_approved',
+            title: 'Password Reset Approved',
+            message: 'Your password reset request was approved. You can reset your password now.',
+            link: '/forgot-password',
+            metadata: { requestId: request._id }
+        });
+
+        res.send({ 
+            message: 'Password reset request approved. User can now reset their password.',
+            request
+        });
+    } catch (e) {
+        res.status(500).send({ error: e.message });
+    }
+});
+
+// Reject password reset request - Admin only
+router.patch('/admin/password-reset-requests/:id/reject', auth, authorize('admin'), async (req, res) => {
+    try {
+        const request = await PasswordResetRequest.findById(req.params.id);
+
+        if (!request) {
+            return res.status(404).send({ error: 'Password reset request not found' });
+        }
+
+        if (request.status !== 'pending') {
+            return res.status(400).send({ error: 'Request has already been processed' });
+        }
+
+        request.status = 'rejected';
+        await request.save();
+
+        await createNotification({
+            recipientId: request.userId,
+            actorId: req.user._id,
+            type: 'password_reset_rejected',
+            title: 'Password Reset Rejected',
+            message: 'Your password reset request was rejected. Please contact support if needed.',
+            link: '/forgot-password',
+            metadata: { requestId: request._id }
+        });
+
+        res.send({ 
+            message: 'Password reset request rejected.',
+            request
+        });
+    } catch (e) {
+        res.status(500).send({ error: e.message });
+    }
+});
+
+// Check password reset status - User checks if their request is approved
+router.get('/password-reset-status/:username', authLimiter, async (req, res) => {
+    try {
+        const { username } = req.params;
+
+        const user = await findUserByUsernameAlias(username);
+        if (!user) {
+            return res.status(404).send({ error: 'User not found' });
+        }
+
+        const request = await PasswordResetRequest.findOne({
+            userId: user._id,
+            status: 'approved',
+            expiresAt: { $gt: new Date() }
+        });
+
+        if (!request) {
+            return res.send({ approved: false });
+        }
+
+        res.send({ 
+            approved: true,
+            requestId: request._id,
+            expiresAt: request.expiresAt
+        });
+    } catch (e) {
+        res.status(500).send({ error: e.message });
+    }
+});
+
+// Reset password - User resets password after admin approval
+router.post('/reset-password', authLimiter, async (req, res) => {
+    try {
+        const { username, newPassword, requestId } = req.body;
+
+        if (!username || !newPassword || !requestId) {
+            return res.status(400).send({ error: 'Username, new password, and request ID are required' });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).send({ error: 'Password must be at least 6 characters long' });
+        }
+
+        const user = await findUserByUsernameAlias(username);
+        if (!user) {
+            return res.status(404).send({ error: 'User not found' });
+        }
+
+        if (user.isFrozen) {
+            return res.status(403).send({
+                error: 'Your account is frozen by admin. You cannot reset password until the account is unfrozen.'
+            });
+        }
+
+        const request = await PasswordResetRequest.findOne({
+            _id: requestId,
+            userId: user._id,
+            status: 'approved'
+        });
+
+        if (!request) {
+            return res.status(404).send({ error: 'No approved password reset request found' });
+        }
+
+        if (request.expiresAt < new Date()) {
+            request.status = 'rejected';
+            await request.save();
+            return res.status(400).send({ error: 'Password reset request has expired. Please submit a new request.' });
+        }
+
+        // Update password
+        user.password = newPassword;
+        await user.save(); // Password hashing happens in User model's pre-save hook
+
+        // Mark request as completed
+        request.status = 'completed';
+        await request.save();
+
+        await createNotification({
+            recipientId: user._id,
+            actorId: user._id,
+            type: 'password_reset_completed',
+            title: 'Password Updated',
+            message: 'Your password was reset successfully.',
+            link: '/login',
+            metadata: { requestId: request._id }
+        });
+
+        res.send({ 
+            message: 'Password reset successfully. You can now login with your new password.',
+            success: true
+        });
+    } catch (e) {
+        logger.error('Reset password error', { error: e.message, stack: e.stack });
+        res.status(500).send({ error: 'Failed to reset password' });
+    }
+});
+
+// Delete password reset request - Admin only
+router.delete('/admin/password-reset-requests/:id', auth, authorize('admin'), async (req, res) => {
+    try {
+        const request = await PasswordResetRequest.findByIdAndDelete(req.params.id);
+        
+        if (!request) {
+            return res.status(404).send({ error: 'Password reset request not found' });
+        }
+
+        res.send({ message: 'Password reset request deleted successfully' });
+    } catch (e) {
+        res.status(500).send({ error: e.message });
+    }
+});
+
+// Get system settings
+router.get('/settings', async (req, res) => {
+    try {
+        const settings = await SystemSetting.findOne();
+        if (!settings) {
+            return res.status(404).send({ error: 'Settings not found' });
+        }
+        res.send({
+            semesterCompletionDate: settings.semesterCompletionDate || null,
+            maintenanceMode: settings.maintenanceMode || false
+        });
+    } catch (e) {
+        logger.error('Error fetching settings', { error: e.message });
+        res.status(500).send({ error: e.message });
+    }
+});
+
+// Update system settings - Admin only
+router.post('/admin/settings', auth, authorize('admin'), async (req, res) => {
+    try {
+        const { semesterCompletionDate, maintenanceMode } = req.body;
+        
+        // Create or update settings
+        let settings = await SystemSetting.findOne();
+        if (!settings) {
+            settings = new SystemSetting();
+        }
+        
+        if (semesterCompletionDate !== undefined) {
+            settings.semesterCompletionDate = semesterCompletionDate;
+        }
+        if (maintenanceMode !== undefined) {
+            settings.maintenanceMode = maintenanceMode;
+        }
+        
+        await settings.save();
+        logger.info('Settings updated', { updatedBy: req.user._id });
+        
+        res.send({
+            message: 'Settings updated successfully',
+            semesterCompletionDate: settings.semesterCompletionDate,
+            maintenanceMode: settings.maintenanceMode
+        });
+    } catch (e) {
+        logger.error('Error updating settings', { error: e.message });
+        res.status(500).send({ error: e.message });
     }
 });
 

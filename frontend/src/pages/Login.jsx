@@ -1,318 +1,294 @@
-import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { loginUser, registerStudent } from '../api/api';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { loginUser } from '../api/api';
+import { validateRequired } from '../utils/authFormValidation';
+import { Button } from '../components/Button';
+import { Input } from '../components/Input';
+import { Card } from '../components/Card';
+import { spacing, colors, typography, shadows } from '../theme';
 
 const Login = () => {
-    const [isRegister, setIsRegister] = useState(false);
-    const [name, setName] = useState('');
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const { login } = useAuth();
-    const navigate = useNavigate();
+  const [isRegister, setIsRegister] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({ username: '', password: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { login, logout } = useAuth();
+  const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-        try {
-            if (isRegister) {
-                // Navigate to the Request Access page instead of calling api immediately
-                navigate('/request-access');
-            } else {
-                const data = await loginUser(username, password);
-                login(data.user, data.token);
+  useEffect(() => {
+    // Opening the login page should always start a fresh unauthenticated session.
+    logout();
+  }, [logout]);
 
-                if (data.user.role === 'admin') navigate('/admin');
-                else if (data.user.role === 'teacher') navigate('/teacher');
-                else navigate('/student');
-            }
-        } catch (err) {
-            setError(err.message);
-        }
+  const validateForm = () => {
+    const nextErrors = {
+      username: validateRequired(username, 'Username'),
+      password: validateRequired(password, 'Password')
     };
+    setFieldErrors(nextErrors);
+    return !nextErrors.username && !nextErrors.password;
+  };
 
-    // Shared styles for inputs
-    const inputStyle = {
-        width: '100%',
-        padding: '0.6rem 0.8rem',
-        border: '1px solid #e2e8f0',
-        borderRadius: '8px',
-        fontSize: '0.9rem',
-        outline: 'none',
-        transition: 'all 0.2s',
-        boxSizing: 'border-box',
-    };
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError('');
 
-    return (
-        <>
-            {/* Responsive CSS */}
-            <style>
-                {`
-                    @media (max-width: 900px) {
-                        .split-container {
-                            flex-direction: column;
-                        }
-                        .hero-section {
-                            display: none;
-                        }
-                        .form-section {
-                            width: 100% !important;
-                            padding: 2rem !important;
-                        }
-                    }
-                `}
-            </style>
+    if (!validateForm()) return;
 
-            <div className="split-container" style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f8fafc', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+    setIsSubmitting(true);
+    try {
+      if (isRegister) {
+        navigate('/request-access');
+        return;
+      }
 
-                {/* LEFT SIDE: Professional Landing / Hero Section */}
-                <div className="hero-section" style={{
-                    flex: '0.6',
-                    background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
-                    color: 'white',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    padding: '2rem',
-                    position: 'relative',
-                    overflow: 'hidden'
-                }}>
-                    {/* Decorative Circle */}
-                    <div style={{
-                        position: 'absolute', top: '-10%', right: '-10%', width: '400px', height: '400px',
-                        background: 'rgba(255,255,255,0.05)', borderRadius: '50%'
-                    }}></div>
+      const data = await loginUser(username, password);
+      login(data.user, data.token);
 
-                    <div style={{ position: 'relative', zIndex: 2 }}>
-                        <h1 style={{ fontSize: '2rem', fontWeight: '700', lineHeight: '1.2', marginBottom: '1rem' }}>
-                            Empowering the <br />
-                            <span style={{ color: '#60a5fa' }}>Next Generation</span>
-                        </h1>
-                        <p style={{ fontSize: '1.1rem', lineHeight: '1.6', color: '#94a3b8', maxWidth: '500px', marginBottom: '2.5rem' }}>
-                            A secure, reliable, and intuitive learning management system designed for educators and students to achieve excellence.
-                        </p>
+      if (data.user.role === 'admin') navigate('/admin');
+      else if (data.user.role === 'teacher') navigate('/teacher');
+      else navigate('/student');
+    } catch (err) {
+      const details = err?.response?.data?.details;
+      setError(Array.isArray(details) && details.length > 0 ? details.join('. ') : (err.message || 'Login failed'));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-                        {/* Trust Indicators */}
-                        <div style={{ display: 'flex', gap: '2rem', marginTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2rem' }}>
-                            <div>
-                                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>10k+</div>
-                                <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Active Students</div>
-                            </div>
-                            <div>
-                                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>99.9%</div>
-                                <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Uptime</div>
-                            </div>
-                            <div>
-                                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>Secure</div>
-                                <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Encrypted Data</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+  return (
+    <>
+      <style>
+        {`
+          @media (max-width: 900px) {
+            .split-container { flex-direction: column; }
+            .hero-section { display: none; }
+            .form-section { width: 100% !important; padding: 2rem !important; }
+          }
+        `}
+      </style>
 
-                {/* RIGHT SIDE: Form Section */}
-                <div className="form-section" style={{
-                    flex: '1.4',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    padding: '2rem',
-                    backgroundColor: '#ffffff',
-                    position: 'relative'
-                }}>
-                    {/* Back Button */}
-                    <button
-                        onClick={() => navigate('/')}
-                        style={{
-                            position: 'absolute',
-                            top: '2rem',
-                            left: '2rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            background: 'transparent',
-                            border: 'none',
-                            color: '#64748b',
-                            fontSize: '0.9rem',
-                            fontWeight: '500',
-                            cursor: 'pointer',
-                            padding: '0.5rem',
-                            borderRadius: '8px',
-                            transition: 'all 0.2s',
-                            zIndex: 10
-                        }}
-                        onMouseOver={(e) => {
-                            e.currentTarget.style.background = '#f1f5f9';
-                            e.currentTarget.style.color = '#1e293b';
-                        }}
-                        onMouseOut={(e) => {
-                            e.currentTarget.style.background = 'transparent';
-                            e.currentTarget.style.color = '#64748b';
-                        }}
-                    >
-                        <ArrowLeft size={18} />
-                        Back to Home
-                    </button>
+      <div className="split-container" style={{ display: 'flex', minHeight: '100vh', background: colors.background }}>
+        <div
+          className="hero-section"
+          style={{
+            flex: '0.6',
+            background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+            color: 'white',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            padding: spacing['2xl'],
+          }}
+        >
+          <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: spacing.md }}>
+            Empowering the
+            <br />
+            <span style={{ color: '#60a5fa' }}>Next Generation</span>
+          </h1>
+          <p style={{ fontSize: '1.05rem', lineHeight: 1.6, color: '#94a3b8' }}>
+            A secure, reliable, and intuitive learning management system for educators and students.
+          </p>
+        </div>
 
-                    <div style={{ width: '100%', maxWidth: '420px' }}>
+        <div
+          className="form-section"
+          style={{
+            flex: '1.4',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: spacing['2xl'],
+            background: colors.background,
+            position: 'relative',
+          }}
+        >
+          <Button
+            onClick={() => navigate('/')}
+            variant="ghost"
+            size="sm"
+            style={{ position: 'absolute', top: spacing.xl, left: spacing.xl, color: colors.textMuted }}
+          >
+            <ArrowLeft size={16} /> Back to Home
+          </Button>
 
-                        {/* Header */}
-                        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-                            <h2 style={{ fontSize: '1.75rem', fontWeight: '700', color: '#1e293b', marginBottom: '0.5rem' }}>
-                                {isRegister ? 'Join the Classroom' : 'Welcome Back'}
-                            </h2>
-                            <p style={{ color: '#64748b', fontSize: '0.95rem' }}>
-                                {isRegister ? 'Create your student account to get started.' : 'Enter your credentials to access your portal.'}
-                            </p>
-                        </div>
-
-                        {/* Form Card */}
-                        <div style={{
-                            background: '#fff',
-                            // border: '1px solid #e2e8f0', 
-                            borderRadius: '12px',
-                        }}>
-                            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-
-                                {isRegister ? (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                        <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
-                                            <p style={{ color: '#64748b' }}>Ready to start learning?</p>
-                                        </div>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => navigate('/request-access')}
-                                            style={{
-                                                background: 'var(--text-gradient)',
-                                                color: 'white',
-                                                border: 'none',
-                                                padding: '1rem',
-                                                borderRadius: '8px',
-                                                cursor: 'pointer',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                gap: '1rem',
-                                                fontWeight: 'bold',
-                                                transition: 'all 0.2s',
-                                                boxShadow: '0 4px 12px rgba(79, 70, 229, 0.2)'
-                                            }}
-                                        >
-                                            Register Now
-                                        </button>
-                                        <p style={{ fontSize: '0.85rem', color: '#64748b', textAlign: 'center' }}>
-                                            No admin approval required. Instant access.
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', textAlign: 'left' }}>
-                                            <label style={{ fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>Username</label>
-                                            <input
-                                                style={inputStyle}
-                                                type="text"
-                                                placeholder="username@role"
-                                                value={username}
-                                                onChange={(e) => setUsername(e.target.value)}
-                                                required
-                                            />
-                                        </div>
-
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', textAlign: 'left' }}>
-                                            <label style={{ fontSize: '0.85rem', fontWeight: '600', color: '#475569' }}>Password</label>
-                                            <input
-                                                style={inputStyle}
-                                                type="password"
-                                                placeholder="••••••••"
-                                                value={password}
-                                                onChange={(e) => setPassword(e.target.value)}
-                                                required
-                                            />
-                                        </div>
-                                    </>
-                                )}
-
-                                {error && (
-                                    <div style={{
-                                        color: '#dc2626',
-                                        fontSize: '0.85rem',
-                                        background: '#fef2f2',
-                                        padding: '0.75rem',
-                                        borderRadius: '6px',
-                                        border: '1px solid #fecaca',
-                                        marginTop: '-0.5rem'
-                                    }}>
-                                        {error}
-                                    </div>
-                                )}
-
-                                <button
-                                    type="submit"
-                                    style={{
-                                        background: '#00d2ff', // Original primary blue
-                                        color: 'white',
-                                        border: 'none',
-                                        padding: '0.9rem',
-                                        borderRadius: '8px',
-                                        fontSize: '1rem',
-                                        fontWeight: '600',
-                                        cursor: 'pointer',
-                                        transition: 'background 0.2s',
-                                        marginTop: '0.5rem'
-                                    }}
-                                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#00b8e6'}
-                                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#00d2ff'}
-                                >
-                                    {isRegister ? '' : 'Sign In Securely'}
-                                </button>
-                            </form>
-
-                            {/* Toggle Switch */}
-                            <div style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.9rem', color: '#64748b' }}>
-                                {isRegister ? 'Already have an account?' : 'New student?'}{' '}
-                                <button
-                                    onClick={() => {
-                                        setIsRegister(!isRegister);
-                                        setError('');
-                                        setName('');
-                                        setUsername('');
-                                        setPassword('');
-                                    }}
-                                    style={{
-                                        background: 'transparent',
-                                        border: 'none',
-                                        color: '#2563eb',
-                                        fontWeight: '600',
-                                        cursor: 'pointer',
-                                        textDecoration: 'none'
-                                    }}
-                                >
-                                    {isRegister ? 'Sign In' : 'Create an account'}
-                                </button>
-                            </div>
-
-                            {!isRegister && (
-                                <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.75rem', color: '#94a3b8' }}>
-                                    <p>Format: <span style={{ fontFamily: 'monospace', background: '#f1f5f9', padding: '2px 4px', borderRadius: '4px' }}>name@admin</span> | <span style={{ fontFamily: 'monospace', background: '#f1f5f9', padding: '2px 4px', borderRadius: '4px' }}>name@teacher</span> | <span style={{ fontFamily: 'monospace', background: '#f1f5f9', padding: '2px 4px', borderRadius: '4px' }}>name@student</span></p>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Trust Badge */}
-                        <div style={{ marginTop: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.75rem', color: '#94a3b8' }}>
-                            <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" />
-                            </svg>
-                            Secured by 256-bit SSL Encryption
-                        </div>
-                    </div>
-                </div>
+          <div style={{ width: '100%', maxWidth: '420px' }}>
+            <div style={{ textAlign: 'center', marginBottom: spacing.lg }}>
+              <h2 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: spacing.xs, color: colors.text }}>
+                {isRegister ? 'Join the Classroom' : 'Welcome Back'}
+              </h2>
+              <p style={{ fontSize: '0.875rem', color: colors.textMuted, marginTop: spacing.sm }}>
+                {isRegister
+                  ? 'Create your student account to get started.'
+                  : 'Enter your credentials to access your portal.'}
+              </p>
             </div>
-        </>
-    );
+
+            <Card style={{ padding: '28px 24px', boxShadow: shadows.lg }}>
+              <div style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+                <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                  {isRegister ? (
+                    <>
+                      <Button type="button" onClick={() => navigate('/request-access')} fullWidth>
+                        Register Now
+                      </Button>
+                      <p style={{ ...typography.small, color: colors.textMuted, textAlign: 'center' }}>
+                        Submit request first. Complete signup after admin approval.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <Input
+                        fullWidth
+                        id="username"
+                        label="Email or Username"
+                        type="text"
+                        placeholder="Enter your email"
+                        value={username}
+                        onChange={(event) => {
+                          setUsername(event.target.value);
+                          if (fieldErrors.username) {
+                            setFieldErrors((prev) => ({ ...prev, username: '' }));
+                          }
+                        }}
+                        error={fieldErrors.username}
+                        style={{ minHeight: '44px', fontSize: '15px' }}
+                        required
+                      />
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.xs }}>
+                        <label htmlFor="password" style={{ ...typography.label, color: colors.text, fontWeight: 600 }}>
+                          Password
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => navigate('/forgot-password')}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: colors.primary,
+                            cursor: 'pointer',
+                            fontSize: '13px',
+                            fontWeight: 500,
+                            padding: 0,
+                            textDecoration: 'none',
+                          }}
+                          onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
+                          onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
+                        >
+                          Forgot password?
+                        </button>
+                      </div>
+
+                      <Input
+                        fullWidth
+                        id="password"
+                        type="password"
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(event) => {
+                          setPassword(event.target.value);
+                          if (fieldErrors.password) {
+                            setFieldErrors((prev) => ({ ...prev, password: '' }));
+                          }
+                        }}
+                        error={fieldErrors.password}
+                        style={{ minHeight: '44px', fontSize: '15px' }}
+                        required
+                      />
+                    </>
+                  )}
+
+                  {error && (
+                    <div
+                      style={{
+                        ...typography.small,
+                        color: colors.danger,
+                        background: '#fef2f2',
+                        border: '1px solid #fecaca',
+                        borderRadius: '8px',
+                        padding: spacing.md,
+                      }}
+                    >
+                      {error}
+                    </div>
+                  )}
+
+                  {!isRegister && (
+                    <Button type="submit" fullWidth loading={isSubmitting}>
+                      Sign In
+                    </Button>
+                  )}
+                </form>
+
+                {!isRegister && (
+                  <div style={{ marginTop: spacing.lg, textAlign: 'center' }}>
+                    <span style={{ fontSize: '14px', color: colors.textMuted }}>
+                      New student?{' '}
+                    </span>
+                    <button
+                      onClick={() => {
+                        setError('');
+                        setUsername('');
+                        setPassword('');
+                        setFieldErrors({ username: '', password: '' });
+                        navigate('/student-registration');
+                      }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: colors.primary,
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        padding: 0,
+                        textDecoration: 'none',
+                      }}
+                    >
+                      Create an account
+                    </button>
+                  </div>
+                )}
+
+                {isRegister && (
+                  <div style={{ marginTop: spacing.md, paddingTop: spacing.md, borderTop: `1px solid ${colors.border}`, textAlign: 'center' }}>
+                    <span style={{ fontSize: '14px', color: colors.textMuted }}>
+                      Already have an account?{' '}
+                    </span>
+                    <button
+                      onClick={() => {
+                        setIsRegister(!isRegister);
+                        setError('');
+                        setUsername('');
+                        setPassword('');
+                        setFieldErrors({ username: '', password: '' });
+                      }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: colors.primary,
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        padding: 0,
+                        textDecoration: 'none',
+                      }}
+                    >
+                      Sign In
+                    </button>
+                  </div>
+                )}
+              </div>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </>
+  );
 };
 
 export default Login;

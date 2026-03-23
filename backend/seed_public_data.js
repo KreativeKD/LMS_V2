@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Professor = require('./models/Professor');
 const AcademicCourse = require('./models/AcademicCourse');
+const logger = require('./utils/logger');
 require('dotenv').config();
 
 const professorsData = [
@@ -190,20 +191,20 @@ const academicCoursesData = [
 async function seed() {
     try {
         await mongoose.connect(process.env.MONGO_URI);
-        console.log('Connected to MongoDB');
+        logger.info('Connected to MongoDB');
 
         await Professor.deleteMany({});
         await AcademicCourse.deleteMany({});
 
         await Professor.insertMany(professorsData);
-        console.log('Professors seeded');
+        logger.info('Professors seeded');
 
         await AcademicCourse.insertMany(academicCoursesData);
-        console.log('Academic Courses seeded');
+        logger.info('Academic Courses seeded');
 
         process.exit(0);
     } catch (err) {
-        console.error(err);
+        logger.error('Seeding error', { error: err.message, stack: err.stack });
         process.exit(1);
     }
 }

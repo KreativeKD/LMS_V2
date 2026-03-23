@@ -3,6 +3,11 @@ const mongoose = require('mongoose');
 const academicCourseSchema = new mongoose.Schema({
     title: { type: String, required: true },
     description: { type: String },
+    courseType: {
+        type: String,
+        enum: ['academic', 'professional', 'both'],
+        default: 'academic'
+    },
     professor: { type: String },
     duration: { type: String },
     level: { type: String },
