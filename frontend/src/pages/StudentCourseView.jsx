@@ -19,10 +19,9 @@ import {
   Eye,
   EyeOff,
   FileText,
-  FileType,
   HelpCircle,
   Menu,
-  PlayCircle,
+  Star,
   ThumbsUp,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -499,8 +498,16 @@ const StudentCourseView = () => {
                         color: colors.text,
                       }}
                     >
-                      <span style={{ textDecoration: chapterHidden ? 'line-through' : 'none' }}>
-                        ? {chapterTitle}
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          textDecoration: chapterHidden ? 'line-through' : 'none'
+                        }}
+                      >
+                        <Star size={14} fill="currentColor" style={{ opacity: 0.85, flexShrink: 0 }} />
+                        {chapterTitle}
                       </span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: spacing.xs }}>
                         <Button
@@ -575,7 +582,17 @@ const StudentCourseView = () => {
                               }}
                             >
                               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
-                                <span style={{ color: colors.primary, opacity: 0.9, fontSize: '18px', lineHeight: 1 }}>•</span>
+                                <span
+                                  aria-hidden="true"
+                                  style={{
+                                    width: '6px',
+                                    height: '6px',
+                                    borderRadius: '999px',
+                                    background: colors.primary,
+                                    opacity: active ? 0.9 : 0.65,
+                                    flexShrink: 0,
+                                  }}
+                                />
                                 <span
                                   style={{
                                     ...typography.small,

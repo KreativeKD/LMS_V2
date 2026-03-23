@@ -218,7 +218,7 @@ const Professor = () => {
 
                                 {/* Courses Section */}
                                 <div className="professor-courses-section" style={{ margin: '2rem 0' }}>
-                                    <h4 className="courses-section-title">Courses Taught by {selectedProf.name}</h4>
+                                    <h4 className="courses-section-title">Courses by {selectedProf.name}</h4>
                                     <div className="courses-grid">
                                         {selectedProf.courses.map(course => (
                                             <div key={course.id} className="landing-course-card">
