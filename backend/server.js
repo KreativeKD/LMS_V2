@@ -35,7 +35,7 @@ if (!process.env.MONGO_URI) {
 }
 
 // CORS configuration
-const configuredOrigins = (process.env.FRONTEND_URL || "https://coursez.in/")
+const configuredOrigins = (process.env.FRONTEND_URL || "https://coursez.in")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
