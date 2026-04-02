@@ -35,36 +35,20 @@ if (!process.env.MONGO_URI) {
 }
 
 // CORS configuration
-const configuredOrigins = (process.env.FRONTEND_URL || "https://coursez.in")
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
+const allowedOrigins = ["https://coursez.in", "https://www.coursez.in"];
 
-const localhostDevOriginPattern =
-  /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i;
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+  }),
+);
 
-const corsOptions = {
-  origin: (origin, callback) => {
-    if (!origin) {
-      callback(null, true);
-      return;
-    }
-
-    if (
-      configuredOrigins.includes(origin) ||
-      localhostDevOriginPattern.test(origin)
-    ) {
-      callback(null, true);
-      return;
-    }
-
-    callback(new Error("Not allowed by CORS"));
-  },
-  credentials: true,
-  optionsSuccessStatus: 200,
-};
-
-app.use(cors(corsOptions));
 app.use(express.json({ limit: "50mb" }));
 
 // Request logging middleware
@@ -93,7 +77,7 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/announcements", announcementRoutes);
 
 app.get("/", (req, res) => {
-  res.send("LMS API is running...");
+  res.send("LMS API is running... w changes done");
 });
 
 // 404 handler
