@@ -68,7 +68,7 @@ const AdminDashboard = () => {
       setTeachers(data || []);
       setErrors((prev) => ({ ...prev, teachers: '' }));
     } catch (error) {
-      setErrors((prev) => ({ ...prev, teachers: error?.message || 'Failed to load teachers' }));
+      setErrors((prev) => ({ ...prev, teachers: error?.message || 'Failed to load instructors' }));
     }
   };
 
@@ -140,7 +140,7 @@ const AdminDashboard = () => {
   const tabs = useMemo(
     () => [
       { key: TABS.courses, label: 'Courses', icon: Book },
-      { key: TABS.teachers, label: 'Teachers', icon: Users },
+      { key: TABS.teachers, label: 'Instructors', icon: Users },
       { key: TABS.students, label: 'Students', icon: User },
       { key: TABS.requests, label: 'Requests', icon: CheckSquare },
       { key: TABS.settings, label: 'Settings', icon: Settings },
@@ -181,7 +181,7 @@ const AdminDashboard = () => {
         id: `teacher-${teacher._id}`,
         type: 'teacher',
         label: teacher.username,
-        subtitle: 'Jump to Teachers tab',
+        subtitle: 'Jump to Instructors tab',
         onSelect: () => setActiveTab(TABS.teachers)
       }));
 
@@ -215,7 +215,7 @@ const AdminDashboard = () => {
       case 'student':
         return { bg: 'rgba(16,185,129,0.12)', color: '#047857', label: 'Student' };
       case 'teacher':
-        return { bg: 'rgba(139,92,246,0.12)', color: '#6d28d9', label: 'Teacher' };
+        return { bg: 'rgba(139,92,246,0.12)', color: '#6d28d9', label: 'Instructor' };
       case 'request':
         return { bg: 'rgba(245,158,11,0.16)', color: '#92400e', label: 'Request' };
       default:
@@ -306,7 +306,7 @@ const AdminDashboard = () => {
 
   const summaryItems = [
     { label: 'Courses', value: courses?.length || 0 },
-    { label: 'Teachers', value: teachers?.length || 0 },
+    { label: 'Instructors', value: teachers?.length || 0 },
     { label: 'Students', value: students?.length || 0 },
     { label: 'Requests', value: requests?.length || 0 }
   ];
@@ -371,7 +371,7 @@ const AdminDashboard = () => {
               }}
               onFocus={() => setIsCommandOpen(true)}
               onKeyDown={onCommandKeyDown}
-              placeholder="Quick find: student, teacher, course, request..."
+              placeholder="Quick find: student, instructor, course, request..."
               style={{
                 width: '100%',
                 border: `1px solid ${colors.border}`,

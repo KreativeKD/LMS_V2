@@ -4,11 +4,10 @@ import {
     BookOpen, Award, BarChart2, Shield, Users, Globe,
     Star, Check, Target, TrendingUp, Sparkles,
     Clock, Trophy, Rocket, Heart, Zap,
-    GraduationCap, FileText, Mail, Phone, Megaphone, CalendarDays,
+    GraduationCap, FileText, Phone, Megaphone, CalendarDays,
     ArrowRight, Building, MessageCircle
 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
-import { showToast } from '../utils/toast';
 import PublicFooter from '../components/PublicFooter';
 import {
     fetchAcademicCourses,
@@ -156,6 +155,56 @@ const LandingPage = () => {
     const handleNavigation = (path) => {
         navigate(path);
     };
+
+    const getCoursePriority = (title = '') => {
+        const normalizedTitle = title
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        if (normalizedTitle.includes('image') && normalizedTitle.includes('processing')) {
+            return 0;
+        }
+
+        if (normalizedTitle.includes('signal') && normalizedTitle.includes('processing')) {
+            return 1;
+        }
+
+        return Number.MAX_SAFE_INTEGER;
+    };
+
+    const getCourseTileDescription = (course) => {
+        const rawDescription = (course?.description || '').trim();
+        const normalizedTitle = (course?.title || '').toLowerCase();
+        const looksPlaceholder = !rawDescription || rawDescription.toLowerCase().includes('new course by instructor');
+
+        if (looksPlaceholder && normalizedTitle.includes('signal') && normalizedTitle.includes('processing')) {
+            return 'Learn sampling, transforms, filtering, and practical signal analysis for real systems.';
+        }
+
+        if (looksPlaceholder && normalizedTitle.includes('image') && normalizedTitle.includes('processing')) {
+            return 'Master enhancement, segmentation, and feature extraction using modern image processing techniques.';
+        }
+
+        if (rawDescription.length > 80) {
+            return `${rawDescription.substring(0, 80)}...`;
+        }
+
+        return rawDescription || 'Explore this course with structured modules and practical learning outcomes.';
+    };
+
+    const featuredCourses = publicCourses
+        .map((course, index) => ({ course, index }))
+        .sort((a, b) => {
+            const rankA = getCoursePriority(a.course.title);
+            const rankB = getCoursePriority(b.course.title);
+
+            if (rankA !== rankB) return rankA - rankB;
+            return a.index - b.index;
+        })
+        .map((item) => item.course)
+        .slice(0, 3);
 
     const formatStatValue = (value, withPlus = false) => {
         if (!Number.isFinite(value)) return '--';
@@ -467,7 +516,7 @@ const LandingPage = () => {
                 <div className="courses-container" style={{ maxWidth: '1000px', margin: '0 auto', textAlign: 'center' }}>
                     <div className="courses-preview" style={{ marginBottom: '3rem' }}>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
-                            {publicCourses.slice(0, 3).map((course, index) => {
+                            {featuredCourses.map((course, index) => {
                                 const Icon = LucideIcons[course.iconName] || BarChart2;
                                 const themes = ['sticky-yellow', 'sticky-cyan', 'sticky-pink'];
                                 const rotations = ['rotate-1', 'rotate-2', 'rotate-3'];
@@ -475,7 +524,7 @@ const LandingPage = () => {
                                     <div key={course._id} className={`course-sticky-note ${themes[index % 3]} ${rotations[index % 3]}`}>
                                         <Icon size={40} className="sticky-icon" />
                                         <h4>{course.title}</h4>
-                                        <p>{course.description.substring(0, 80)}...</p>
+                                        <p>{getCourseTileDescription(course)}</p>
                                     </div>
                                 );
                             })}
@@ -483,35 +532,22 @@ const LandingPage = () => {
                                 <>
                                     <div className="course-sticky-note sticky-yellow rotate-1">
                                         <BarChart2 size={40} className="sticky-icon" />
-                                        <h4>Digital Signal Processing</h4>
-                                        <p>Master advanced signal processing techniques with industry-standard tools.</p>
+                                        <h4>Digital Image Processing</h4>
+                                        <p>Learn image enhancement, feature extraction, and practical vision workflows.</p>
                                     </div>
                                     <div className="course-sticky-note sticky-cyan rotate-2">
                                         <Sparkles size={40} className="sticky-icon" />
-                                        <h4>AI & Machine Learning</h4>
-                                        <p>Build cutting-edge AI solutions from neural networks to deep learning models.</p>
+                                        <h4>Digital Signal Processing</h4>
+                                        <p>Master advanced signal processing techniques with industry-standard tools.</p>
                                     </div>
                                     <div className="course-sticky-note sticky-pink rotate-3">
                                         <Zap size={40} className="sticky-icon" />
-                                        <h4>Embedded Systems & IoT</h4>
-                                        <p>Design next-gen connected devices using high-performance microcontrollers.</p>
+                                        <h4>Internet of Things (IoT)</h4>
+                                        <p>Build connected systems integrating sensors, edge logic, and cloud services.</p>
                                     </div>
                                 </>
                             )}
                         </div>
-                        <p style={{ fontStyle: 'italic', color: 'var(--text-muted)', marginTop: '2rem' }}>Positions limited. Early access guarantees premium mentorship opportunities.</p>
-                    </div>
-                    <div className="email-capture" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '16px', padding: '2rem', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.05)' }}>
-                        <h3 style={{ marginBottom: '1rem' }}>Join 500+ Students on the Waitlist</h3>
-                        <p style={{ marginBottom: '2rem', color: 'var(--text-muted)' }}>Get notified when courses launch and receive exclusive early access.</p>
-                        <form onSubmit={(e) => { e.preventDefault(); showToast.success("Thank you! We'll notify you when courses launch."); }} style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-                            <input type="email" placeholder="Enter your email" required style={{ flex: '1', minWidth: '250px' }} />
-                            <button type="submit" className="btn-primary" style={{ whiteSpace: 'nowrap' }}>
-                                <Mail size={18} />
-                                <span>Notify Me</span>
-                            </button>
-                        </form>
-                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '1rem' }}>No spam, unsubscribe anytime.</p>
                     </div>
                 </div>
             </section>

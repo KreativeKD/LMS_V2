@@ -82,9 +82,6 @@ const Professor = () => {
     }, []);
 
     const selectedProf = professorsData.find(p => p._id === activeProfId) || professorsData[0];
-    const isKiranProfile = selectedProf?.name?.toLowerCase().includes('kiran');
-    const experienceStat = isKiranProfile ? '37+' : selectedProf?.stats?.experience;
-    const patentsStat = isKiranProfile ? '25' : selectedProf?.stats?.patents;
 
 
     useEffect(() => {
@@ -122,7 +119,7 @@ const Professor = () => {
                         {isCollapsed ? <ChevronRight size={18} strokeWidth={3} /> : <ChevronLeft size={18} strokeWidth={3} />}
                     </button>
 
-                    <h3 className="sidebar-title">Faculty Directory</h3>
+                    <h3 className="sidebar-title">Instructor Directory</h3>
                     <div className="professor-list-nav">
                         {professorsData.map((prof) => (
                             <button
@@ -159,17 +156,10 @@ const Professor = () => {
                                     </div>
 
                                     <div className="professor-quick-info">
-                                        {/* Professor Information Paragraph */}
                                         <div style={{ marginTop: 0, lineHeight: '1.6', color: '#555' }}>
-                                            {/* PROFESSOR INFORMATION HERE - Paste the professor's paragraph/bio here */}
-                                            <p style={{ fontSize: '0.95rem' }}>
-                                                Dr. Kiran Talele is an academician, entrepreneur, and mentor dedicated to fostering innovation
-                                                and professional excellence. With a strong focus on student development and entrepreneurial mindset,
-                                                he has contributed significantly to academic programs, startups, and skill-building initiatives.
-                                                Dr. Talele combines 37+ years of experience with a passion for teaching, guiding students and
-                                                professionals to achieve meaningful growth and career success.
+                                            <p style={{ fontSize: '0.95rem', whiteSpace: 'pre-wrap' }}>
+                                                {selectedProf.bio || 'Instructor profile details will appear here after completion.'}
                                             </p>
-                                            <p>He serves as a Mentor for Startup Incubation and Intellectual Asset Creation, guiding innovation and entrepreneurial initiatives. He has authored more than 85 research papers published in reputed national and international conferences and journals. In addition, he holds over 25 patents filed and published in India, the United Kingdom, and Germany. He is also the co-founder of Vehiscrap, Serenitysphere, and Anudan Jagruti, contributing actively to technology-driven entrepreneurship and innovation.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -178,19 +168,19 @@ const Professor = () => {
                                 <div style={{ marginBottom: '2rem' }}>
                                     <div className="quick-stats">
                                         <div className="quick-stat">
-                                            <strong>{experienceStat}</strong>
+                                            <strong>{selectedProf?.stats?.experience || '--'}</strong>
                                             <span>Years Experience</span>
                                         </div>
                                         <div className="quick-stat">
-                                            <strong>{selectedProf.stats.publications}</strong>
+                                            <strong>{selectedProf?.stats?.publications || '--'}</strong>
                                             <span>Publications</span>
                                         </div>
                                         <div className="quick-stat">
-                                            <strong>{patentsStat}</strong>
+                                            <strong>{selectedProf?.stats?.patents || '--'}</strong>
                                             <span>Patents</span>
                                         </div>
                                         <div className="quick-stat">
-                                            <strong>{selectedProf.stats.startups}</strong>
+                                            <strong>{selectedProf?.stats?.startups || '--'}</strong>
                                             <span>Startups</span>
                                         </div>
                                     </div>
@@ -198,36 +188,38 @@ const Professor = () => {
 
                                 {/* Contact Buttons */}
                                 <div className="contact-buttons" style={{ marginBottom: '2rem' }}>
-                                    {selectedProf.contact.website !== '#' && (
+                                    {selectedProf?.contact?.website && (
                                         <a href={selectedProf.contact.website} target="_blank" rel="noopener noreferrer" className="contact-btn">
                                             <ExternalLink size={18} />
                                             <span>Website</span>
                                         </a>
                                     )}
-                                    {selectedProf.contact.linkedin !== '#' && (
+                                    {selectedProf?.contact?.linkedin && (
                                         <a href={selectedProf.contact.linkedin} target="_blank" rel="noopener noreferrer" className="contact-btn">
                                             <Linkedin size={18} />
                                             <span>LinkedIn</span>
                                         </a>
                                     )}
-                                    <a href={`mailto:${selectedProf.contact.email}`} className="contact-btn">
-                                        <Mail size={18} />
-                                        <span>Email</span>
-                                    </a>
+                                    {selectedProf?.contact?.email && (
+                                        <a href={`mailto:${selectedProf.contact.email}`} className="contact-btn">
+                                            <Mail size={18} />
+                                            <span>Email</span>
+                                        </a>
+                                    )}
                                 </div>
 
                                 {/* Courses Section */}
                                 <div className="professor-courses-section" style={{ margin: '2rem 0' }}>
                                     <h4 className="courses-section-title">Courses by {selectedProf.name}</h4>
                                     <div className="courses-grid">
-                                        {selectedProf.courses.map(course => (
+                                        {(selectedProf.courses || []).map(course => (
                                             <div key={course.id} className="landing-course-card">
                                                 <div className="course-card-content">
                                                     <div className="course-icon">
                                                         {course.id === 'dsp' ? <BarChart2 size={32} /> : <Zap size={32} />}
                                                     </div>
                                                     <h3>{course.title}</h3>
-                                                    <p>{course.description.substring(0, 100)}...</p>
+                                                    <p>{String(course.description || '').substring(0, 100)}...</p>
                                                     <button
                                                         className="know-more-btn"
                                                         onClick={() => handleKnowMore(course)}

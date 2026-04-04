@@ -141,12 +141,12 @@ router.get('/', async (req, res) => {
 
         // Fetch courses with pagination and minimal populate (no chapters/units)
         const courses = await Course.find()
-            .select('title description courseType descriptionPdf contentHours image instructor assignedTeachers students chapters completionDate createdAt')
+            .select('title description courseType descriptionPdf contentHours image instructor assignedTeachers students chapters displayOrder completionDate createdAt')
             .populate('instructor', 'username')
             .populate('assignedTeachers', 'username')
             .skip(skip)
             .limit(limit)
-            .sort({ createdAt: -1 })
+            .sort({ displayOrder: 1, createdAt: -1 })
             .lean(); // Use lean() for better performance
 
         // Add chapter count without loading full chapter data
@@ -430,9 +430,13 @@ router.delete('/:courseId/testimonials/:testimonialId', auth, authorize('admin',
 // Admin/Teacher: Create Course
 router.post('/', auth, authorize('admin', 'teacher'), validate(courseSchema), async (req, res) => {
     try {
+        const lastCourse = await Course.findOne().sort({ displayOrder: -1, createdAt: -1 }).select('displayOrder').lean();
+        const nextDisplayOrder = Number.isFinite(lastCourse?.displayOrder) ? lastCourse.displayOrder + 1 : 0;
+
         const course = new Course({
             ...req.body,
-            instructor: req.user._id
+            instructor: req.user._id,
+            displayOrder: nextDisplayOrder
         });
         await course.save();
         await createCourseCreatedAnnouncement({ course, actorId: req.user._id });
@@ -489,6 +493,55 @@ router.delete('/:id', auth, authorize('admin', 'teacher'), async (req, res) => {
         res.send({ message: 'Course deleted' });
     } catch (e) {
         res.status(500).send(e.message);
+    }
+});
+
+// Admin: Reorder Courses
+router.patch('/admin/reorder', auth, authorize('admin'), async (req, res) => {
+    try {
+        const { courseIds } = req.body;
+
+        if (!Array.isArray(courseIds) || courseIds.length < 2) {
+            return res.status(400).send({ error: 'courseIds must be an array with at least 2 course IDs' });
+        }
+
+        const uniqueCourseIds = [...new Set(courseIds.map((id) => String(id)))];
+        if (uniqueCourseIds.length !== courseIds.length) {
+            return res.status(400).send({ error: 'courseIds must not contain duplicates' });
+        }
+
+        const existingCourses = await Course.find({ _id: { $in: uniqueCourseIds } })
+            .select('_id displayOrder createdAt')
+            .lean();
+
+        if (existingCourses.length !== uniqueCourseIds.length) {
+            return res.status(400).send({ error: 'courseIds contains invalid course IDs' });
+        }
+
+        const sortedExisting = [...existingCourses].sort((a, b) => {
+            const aOrder = Number.isFinite(a.displayOrder) ? a.displayOrder : Number.MAX_SAFE_INTEGER;
+            const bOrder = Number.isFinite(b.displayOrder) ? b.displayOrder : Number.MAX_SAFE_INTEGER;
+            if (aOrder !== bOrder) return aOrder - bOrder;
+            return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        });
+
+        const orderById = new Map(sortedExisting.map((course, index) => [String(course._id), index]));
+        const bulkUpdates = uniqueCourseIds.map((courseId, index) => ({
+            updateOne: {
+                filter: { _id: courseId },
+                update: { $set: { displayOrder: index } }
+            }
+        }));
+
+        await Course.bulkWrite(bulkUpdates);
+
+        invalidateCache('GET:/api/courses*');
+        res.send({
+            message: 'Course order updated successfully',
+            previousOrder: Object.fromEntries(orderById)
+        });
+    } catch (e) {
+        res.status(500).send({ error: e.message });
     }
 });
 

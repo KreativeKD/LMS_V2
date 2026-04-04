@@ -228,7 +228,7 @@ const Login = () => {
                 {!isRegister && (
                   <div style={{ marginTop: spacing.lg, textAlign: 'center' }}>
                     <span style={{ fontSize: '14px', color: colors.textMuted }}>
-                      New student?{' '}
+                      New user?{' '}
                     </span>
                     <button
                       onClick={() => {

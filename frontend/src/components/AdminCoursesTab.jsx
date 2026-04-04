@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Eye, Edit, Trash2, User, Layout, Users, MoreVertical, BookOpen, UserMinus } from 'lucide-react';
 import { spacing, colors, typography } from '../theme';
@@ -7,7 +7,7 @@ import { Input } from './Input';
 import { Card } from './Card';
 import { AdminDataState } from './AdminDataState';
 import { ConfirmDialog } from './ConfirmDialog';
-import { createCourse, updateCourse, deleteCourse, fetchEnrolledStudents, assignTeacher, unassignTeacher } from '../api/api';
+import { createCourse, updateCourse, deleteCourse, fetchEnrolledStudents, assignTeacher, unassignTeacher, reorderCourses } from '../api/api';
 import { handleSuccess, handleApiError } from '../utils/toast';
 
 const getDisplayName = (person) => {
@@ -45,6 +45,18 @@ const getTeacherNames = (course) => {
   return uniqueNames.join(', ') || 'Unassigned';
 };
 
+const reorderCourseList = (coursesList, draggedId, targetId) => {
+  const fromIndex = coursesList.findIndex((course) => String(course._id) === String(draggedId));
+  const toIndex = coursesList.findIndex((course) => String(course._id) === String(targetId));
+
+  if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return coursesList;
+
+  const updated = [...coursesList];
+  const [moved] = updated.splice(fromIndex, 1);
+  updated.splice(toIndex, 0, moved);
+  return updated;
+};
+
 export const AdminCoursesTab = ({ courses, teachers, onCoursesUpdate, loading, error, onRetry }) => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
@@ -60,6 +72,14 @@ export const AdminCoursesTab = ({ courses, teachers, onCoursesUpdate, loading, e
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [formLoading, setFormLoading] = useState(false);
   const [teacherActionLoadingId, setTeacherActionLoadingId] = useState(null);
+  const [orderedCourses, setOrderedCourses] = useState(courses || []);
+  const [draggedCourseId, setDraggedCourseId] = useState(null);
+  const [dragOverCourseId, setDragOverCourseId] = useState(null);
+  const [reorderLoading, setReorderLoading] = useState(false);
+
+  useEffect(() => {
+    setOrderedCourses(courses || []);
+  }, [courses]);
 
   const handleEdit = (course) => {
     setEditingCourse(course);
@@ -142,7 +162,7 @@ export const AdminCoursesTab = ({ courses, teachers, onCoursesUpdate, loading, e
     e.preventDefault();
     try {
       await assignTeacher(editingCourse._id, selectedTeacherId);
-      handleSuccess('Teacher assigned successfully');
+      handleSuccess('Instructor assigned successfully');
       setSelectedTeacherId('');
       await onCoursesUpdate();
       setEditingCourse((prev) => {
@@ -166,7 +186,7 @@ export const AdminCoursesTab = ({ courses, teachers, onCoursesUpdate, loading, e
     setTeacherActionLoadingId(teacherId);
     try {
       await unassignTeacher(editingCourse._id, teacherId);
-      handleSuccess('Teacher unassigned successfully');
+      handleSuccess('Instructor unassigned successfully');
       await onCoursesUpdate();
       setEditingCourse((prev) => {
         if (!prev) return prev;
@@ -190,6 +210,37 @@ export const AdminCoursesTab = ({ courses, teachers, onCoursesUpdate, loading, e
       onCoursesUpdate();
     } catch (err) {
       handleApiError(err);
+    }
+  };
+
+  const handleCardDrop = async (targetCourseId) => {
+    if (!draggedCourseId || !targetCourseId || String(draggedCourseId) === String(targetCourseId)) {
+      setDraggedCourseId(null);
+      setDragOverCourseId(null);
+      return;
+    }
+
+    const previousOrder = [...orderedCourses];
+    const nextOrder = reorderCourseList(previousOrder, draggedCourseId, targetCourseId);
+    if (nextOrder === previousOrder) {
+      setDraggedCourseId(null);
+      setDragOverCourseId(null);
+      return;
+    }
+
+    setOrderedCourses(nextOrder);
+    setReorderLoading(true);
+
+    try {
+      await reorderCourses(nextOrder.map((course) => course._id));
+      handleSuccess('Course order updated');
+    } catch (err) {
+      setOrderedCourses(previousOrder);
+      handleApiError(err);
+    } finally {
+      setDraggedCourseId(null);
+      setDragOverCourseId(null);
+      setReorderLoading(false);
     }
   };
 
@@ -243,20 +294,49 @@ export const AdminCoursesTab = ({ courses, teachers, onCoursesUpdate, loading, e
       )}
 
       {!loading && !error && courses.length > 0 && (
+      <>
+      <p style={{ ...typography.small, margin: '0 0 ' + spacing.sm + ' 0', color: colors.textMuted }}>
+        Drag and drop a course card to move it left or right.
+      </p>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: spacing.md }}>
-        {courses.map(course => (
+        {orderedCourses.map(course => (
           <div 
             key={course._id} 
+            draggable={!reorderLoading}
+            onDragStart={() => {
+              setDraggedCourseId(course._id);
+            }}
+            onDragOver={(event) => {
+              event.preventDefault();
+              if (dragOverCourseId !== course._id) {
+                setDragOverCourseId(course._id);
+              }
+            }}
+            onDragLeave={() => {
+              if (dragOverCourseId === course._id) {
+                setDragOverCourseId(null);
+              }
+            }}
+            onDrop={(event) => {
+              event.preventDefault();
+              handleCardDrop(course._id);
+            }}
+            onDragEnd={() => {
+              setDraggedCourseId(null);
+              setDragOverCourseId(null);
+            }}
             style={{
               display: 'flex',
               flexDirection: 'column',
               background: colors.surface,
               borderRadius: '12px',
-              border: `1px solid ${colors.border}`,
+              border: `1px solid ${dragOverCourseId === course._id ? colors.primary : colors.border}`,
               boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
               transition: 'all 0.2s ease',
               height: '100%',
-              position: 'relative'
+              position: 'relative',
+              cursor: reorderLoading ? 'wait' : 'grab',
+              opacity: draggedCourseId === course._id ? 0.65 : 1
             }}
           >
             {/* Image Section */}
@@ -303,7 +383,7 @@ export const AdminCoursesTab = ({ courses, teachers, onCoursesUpdate, loading, e
                 margin: '0 0 ' + spacing.md + ' 0',
                 color: colors.textMuted 
               }}>
-                <strong>Teacher:</strong> {getTeacherNames(course)}
+                <strong>Instructor:</strong> {getTeacherNames(course)}
               </p>
 
               {/* Spacer */}
@@ -350,7 +430,7 @@ export const AdminCoursesTab = ({ courses, teachers, onCoursesUpdate, loading, e
                           setOpenDropdown(null);
                         }}
                       >
-                        <User size={14} /> Assign Teacher
+                        <User size={14} /> Assign Instructor
                       </button>
                       <button
                         style={dropdownItemStyle}
@@ -389,6 +469,7 @@ export const AdminCoursesTab = ({ courses, teachers, onCoursesUpdate, loading, e
           </div>
         ))}
       </div>
+      </>
       )}
 
       {/* Create/Edit Modal */}
@@ -444,7 +525,7 @@ export const AdminCoursesTab = ({ courses, teachers, onCoursesUpdate, loading, e
                 >
                   <option value="academic">Academic</option>
                   <option value="professional">Professional</option>
-                  <option value="both">Both</option>
+                  <option value="short-term">Short Term</option>
                 </select>
               </div>
               <Input
@@ -605,14 +686,14 @@ export const AdminCoursesTab = ({ courses, teachers, onCoursesUpdate, loading, e
         </div>
       )}
 
-      {/* Assign Teacher Modal */}
+      {/* Assign Instructor Modal */}
       {showAssignModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <Card style={{ maxWidth: '400px', width: '90%' }}>
-            <h2 style={typography.h3}>Assign Teacher</h2>
+            <h2 style={typography.h3}>Assign Instructor</h2>
             <form onSubmit={handleAssignTeacher} style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg, marginTop: spacing.lg }}>
               <div>
-                <label style={{ ...typography.label, display: 'block', marginBottom: spacing.sm }}>Select Teacher</label>
+                <label style={{ ...typography.label, display: 'block', marginBottom: spacing.sm }}>Select Instructor</label>
                 <select
                   value={selectedTeacherId}
                   onChange={(e) => setSelectedTeacherId(e.target.value)}
@@ -627,7 +708,7 @@ export const AdminCoursesTab = ({ courses, teachers, onCoursesUpdate, loading, e
                   }}
                   required
                 >
-                  <option value="">-- Select a Teacher --</option>
+                  <option value="">-- Select an Instructor --</option>
                   {teachers.map(t => (
                     <option key={t._id} value={t._id}>{t.username}</option>
                   ))}
@@ -635,9 +716,9 @@ export const AdminCoursesTab = ({ courses, teachers, onCoursesUpdate, loading, e
               </div>
 
               <div>
-                <label style={{ ...typography.label, display: 'block', marginBottom: spacing.sm }}>Assigned Teachers</label>
+                <label style={{ ...typography.label, display: 'block', marginBottom: spacing.sm }}>Assigned Instructors</label>
                 {(editingCourse?.assignedTeachers || []).length === 0 ? (
-                  <p style={{ ...typography.small, color: colors.textMuted, margin: 0 }}>No teachers assigned yet.</p>
+                  <p style={{ ...typography.small, color: colors.textMuted, margin: 0 }}>No instructors assigned yet.</p>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
                     {(editingCourse?.assignedTeachers || []).map((teacher) => (
@@ -655,7 +736,7 @@ export const AdminCoursesTab = ({ courses, teachers, onCoursesUpdate, loading, e
                         }}
                       >
                         <span style={{ ...typography.small, color: colors.text }}>
-                          {getDisplayName(teacher) || teacher.username || 'Teacher'}
+                          {getDisplayName(teacher) || teacher.username || 'Instructor'}
                         </span>
                         <Button
                           type="button"

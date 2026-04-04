@@ -92,8 +92,8 @@ const courseSchema = Joi.object({
         'string.min': 'Course description must be at least 10 characters',
         'string.max': 'Course description cannot exceed 2000 characters',
     }),
-    courseType: Joi.string().valid('academic', 'professional', 'both').default('academic').messages({
-        'any.only': 'Course type must be academic, professional, or both'
+    courseType: Joi.string().valid('academic', 'professional', 'short-term').default('academic').messages({
+        'any.only': 'Course type must be academic, professional, or short-term'
     }),
     descriptionPdf: Joi.string().allow('').max(45000000).messages({
         'string.max': 'Description PDF is too large. Please upload a smaller file.'

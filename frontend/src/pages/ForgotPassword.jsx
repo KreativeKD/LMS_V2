@@ -138,7 +138,7 @@ const ForgotPassword = () => {
                   id="username"
                   label="Username"
                   type="text"
-                  placeholder="name@teacher"
+                  placeholder="name@instructor"
                   value={username}
                   onChange={(event) => {
                     setUsername(event.target.value);

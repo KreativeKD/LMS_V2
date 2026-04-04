@@ -5,7 +5,7 @@ const courseSchema = new mongoose.Schema({
     description: { type: String },
     courseType: {
         type: String,
-        enum: ['academic', 'professional', 'both'],
+        enum: ['academic', 'professional', 'short-term'],
         default: 'academic'
     },
     descriptionPdf: { type: String }, // Base64 data URL for course description PDF
@@ -15,6 +15,7 @@ const courseSchema = new mongoose.Schema({
     instructor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     assignedTeachers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     chapters: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Chapter' }],
+    displayOrder: { type: Number, min: 0 },
     completionDate: { type: Date }
 }, { timestamps: true });
 

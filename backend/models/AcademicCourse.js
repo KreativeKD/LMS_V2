@@ -5,7 +5,7 @@ const academicCourseSchema = new mongoose.Schema({
     description: { type: String },
     courseType: {
         type: String,
-        enum: ['academic', 'professional', 'both'],
+        enum: ['academic', 'professional', 'short-term'],
         default: 'academic'
     },
     professor: { type: String },
