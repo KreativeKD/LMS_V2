@@ -24,7 +24,6 @@ const QuizView = React.lazy(() => import('./pages/QuizView'));
 const StudentCourseView = React.lazy(() => import('./pages/StudentCourseView'));
 const StudentRegistrationForm = React.lazy(() => import('./pages/StudentRegistrationForm'));
 const UserProfile = React.lazy(() => import('./pages/UserProfile'));
-const InstructorProfile = React.lazy(() => import('./pages/InstructorProfile'));
 const Professor = React.lazy(() => import('./pages/Professor'));
 const CoursesPage = React.lazy(() => import('./pages/CoursesPage'));
 const Scholarship = React.lazy(() => import('./pages/Scholarship'));
@@ -96,14 +95,6 @@ function AppShell() {
             <ProtectedRoute roles={['admin', 'teacher']}>
               <Suspense fallback={<RouteLoadingSpinner />}>
                 <TeacherDashboard />
-              </Suspense>
-            </ProtectedRoute>
-          } />
-
-          <Route path="/teacher/instructor-profile" element={
-            <ProtectedRoute roles={['teacher']}>
-              <Suspense fallback={<RouteLoadingSpinner />}>
-                <InstructorProfile />
               </Suspense>
             </ProtectedRoute>
           } />

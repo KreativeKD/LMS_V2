@@ -308,18 +308,10 @@ const TeacherDashboard = () => {
       >
         <div style={{ width: '100%' }}>
           <div style={{ marginBottom: spacing.md }}>
-            <h2 style={{ ...typography.h3, margin: 0 }}>Instructor Studio</h2>
+            <h2 style={{ ...typography.h3, margin: 0 }}>Teacher Studio</h2>
             <p style={{ ...typography.small, color: colors.textMuted, margin: `${spacing.xs} 0 0 0` }}>
               Manage curriculum and monitor enrollment from one place.
             </p>
-            <div style={{ marginTop: spacing.sm }}>
-              <Button
-                variant="secondary"
-                onClick={() => navigate('/teacher/instructor-profile')}
-              >
-                Setup Instructor Profile
-              </Button>
-            </div>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: spacing.md }}>
             <div style={{ padding: spacing.md, borderRadius: 10, background: colors.surface, border: `1px solid ${colors.border}` }}>
@@ -369,7 +361,7 @@ const TeacherDashboard = () => {
               >
                 <option value="academic">Academic</option>
                 <option value="professional">Professional</option>
-                <option value="short-term">Short Term</option>
+                <option value="both">Both</option>
               </select>
             </div>
             <div style={{ width: '100%' }}>
@@ -685,7 +677,7 @@ const TeacherDashboard = () => {
         to { transform: translateX(0); opacity: 1; }
       }`}</style>
       <PageLayout
-        title="Instructor Studio"
+        title="Teacher Studio"
         header={mobileHeader}
         sidebar={!isMobile ? sidebar : null}
         hasSidebar={!isMobile}

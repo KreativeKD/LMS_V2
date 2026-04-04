@@ -1,7 +1,6 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const Professor = require('../models/Professor');
 const RegistrationRequest = require('../models/RegistrationRequest');
 const PasswordResetRequest = require('../models/PasswordResetRequest');
 const SystemSetting = require('../models/SystemSetting');
@@ -24,8 +23,7 @@ const normalizeUsernameAlias = (value = '') => {
     }
 
     const localPart = trimmed.slice(0, atIndex).toLowerCase().replace(/\s+/g, '');
-    const rawRolePart = trimmed.slice(atIndex + 1).toLowerCase().replace(/\s+/g, '');
-    const rolePart = rawRolePart === 'instructor' ? 'teacher' : rawRolePart;
+    const rolePart = trimmed.slice(atIndex + 1).toLowerCase().replace(/\s+/g, '');
     return `${localPart}@${rolePart}`;
 };
 
@@ -44,10 +42,9 @@ const findUserByUsernameAlias = async (username, projection = '') => {
     if (atIndex === -1) return null;
 
     const role = trimmed.slice(atIndex + 1).trim().toLowerCase();
-    const normalizedRole = role === 'instructor' ? 'teacher' : role;
-    if (!['admin', 'teacher', 'student'].includes(normalizedRole)) return null;
+    if (!['admin', 'teacher', 'student'].includes(role)) return null;
 
-    let candidatesQuery = User.find({ role: normalizedRole });
+    let candidatesQuery = User.find({ role });
     if (projection) {
         candidatesQuery = candidatesQuery.select(projection);
     }
@@ -55,28 +52,6 @@ const findUserByUsernameAlias = async (username, projection = '') => {
     const normalizedInput = normalizeUsernameAlias(trimmed);
 
     return candidates.find((candidate) => normalizeUsernameAlias(candidate.username) === normalizedInput) || null;
-};
-
-const isInstructorProfileComplete = (profile = {}) => {
-    const hasName = String(profile.name || '').trim().length > 0;
-    const hasDesignation = String(profile.designation || '').trim().length > 0;
-    const hasPhoto = String(profile.photo || '').trim().length > 0;
-    const hasBio = String(profile.bio || '').trim().length >= 50;
-    const stats = profile.stats || {};
-    const hasStats = ['experience', 'publications', 'patents', 'startups']
-        .every((key) => String(stats[key] || '').trim().length > 0);
-
-    return hasName && hasDesignation && hasPhoto && hasBio && hasStats;
-};
-
-const LEGACY_KIRAN_BIO = 'Dr. Kiran Talele is an academician, entrepreneur, and mentor dedicated to fostering innovation and professional excellence. With a strong focus on student development and entrepreneurial mindset, he has contributed significantly to academic programs, startups, and skill-building initiatives. Dr. Talele combines 37+ years of experience with a passion for teaching, guiding students and professionals to achieve meaningful growth and career success. He serves as a Mentor for Startup Incubation and Intellectual Asset Creation, guiding innovation and entrepreneurial initiatives. He has authored more than 85 research papers published in reputed national and international conferences and journals. In addition, he holds over 25 patents filed and published in India, the United Kingdom, and Germany. He is also the co-founder of Vehiscrap, Serenitysphere, and Anudan Jagruti, contributing actively to technology-driven entrepreneurship and innovation.';
-
-const isKiranProfileName = (name = '') => /kiran\s*talele/i.test(String(name || '').trim());
-
-const applyIfMissing = (currentValue, fallbackValue) => {
-    const current = String(currentValue || '').trim();
-    const fallback = String(fallbackValue || '').trim();
-    return current.length > 0 ? current : fallback;
 };
 
 // Login route with name@role logic
@@ -148,19 +123,17 @@ router.post('/login', loginLimiter, validate(loginSchema), async (req, res) => {
             return res.status(400).send({ error: 'Invalid username format. Use name@role' });
         }
 
-        const [name, roleInput] = parts;
-        const requestedRole = String(roleInput || '').toLowerCase();
-        const normalizedRole = requestedRole === 'instructor' ? 'teacher' : requestedRole;
+        const [name, role] = parts;
         const user = await findUserByUsernameAlias(username, '+password');
 
-        if (!user || user.role !== normalizedRole) {
-            logger.error('User authentication failed', { username, role: requestedRole });
+        if (!user || user.role !== role) {
+            logger.error('User authentication failed', { username, role });
             return res.status(400).send({ error: 'Invalid login credentials' });
         }
 
         const isPasswordValid = await user.comparePassword(password);
         if (!isPasswordValid) {
-            logger.error('User authentication failed: invalid password', { username, role: requestedRole });
+            logger.error('User authentication failed: invalid password', { username, role });
             return res.status(400).send({ error: 'Invalid login credentials' });
         }
 
@@ -215,119 +188,6 @@ router.patch('/me', auth, validate(updateProfileSchema), async (req, res) => {
     } catch (e) {
         console.error('Profile update error:', e);
         res.status(400).send({ error: e.message || 'Failed to update profile' });
-    }
-});
-
-router.get('/me/instructor-profile', auth, authorize('teacher'), async (req, res) => {
-    try {
-        const fallbackName = String(req.user.username || '').split('@')[0] || 'Instructor';
-        let profile = await Professor.findOne({ teacherId: req.user._id });
-
-        if (!profile) {
-            profile = await Professor.create({
-                teacherId: req.user._id,
-                name: fallbackName,
-                designation: 'Professor',
-                contact: {
-                    email: req.user.email || ''
-                },
-                stats: {
-                    experience: '',
-                    publications: '',
-                    patents: '',
-                    startups: ''
-                },
-                isProfileComplete: false
-            });
-        }
-
-        const profileName = applyIfMissing(profile.name, fallbackName);
-        if (isKiranProfileName(profileName)) {
-            const legacyProfile = await Professor.findOne({
-                _id: { $ne: profile._id },
-                name: /kiran\s*talele/i,
-                $or: [
-                    { teacherId: { $exists: false } },
-                    { teacherId: null }
-                ]
-            }).lean();
-
-            profile.name = applyIfMissing(profile.name, legacyProfile?.name || 'Dr. Kiran TALELE');
-            profile.designation = applyIfMissing(profile.designation, legacyProfile?.designation || 'Professor');
-            profile.photo = applyIfMissing(profile.photo, legacyProfile?.photo);
-            profile.bio = applyIfMissing(profile.bio, legacyProfile?.bio || LEGACY_KIRAN_BIO);
-            profile.dept = applyIfMissing(profile.dept, legacyProfile?.dept);
-            profile.institution = applyIfMissing(profile.institution, legacyProfile?.institution);
-
-            profile.stats = {
-                ...(profile.stats || {}),
-                experience: applyIfMissing(profile?.stats?.experience, legacyProfile?.stats?.experience || '37+'),
-                publications: applyIfMissing(profile?.stats?.publications, legacyProfile?.stats?.publications || '85+'),
-                patents: applyIfMissing(profile?.stats?.patents, legacyProfile?.stats?.patents || '25'),
-                startups: applyIfMissing(profile?.stats?.startups, legacyProfile?.stats?.startups || '4')
-            };
-
-            profile.contact = {
-                ...(profile.contact || {}),
-                email: applyIfMissing(profile?.contact?.email, legacyProfile?.contact?.email || req.user.email),
-                website: applyIfMissing(profile?.contact?.website, legacyProfile?.contact?.website),
-                linkedin: applyIfMissing(profile?.contact?.linkedin, legacyProfile?.contact?.linkedin)
-            };
-        }
-
-        profile.isProfileComplete = isInstructorProfileComplete(profile);
-        await profile.save();
-
-        res.send(profile);
-    } catch (e) {
-        res.status(500).send({ error: e.message });
-    }
-});
-
-router.put('/me/instructor-profile', auth, authorize('teacher'), async (req, res) => {
-    try {
-        const teacher = await User.findById(req.user._id);
-        if (!teacher) return res.status(404).send({ error: 'Instructor not found' });
-
-        const payload = {
-            teacherId: teacher._id,
-            name: String(req.body?.name || '').trim() || String(teacher.username || '').split('@')[0],
-            designation: String(req.body?.designation || '').trim() || 'Professor',
-            dept: String(req.body?.dept || '').trim(),
-            institution: String(req.body?.institution || '').trim(),
-            photo: String(req.body?.photo || '').trim(),
-            bio: String(req.body?.bio || '').trim(),
-            stats: {
-                experience: String(req.body?.stats?.experience || '').trim(),
-                publications: String(req.body?.stats?.publications || '').trim(),
-                patents: String(req.body?.stats?.patents || '').trim(),
-                startups: String(req.body?.stats?.startups || '').trim()
-            },
-            contact: {
-                website: String(req.body?.contact?.website || '').trim(),
-                linkedin: String(req.body?.contact?.linkedin || '').trim(),
-                email: String(req.body?.contact?.email || teacher.email || '').trim()
-            }
-        };
-
-        payload.isProfileComplete = isInstructorProfileComplete(payload);
-
-        const profile = await Professor.findOneAndUpdate(
-            { teacherId: teacher._id },
-            { $set: payload },
-            { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true }
-        );
-
-        if (!profile.isProfileComplete) {
-            return res.status(400).send({
-                error: 'Complete all required profile fields before publishing to the Professor tab.',
-                profile
-            });
-        }
-
-        res.send(profile);
-    } catch (e) {
-        res.status(400).send({ error: e.message });
     }
 });
 
@@ -593,27 +453,7 @@ router.post('/admin/add-teacher', auth, authorize('admin'), async (req, res) => 
         const username = `${name}@teacher`;
         const user = new User({ username, password, role: 'teacher' });
         await user.save();
-
-        await Professor.findOneAndUpdate(
-            { teacherId: user._id },
-            {
-                $setOnInsert: {
-                    teacherId: user._id,
-                    name,
-                    designation: 'Professor',
-                    stats: {
-                        experience: '',
-                        publications: '',
-                        patents: '',
-                        startups: ''
-                    },
-                    isProfileComplete: false
-                }
-            },
-            { upsert: true, new: true }
-        );
-
-        res.status(201).send({ message: 'Instructor added successfully', username });
+        res.status(201).send({ message: 'Teacher added successfully', username });
     } catch (e) {
         res.status(400).send(e.message);
     }
@@ -651,16 +491,14 @@ router.delete('/admin/teachers/:id', auth, authorize('admin'), async (req, res) 
         });
 
         if (!teacher) {
-            return res.status(404).send({ error: 'Instructor not found' });
+            return res.status(404).send({ error: 'Teacher not found' });
         }
 
         await Notification.deleteMany({
             $or: [{ recipient: teacher._id }, { actor: teacher._id }]
         });
 
-        await Professor.deleteOne({ teacherId: teacher._id });
-
-        res.send({ message: 'Instructor deleted successfully' });
+        res.send({ message: 'Teacher deleted successfully' });
     } catch (e) {
         res.status(500).send({ error: e.message });
     }

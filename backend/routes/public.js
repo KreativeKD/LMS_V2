@@ -12,8 +12,7 @@ const { auth, authorize } = require('../middleware/auth');
 
 const PUBLIC_PROFESSOR_EXCLUDE_REGEX = /michael chen/i;
 const getPublicProfessorQuery = () => ({
-    name: { $not: PUBLIC_PROFESSOR_EXCLUDE_REGEX },
-    isProfileComplete: true
+    name: { $not: PUBLIC_PROFESSOR_EXCLUDE_REGEX }
 });
 
 const serializeGeneralTestimonial = (item) => {
@@ -44,40 +43,8 @@ const serializeGeneralTestimonial = (item) => {
 // Get all professors
 router.get('/professors', async (req, res) => {
     try {
-        const professors = await Professor.find(getPublicProfessorQuery()).lean();
-
-        const teacherIds = professors
-            .map((prof) => prof.teacherId)
-            .filter(Boolean);
-
-        const linkedCourses = teacherIds.length > 0
-            ? await Course.find({
-                $or: [
-                    { instructor: { $in: teacherIds } },
-                    { assignedTeachers: { $in: teacherIds } }
-                ]
-            }).select('title description instructor assignedTeachers').lean()
-            : [];
-
-        const profiles = professors.map((prof) => {
-            const myCourses = linkedCourses.filter((course) => {
-                const isInstructor = String(course.instructor) === String(prof.teacherId);
-                const isAssigned = Array.isArray(course.assignedTeachers)
-                    && course.assignedTeachers.some((teacherId) => String(teacherId) === String(prof.teacherId));
-                return isInstructor || isAssigned;
-            });
-
-            return {
-                ...prof,
-                courses: myCourses.map((course) => ({
-                    id: String(course._id),
-                    title: course.title,
-                    description: course.description || 'Live course by instructor'
-                }))
-            };
-        });
-
-        res.send(profiles);
+        const professors = await Professor.find(getPublicProfessorQuery());
+        res.send(professors);
     } catch (err) {
         res.status(500).send(err);
     }

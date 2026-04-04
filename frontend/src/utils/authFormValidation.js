@@ -1,5 +1,5 @@
 const NAME_REGEX = /^[A-Za-z][A-Za-z\s'-]{1,49}$/;
-const USERNAME_ROLE_REGEX = /^[A-Za-z0-9._\-\s]{1,40}@(admin|teacher|instructor|student)$/i;
+const USERNAME_ROLE_REGEX = /^[A-Za-z0-9._\-\s]{1,40}@(admin|teacher|student)$/i;
 
 export const validateName = (value, fieldLabel = 'Name') => {
   const trimmed = (value || '').trim();
@@ -20,7 +20,7 @@ export const validateUsernameWithRole = (value) => {
   const trimmed = (value || '').trim();
   if (!trimmed) return 'Username is required';
   if (!USERNAME_ROLE_REGEX.test(trimmed)) {
-    return 'Use format name@role (role: admin, instructor, or student)';
+    return 'Use format name@role (role: admin, teacher, or student)';
   }
   return '';
 };

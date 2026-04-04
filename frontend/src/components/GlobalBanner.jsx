@@ -9,7 +9,7 @@ const PAGE_TITLES = {
     '/complete-setup': 'Complete Setup',
     '/student-registration': 'Student Registration',
     '/admin': 'Admin Dashboard',
-    '/teacher': 'Instructor Studio',
+    '/teacher': 'Teacher Studio',
     '/student': 'Student Dashboard',
     '/my-courses': 'My Courses',
     '/courses': 'Courses',

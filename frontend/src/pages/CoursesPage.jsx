@@ -39,15 +39,15 @@ const CoursesPage = () => {
     }, []);
 
     const normalizeCourseType = (courseType) => {
-        if (courseType === 'professional' || courseType === 'short-term') return courseType;
+        if (courseType === 'professional' || courseType === 'both') return courseType;
         return 'academic';
     };
 
     const typeFilteredCourses = coursesData.filter((course) => {
         const type = normalizeCourseType(course.courseType);
         if (selectedCourseType === 'all') return true;
-        if (selectedCourseType === 'academic') return type === 'academic';
-        return type === 'professional';
+        if (selectedCourseType === 'academic') return type === 'academic' || type === 'both';
+        return type === 'professional' || type === 'both';
     });
 
     const filteredCourses = selectedBranch === 'All'
@@ -181,11 +181,9 @@ const CoursesPage = () => {
                                 const colorClass = colors[index % colors.length];
                                 const rotationClass = rotations[index % rotations.length];
                                 const courseCategory = normalizeCourseType(course.courseType);
-                                const categoryLabel = courseCategory === 'professional'
-                                    ? 'Professional'
-                                    : courseCategory === 'short-term'
-                                        ? 'Short Term'
-                                        : 'Academic';
+                                const categoryLabel = courseCategory === 'both'
+                                    ? 'Academic + Professional'
+                                    : (courseCategory === 'professional' ? 'Professional' : 'Academic');
 
                                 return (
                                     <Card key={course._id} className={`${colorClass} ${rotationClass}`} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>

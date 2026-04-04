@@ -469,7 +469,7 @@ const CourseEditor = () => {
     if (!course) return <PageLayout title="Course Editor"><p style={{ ...typography.bodySmall, color: colors.textMuted }}>Course not found.</p></PageLayout>;
 
     const breadcrumbs = [
-        { label: 'Instructor Dashboard', onClick: () => navigate('/teacher') },
+        { label: 'Teacher Dashboard', onClick: () => navigate('/teacher') },
         { label: course.title, current: true }
     ];
 
@@ -505,7 +505,7 @@ const CourseEditor = () => {
                         >
                             <option value="academic">Academic</option>
                             <option value="professional">Professional</option>
-                            <option value="short-term">Short Term</option>
+                            <option value="both">Both</option>
                         </select>
                     </div>
                     <Button

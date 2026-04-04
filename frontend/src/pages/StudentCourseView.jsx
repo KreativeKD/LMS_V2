@@ -635,7 +635,7 @@ const StudentCourseView = () => {
                     Share your feedback
                   </h3>
                   <p style={{ margin: '8px 0 0 0', fontSize: '13px', lineHeight: 1.5, color: colors.textMuted }}>
-                    Your feedback is shared with the course instructor inside the instructor dashboard.
+                    Your feedback is shared with the course teacher inside the teacher dashboard.
                   </p>
                 </div>
 

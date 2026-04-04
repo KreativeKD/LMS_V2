@@ -62,7 +62,7 @@ export const addTeacher = async (name, password) => {
         headers: getHeaders(),
         body: JSON.stringify({ name, password })
     });
-    if (!response.ok) throw new Error('Failed to add instructor');
+    if (!response.ok) throw new Error('Failed to add teacher');
     return response.json();
 };
 
@@ -71,7 +71,7 @@ export const deleteTeacher = async (teacherId) => {
         method: 'DELETE',
         headers: getHeaders()
     });
-    if (!response.ok) throw new Error('Failed to delete instructor');
+    if (!response.ok) throw new Error('Failed to delete teacher');
     return response.json();
 };
 
@@ -128,19 +128,6 @@ export const deleteCourse = async (courseId) => {
         headers: getHeaders()
     });
     if (!response.ok) throw new Error('Failed to delete course');
-};
-
-export const reorderCourses = async (courseIds) => {
-    const response = await fetch(`${API_URL}/courses/admin/reorder`, {
-        method: 'PATCH',
-        headers: getHeaders(),
-        body: JSON.stringify({ courseIds })
-    });
-    if (!response.ok) {
-        const data = await safeJsonParse(response);
-        throw new Error(data?.error || 'Failed to reorder courses');
-    }
-    return response.json();
 };
 
 export const addChapter = async (courseId, chapterData) => {
@@ -249,7 +236,7 @@ export const fetchTeachers = async () => {
     const response = await fetch(`${API_URL}/auth/admin/teachers`, {
         headers: getHeaders()
     });
-    if (!response.ok) throw new Error('Failed to fetch instructors');
+    if (!response.ok) throw new Error('Failed to fetch teachers');
     return response.json();
 };
 
@@ -496,7 +483,7 @@ export const assignTeacher = async (courseId, teacherId) => {
         headers: getHeaders(),
         body: JSON.stringify({ teacherId })
     });
-    if (!response.ok) throw new Error('Failed to assign instructor');
+    if (!response.ok) throw new Error('Failed to assign teacher');
     return response.json();
 };
 
@@ -507,7 +494,7 @@ export const unassignTeacher = async (courseId, teacherId) => {
     });
     if (!response.ok) {
         const data = await safeJsonParse(response);
-        throw new Error(data?.error || 'Failed to unassign instructor');
+        throw new Error(data?.error || 'Failed to unassign teacher');
     }
     return response.json();
 };
@@ -536,34 +523,6 @@ export const updateUserProfile = async (data) => {
         throw new Error(errorData?.error || 'Failed to update profile');
     }
     return response.json();
-};
-
-export const fetchMyInstructorProfile = async () => {
-    const response = await fetch(`${API_URL}/auth/me/instructor-profile`, {
-        headers: getHeaders()
-    });
-    if (!response.ok) {
-        const data = await safeJsonParse(response);
-        throw new Error(data?.error || 'Failed to fetch instructor profile');
-    }
-    return response.json();
-};
-
-export const updateMyInstructorProfile = async (data) => {
-    const response = await fetch(`${API_URL}/auth/me/instructor-profile`, {
-        method: 'PUT',
-        headers: getHeaders(),
-        body: JSON.stringify(data)
-    });
-
-    const responseData = await safeJsonParse(response);
-    if (!response.ok) {
-        const error = new Error(responseData?.error || 'Failed to update instructor profile');
-        error.profile = responseData?.profile;
-        throw error;
-    }
-
-    return responseData;
 };
 
 // --- Public Data API ---

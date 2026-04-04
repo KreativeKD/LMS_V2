@@ -211,18 +211,14 @@ const StudentDashboard = () => {
     };
 
     const normalizeCourseType = (courseType) => {
-        if (courseType === 'professional' || courseType === 'short-term') return courseType;
+        if (courseType === 'professional' || courseType === 'both') return courseType;
         return 'academic';
     };
 
     const matchesSelectedType = (course) => {
-        if (selectedCourseType === 'short-term') {
-            const type = normalizeCourseType(course.courseType);
-            return type === 'short-term';
-        }
         const type = normalizeCourseType(course.courseType);
-        if (selectedCourseType === 'academic') return type === 'academic';
-        return type === 'professional';
+        if (selectedCourseType === 'academic') return type === 'academic' || type === 'both';
+        return type === 'professional' || type === 'both';
     };
 
     const displayedCourses = courses.filter((course) => {
@@ -419,14 +415,6 @@ const StudentDashboard = () => {
                                         >
                                             Professional
                                         </Button>
-                                        <Button
-                                            variant={selectedCourseType === 'short-term' ? 'primary' : 'ghost'}
-                                            size="sm"
-                                            style={{ textTransform: 'none', width: '100%', justifyContent: 'center' }}
-                                            onClick={() => setSelectedCourseType('short-term')}
-                                        >
-                                            Short Term
-                                        </Button>
                                     </div>
                                 </div>
                             )}
@@ -563,7 +551,7 @@ const StudentDashboard = () => {
                                     fontSize: '0.86rem',
                                     fontWeight: 600 
                                 }}>
-                                    <span style={{ color: colors.text, fontWeight: 700 }}>Instructor:</span>{' '}
+                                    <span style={{ color: colors.text, fontWeight: 700 }}>Teacher:</span>{' '}
                                     <span style={{ color: colors.text }}>{getTeacherNames(course)}</span>
                                 </p>
 
@@ -669,9 +657,7 @@ const StudentDashboard = () => {
                                 ? 'You have not enrolled in any courses yet.'
                                 : searchQuery.trim()
                                     ? 'No courses matched your search.'
-                                    : selectedCourseType === 'short-term'
-                                        ? 'No short-term courses are available right now.'
-                                        : `No ${selectedCourseType} courses are available right now.`}
+                                    : `No ${selectedCourseType} courses are available right now.`}
                         </p>
                     </Card>
                 )}
