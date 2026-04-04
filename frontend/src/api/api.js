@@ -1,7 +1,6 @@
 import { fetchWithRetry, safeJsonParse } from "./interceptor";
 
-// const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-const API_URL = "https://api2.coursez.in/api";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const getHeaders = () => {
   const token = localStorage.getItem("token");
@@ -402,6 +401,22 @@ export const deleteCourseFeedbackById = async (courseId, feedbackId) => {
   if (!response.ok) {
     const data = await safeJsonParse(response);
     throw new Error(data?.error || "Failed to delete feedback");
+  }
+  return response.json();
+};
+
+export const saveCurrentUnitProgress = async (courseId, unitId) => {
+  const response = await fetch(
+    `${API_URL}/courses/${courseId}/progress/current-unit`,
+    {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify({ unitId }),
+    },
+  );
+  if (!response.ok) {
+    const data = await safeJsonParse(response);
+    throw new Error(data?.error || "Failed to save course progress");
   }
   return response.json();
 };

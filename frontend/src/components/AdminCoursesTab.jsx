@@ -563,7 +563,10 @@ export const AdminCoursesTab = ({ courses, teachers, onCoursesUpdate, loading, e
                 />
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: spacing.sm, fontWeight: 600, fontSize: '0.9rem', color: colors.text }}>Course Image</label>
+                <label style={{ display: 'block', marginBottom: spacing.sm, fontWeight: 600, fontSize: '0.9rem', color: colors.text }}>Course Card / First-Visit Image</label>
+                <div style={{ marginBottom: spacing.sm, ...typography.small, color: colors.textMuted }}>
+                  This image is used on the course card and shown the first time a student enters the course.
+                </div>
                 <div style={{ position: 'relative', marginBottom: spacing.md }}>
                   {courseForm.image && (
                     <div style={{ marginBottom: spacing.md, borderRadius: '8px', overflow: 'hidden', maxHeight: '200px' }}>

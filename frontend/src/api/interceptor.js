@@ -1,7 +1,6 @@
 import { showToast } from "../utils/toast";
 
-// const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-const API_URL = "https://api2.coursez.in/api";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 /**
  * Centralized error handler for all API requests

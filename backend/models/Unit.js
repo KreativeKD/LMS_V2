@@ -20,6 +20,7 @@ const unitSchema = new mongoose.Schema({
         videoUrl: { type: String }, // YouTube link
         pdfUrl: { type: String },   // File path/URL
         text: { type: String },     // Description or content
+        coverImage: { type: String }, // Intro/preview image shown before opening the unit
         quiz: { type: mongoose.Schema.Types.ObjectId, ref: 'Quiz' }
     },
     likes: { type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], default: [] }, // Array of user IDs who liked this unit

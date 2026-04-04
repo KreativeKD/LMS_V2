@@ -133,6 +133,9 @@ const unitSchema = Joi.object({
             'string.max': 'PDF content is too large. Please upload a smaller file.'
         }),
         text: Joi.string().allow(''),
+        coverImage: Joi.string().allow('').max(5000000).messages({
+            'string.max': 'Module intro image is too large. Please upload a smaller image.'
+        }),
         quiz: Joi.string().allow('')
     })
 });
@@ -147,6 +150,9 @@ const updateUnitSchema = Joi.object({
             'string.max': 'PDF content is too large. Please upload a smaller file.'
         }),
         text: Joi.string().allow(''),
+        coverImage: Joi.string().allow('').max(5000000).messages({
+            'string.max': 'Module intro image is too large. Please upload a smaller image.'
+        }),
         quiz: Joi.string().allow('')
     }).optional()
 });

@@ -523,8 +523,12 @@ const LandingPage = () => {
                                 return (
                                     <div key={course._id} className={`course-sticky-note ${themes[index % 3]} ${rotations[index % 3]}`}>
                                         <Icon size={40} className="sticky-icon" />
-                                        <h4>{course.title}</h4>
-                                        <p>{getCourseTileDescription(course)}</p>
+                                        <h4>{index === 2 ? 'Drone Design' : course.title}</h4>
+                                        <p>
+                                            {index === 2
+                                                ? 'Design UAV systems with aerodynamics, flight control, onboard electronics, and mission-ready prototypes.'
+                                                : getCourseTileDescription(course)}
+                                        </p>
                                     </div>
                                 );
                             })}
@@ -542,8 +546,8 @@ const LandingPage = () => {
                                     </div>
                                     <div className="course-sticky-note sticky-pink rotate-3">
                                         <Zap size={40} className="sticky-icon" />
-                                        <h4>Internet of Things (IoT)</h4>
-                                        <p>Build connected systems integrating sensors, edge logic, and cloud services.</p>
+                                        <h4>Drone Design</h4>
+                                        <p>Design UAV systems with aerodynamics, flight control, onboard electronics, and mission-ready prototypes.</p>
                                     </div>
                                 </>
                             )}

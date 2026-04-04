@@ -10,6 +10,7 @@ import {
   fetchUnitComments,
   getLikes,
   likeUnit,
+  saveCurrentUnitProgress,
   toggleHiddenContent,
   updateUnitComment,
 } from '../api/api';
@@ -21,6 +22,7 @@ import {
   FileText,
   HelpCircle,
   Menu,
+  Play,
   Star,
   ThumbsUp,
 } from 'lucide-react';
@@ -52,6 +54,10 @@ const StudentCourseView = () => {
   const [testimonialRating, setTestimonialRating] = useState(0);
   const [isTestimonialsLoading, setIsTestimonialsLoading] = useState(false);
   const [isTestimonialSubmitting, setIsTestimonialSubmitting] = useState(false);
+  const [showEntryPreview, setShowEntryPreview] = useState(false);
+  const [entryPreviewImage, setEntryPreviewImage] = useState('');
+  const [entryPreviewTitle, setEntryPreviewTitle] = useState('');
+  const [isSavingProgress, setIsSavingProgress] = useState(false);
   const ratingMarks = useMemo(() => Array.from({ length: 11 }, (_, index) => (index * 0.5).toFixed(index % 2 === 0 ? 0 : 1)), []);
 
   const getDisplayName = (person) => {
@@ -118,6 +124,10 @@ const StudentCourseView = () => {
   const myTestimonial = useMemo(
     () => courseTestimonials.find((testimonial) => String(testimonial.author?._id) === String(user?._id)) || null,
     [courseTestimonials, user]
+  );
+  const currentEnrollment = useMemo(
+    () => user?.enrolledCourses?.find((entry) => String(entry.course?._id || entry.course) === String(id)) || null,
+    [id, user]
   );
 
   const canModerateComments = useMemo(() => {
@@ -187,6 +197,52 @@ const StudentCourseView = () => {
       console.error('Failed to open PDF:', error);
       showToast.error('Failed to open PDF');
     }
+  };
+
+  const getPreviewForEntry = (unit, loadedCourse, hasSavedProgress) => {
+    if (!unit) {
+      return { image: '', title: '' };
+    }
+
+    if (hasSavedProgress) {
+      return {
+        image: unit.content?.coverImage || '',
+        title: unit.title || 'Continue learning'
+      };
+    }
+
+    return {
+      image: loadedCourse?.image || '',
+      title: loadedCourse?.title || 'Welcome back'
+    };
+  };
+
+  const persistCurrentUnit = async (unitId) => {
+    if (user?.role !== 'student' || !unitId) return;
+
+    setIsSavingProgress(true);
+    try {
+      const updatedUser = await saveCurrentUnitProgress(id, unitId);
+      login(updatedUser, localStorage.getItem('token'));
+    } catch (error) {
+      console.error(error);
+      showToast.error(error?.message || 'Failed to save your current module');
+    } finally {
+      setIsSavingProgress(false);
+    }
+  };
+
+  const handleSelectUnit = async (unit) => {
+    if (!unit) return;
+    setSelectedUnit(unit);
+    setShowEntryPreview(false);
+    await persistCurrentUnit(unit._id);
+  };
+
+  const handleContinueFromPreview = async () => {
+    if (!selectedUnit?._id) return;
+    setShowEntryPreview(false);
+    await persistCurrentUnit(selectedUnit._id);
   };
 
   const loadUnitLikes = async (unitId) => {
@@ -413,10 +469,32 @@ const StudentCourseView = () => {
         setCourse(data);
         await loadCourseTestimonials();
 
+        const flattenedUnits = (data.chapters || []).flatMap((chapter) => chapter.units || []);
+        const savedUnitId = currentEnrollment?.lastViewedUnit ? String(currentEnrollment.lastViewedUnit) : null;
+        const savedUnit = savedUnitId
+          ? flattenedUnits.find((unit) => String(unit._id) === savedUnitId)
+          : null;
         const firstChapter = data.chapters?.[0];
         const firstUnit = firstChapter?.units?.[0];
-        if (firstChapter?._id) setExpandedChapter(firstChapter._id);
-        if (firstUnit) setSelectedUnit(firstUnit);
+        const initialUnit = savedUnit || firstUnit || null;
+        const initialChapterId = savedUnit
+          ? (data.chapters || []).find((chapter) => (chapter.units || []).some((unit) => String(unit._id) === String(savedUnit._id)))?._id
+          : firstChapter?._id;
+
+        if (initialChapterId) setExpandedChapter(initialChapterId);
+        if (initialUnit) {
+          setSelectedUnit(initialUnit);
+          if (user?.role === 'student') {
+            const preview = getPreviewForEntry(initialUnit, data, Boolean(savedUnit));
+            setEntryPreviewImage(preview.image || '');
+            setEntryPreviewTitle(preview.title || '');
+            setShowEntryPreview(Boolean(preview.image));
+          } else {
+            setEntryPreviewImage('');
+            setEntryPreviewTitle('');
+            setShowEntryPreview(false);
+          }
+        }
       } catch (error) {
         console.error(error);
         showToast.error('Failed to load course content');
@@ -424,7 +502,7 @@ const StudentCourseView = () => {
     };
 
     loadCourse();
-  }, [id, navigate, user]);
+  }, [currentEnrollment?.lastViewedUnit, id, navigate, user]);
 
   useEffect(() => {
     if (selectedUnit?._id) {
@@ -566,7 +644,7 @@ const StudentCourseView = () => {
                           return (
                             <div
                               key={unit._id}
-                              onClick={() => !unitHidden && setSelectedUnit(unit)}
+                              onClick={() => !unitHidden && handleSelectUnit(unit)}
                               style={{
                                 borderLeft: `3px solid ${active ? colors.primary : 'transparent'}`,
                                 background: active ? 'rgba(16, 185, 129, 0.08)' : 'transparent',
@@ -749,31 +827,62 @@ const StudentCourseView = () => {
 
           {selectedUnit ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
-              {selectedUnit.type === 'video' && selectedUnit.content?.videoUrl && (
-                <div style={{ marginBottom: spacing.sm }}>
-                  <h2 style={{ ...typography.h2, marginBottom: spacing.sm }}>{selectedUnit.title}</h2>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: spacing.md, marginBottom: spacing.md }}>
-                    <span
-                      style={{
-                        ...typography.label,
-                        background: colors.accent,
-                        color: '#ffffff',
-                        borderRadius: borderRadius.md,
-                        padding: `8px 14px`,
-                        textTransform: 'uppercase',
-                        fontWeight: 600,
-                        letterSpacing: '0.5px',
-                      }}
-                    >
-                      {getUnitTypeLabel(selectedUnit.type)}
-                    </span>
-                    <p style={{ ...typography.small, color: colors.textMuted, margin: 0 }}>
-                      <strong>Instructor:</strong> {instructorLabel}
-                    </p>
-                  </div>
+              <div style={{ marginBottom: spacing.sm }}>
+                <h2 style={{ ...typography.h2, marginBottom: spacing.sm }}>{selectedUnit.title}</h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: spacing.md, marginBottom: spacing.md, flexWrap: 'wrap' }}>
+                  <span
+                    style={{
+                      ...typography.label,
+                      background: colors.accent,
+                      color: '#ffffff',
+                      borderRadius: borderRadius.md,
+                      padding: `8px 14px`,
+                      textTransform: 'uppercase',
+                      fontWeight: 600,
+                      letterSpacing: '0.5px',
+                    }}
+                  >
+                    {getUnitTypeLabel(selectedUnit.type)}
+                  </span>
+                  <p style={{ ...typography.small, color: colors.textMuted, margin: 0 }}>
+                    <strong>Instructor:</strong> {instructorLabel}
+                  </p>
                 </div>
+              </div>
+
+              {showEntryPreview && entryPreviewImage && (
+                <Card style={{ padding: 0, overflow: 'hidden' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <img
+                      src={entryPreviewImage}
+                      alt={entryPreviewTitle || selectedUnit.title}
+                      style={{ width: '100%', maxHeight: '420px', objectFit: 'cover', display: 'block' }}
+                    />
+                    <div style={{ padding: spacing.lg, display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
+                      <div>
+                        <p style={{ ...typography.label, color: colors.accent, margin: 0 }}>
+                          {currentEnrollment?.lastViewedUnit ? 'Resume your current module' : 'Start with this course intro'}
+                        </p>
+                        <h3 style={{ ...typography.h4, margin: `${spacing.xs} 0 0 0` }}>
+                          {entryPreviewTitle || selectedUnit.title}
+                        </h3>
+                        <p style={{ ...typography.bodySmall, color: colors.textMuted, margin: `${spacing.sm} 0 0 0` }}>
+                          {currentEnrollment?.lastViewedUnit
+                            ? 'You are returning to the module you were studying last time.'
+                            : 'This image is shown the first time you enter the course before you begin the first module.'}
+                        </p>
+                      </div>
+                      <div style={{ display: 'flex', gap: spacing.sm, flexWrap: 'wrap' }}>
+                        <Button onClick={handleContinueFromPreview} disabled={isSavingProgress}>
+                          <Play size={16} /> {isSavingProgress ? 'Opening...' : selectedUnit.type === 'video' ? 'Continue to Video' : 'Open Module'}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
               )}
 
+              {!showEntryPreview && (
               <Card style={{ padding: 0, overflow: 'hidden' }}>
                 {selectedUnit.type === 'video' && selectedUnit.content?.videoUrl && (
                   <div style={{ position: 'relative', width: '100%', paddingBottom: '56.25%', height: 0 }}>
@@ -818,8 +927,9 @@ const StudentCourseView = () => {
                   </div>
                 )}
               </Card>
+              )}
 
-              {selectedUnit.type === 'video' && selectedUnit.content?.videoUrl && (
+              {!showEntryPreview && selectedUnit.type === 'video' && selectedUnit.content?.videoUrl && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: spacing.md, paddingTop: spacing.sm }}>
                   <Button
                     variant={userLikes.has(selectedUnit._id) ? 'primary' : 'secondary'}
@@ -832,7 +942,7 @@ const StudentCourseView = () => {
                 </div>
               )}
 
-              {selectedUnit.type === 'video' && selectedUnit.content?.videoUrl && (
+              {!showEntryPreview && selectedUnit.type === 'video' && selectedUnit.content?.videoUrl && (
                 <Card>
                   <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: spacing.md }}>
                     <h3 style={{ ...typography.h4, margin: 0 }}>Comments</h3>

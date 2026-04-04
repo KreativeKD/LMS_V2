@@ -35,19 +35,44 @@ if (!process.env.MONGO_URI) {
 }
 
 // CORS configuration
-const allowedOrigins = ["https://coursez.in", "https://www.coursez.in"];
+const normalizeOrigin = (origin = "") => String(origin).trim().replace(/\/$/, "");
+
+const defaultAllowedOrigins = [
+  "https://coursez.in",
+  "https://www.coursez.in",
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+];
+
+const envAllowedOrigins = String(process.env.FRONTEND_URL || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const allowedOriginSet = new Set(
+  [...defaultAllowedOrigins, ...envAllowedOrigins].map(normalizeOrigin),
+);
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    if (allowedOriginSet.has(normalizeOrigin(origin))) {
+      return callback(null, true);
+    }
+
+    return callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+};
 
 app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-      return callback(new Error("Not allowed by CORS"));
-    },
-    credentials: true,
-  }),
+  cors(corsOptions),
 );
+
+app.options("*", cors(corsOptions));
 
 app.use(express.json({ limit: "50mb" }));
 
