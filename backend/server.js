@@ -31,32 +31,37 @@ if (!process.env.MONGO_URI) {
 }
 
 // CORS configuration
-const configuredOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
+const normalizeOrigin = (origin) => origin.replace(/\/$/, '');
+const envOrigins = (process.env.FRONTEND_URL || '')
     .split(',')
     .map((origin) => origin.trim())
-    .filter(Boolean);
+    .filter(Boolean)
+    .map(normalizeOrigin);
+
+const allowedOrigins = [
+    ...new Set(['https://coursez.in', 'https://www.coursez.in', ...envOrigins])
+];
 
 const localhostDevOriginPattern = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i;
 
-const corsOptions = {
-    origin: (origin, callback) => {
-        if (!origin) {
-            callback(null, true);
-            return;
-        }
+app.use(
+    cors({
+        origin: function (origin, callback) {
+            if (!origin) {
+                return callback(null, true);
+            }
 
-        if (configuredOrigins.includes(origin) || localhostDevOriginPattern.test(origin)) {
-            callback(null, true);
-            return;
-        }
+            const normalizedOrigin = normalizeOrigin(origin);
+            if (allowedOrigins.includes(normalizedOrigin) || localhostDevOriginPattern.test(normalizedOrigin)) {
+                return callback(null, true);
+            }
 
-        callback(new Error('Not allowed by CORS'));
-    },
-    credentials: true,
-    optionsSuccessStatus: 200
-};
-
-app.use(cors(corsOptions));
+            return callback(new Error('Not allowed by CORS'));
+        },
+        credentials: true,
+        optionsSuccessStatus: 200
+    })
+);
 app.use(express.json({ limit: '50mb' }));
 
 // Request logging middleware
