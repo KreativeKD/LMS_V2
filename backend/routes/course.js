@@ -3,7 +3,6 @@ const Course = require('../models/Course');
 const Chapter = require('../models/Chapter');
 const Unit = require('../models/Unit');
 const Testimonial = require('../models/Testimonial');
-const User = require('../models/User');
 const { auth, authorize } = require('../middleware/auth');
 const { validate, courseSchema, chapterSchema, unitSchema, updateUnitSchema } = require('../middleware/validation');
 const { apiLimiter } = require('../middleware/rateLimiters');
@@ -854,59 +853,6 @@ router.post('/:courseId/enroll', auth, authorize('student'), async (req, res) =>
     }
 });
 
-router.post('/:courseId/progress/current-unit', auth, authorize('student'), async (req, res) => {
-    try {
-        const { unitId } = req.body || {};
-        if (!unitId) {
-            return res.status(400).send({ error: 'Unit ID is required' });
-        }
-
-        const course = await Course.findById(req.params.courseId).select('students instructor assignedTeachers');
-        if (!course) {
-            return res.status(404).send({ error: 'Course not found' });
-        }
-
-        if (!canAccessCourseContent(course, req.user)) {
-            return res.status(403).send({ error: 'Access denied. You are not enrolled in this course.' });
-        }
-
-        const unit = await Unit.findById(unitId).select('chapterId');
-        if (!unit) {
-            return res.status(404).send({ error: 'Unit not found' });
-        }
-
-        const chapter = await Chapter.findById(unit.chapterId).select('courseId');
-        if (!chapter || String(chapter.courseId) !== String(req.params.courseId)) {
-            return res.status(400).send({ error: 'Unit does not belong to this course' });
-        }
-
-        const user = await User.findById(req.user._id);
-        if (!user) {
-            return res.status(404).send({ error: 'User not found' });
-        }
-
-        const enrollment = user.enrolledCourses.find(
-            (entry) => entry.course && String(entry.course) === String(req.params.courseId)
-        );
-
-        if (!enrollment || enrollment.status !== 'approved') {
-            return res.status(403).send({ error: 'Active enrollment is required' });
-        }
-
-        enrollment.lastViewedUnit = unit._id;
-        enrollment.lastViewedAt = new Date();
-        await user.save();
-
-        const populatedUser = await User.findById(user._id)
-            .select('-password')
-            .populate('enrolledCourses.course');
-
-        res.send(populatedUser);
-    } catch (e) {
-        res.status(500).send({ error: e.message });
-    }
-});
-
 // Admin/Teacher: Approve Enrollment
 router.post('/:courseId/approve-enrollment', auth, authorize('admin', 'teacher'), async (req, res) => {
     try {
@@ -924,6 +870,7 @@ router.post('/:courseId/approve-enrollment', auth, authorize('admin', 'teacher')
             return res.status(403).send({ error: 'Access denied' });
         }
 
+        const User = require('../models/User'); // Ensure User model is available
         const student = await User.findById(studentId);
         if (!student) return res.status(404).send({ error: 'Student not found' });
 
@@ -1046,6 +993,7 @@ router.get('/:courseId/requests', auth, authorize('admin', 'teacher'), async (re
             return res.status(403).send({ error: 'Access denied' });
         }
 
+        const User = require('../models/User');
         // Find students who have this course in enrolledCourses with status 'pending'
         const students = await User.find({
             'enrolledCourses': { $elemMatch: { course: course._id, status: 'pending' } }

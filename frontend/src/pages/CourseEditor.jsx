@@ -25,9 +25,8 @@ const CourseEditor = () => {
     // Unit Modal State
     const [showUnitModal, setShowUnitModal] = useState(false);
     const [unitType, setUnitType] = useState('video');
-    const [unitForm, setUnitForm] = useState({ title: '', contentValue: '', coverImage: '' });
+    const [unitForm, setUnitForm] = useState({ title: '', contentValue: '' });
     const [pdfFileName, setPdfFileName] = useState('');
-    const [unitImageFileName, setUnitImageFileName] = useState('');
 
     // Edit Modal States
     const [showEditChapterModal, setShowEditChapterModal] = useState(false);
@@ -36,7 +35,6 @@ const CourseEditor = () => {
     const [showEditUnitModal, setShowEditUnitModal] = useState(false);
     const [editingUnit, setEditingUnit] = useState(null);
     const [editingPdfFileName, setEditingPdfFileName] = useState('');
-    const [editingUnitImageFileName, setEditingUnitImageFileName] = useState('');
     const [editingQuiz, setEditingQuiz] = useState(null);
 
     // Student Progress State
@@ -207,9 +205,8 @@ const CourseEditor = () => {
     const openUnitModal = (chapterId, type) => {
         setActiveChapterId(chapterId);
         setUnitType(type);
-        setUnitForm({ title: '', contentValue: '', coverImage: '' });
+        setUnitForm({ title: '', contentValue: '' });
         setPdfFileName('');
-        setUnitImageFileName('');
         if (type === 'quiz') {
             setQuizData({
                 title: '',
@@ -233,12 +230,10 @@ const CourseEditor = () => {
             if (unitType === 'video') content.videoUrl = unitForm.contentValue;
             else if (unitType === 'pdf') content.pdfUrl = unitForm.contentValue;
             else content.text = unitForm.contentValue;
-            if (unitForm.coverImage) content.coverImage = unitForm.coverImage;
 
             await addUnit(activeChapterId, { title: unitForm.title, type: unitType, content });
             setShowUnitModal(false);
             setPdfFileName('');
-            setUnitImageFileName('');
             loadCourseData();
             showToast.success('Unit added successfully!');
         } catch (err) { handleApiError(err, 'Failed to add unit'); }
@@ -309,11 +304,9 @@ const CourseEditor = () => {
     const handleEditUnit = (unit) => {
         setEditingUnit({
             ...unit,
-            contentValue: unit.content?.videoUrl || unit.content?.pdfUrl || unit.content?.text || '',
-            coverImage: unit.content?.coverImage || ''
+            contentValue: unit.content?.videoUrl || unit.content?.pdfUrl || unit.content?.text || ''
         });
         setEditingPdfFileName(unit.type === 'pdf' && unit.content?.pdfUrl ? 'Current uploaded PDF' : '');
-        setEditingUnitImageFileName(unit.content?.coverImage ? 'Current uploaded image' : '');
         setShowEditUnitModal(true);
     };
 
@@ -324,13 +317,11 @@ const CourseEditor = () => {
             if (editingUnit.type === 'video') content.videoUrl = editingUnit.contentValue;
             else if (editingUnit.type === 'pdf') content.pdfUrl = editingUnit.contentValue;
             else content.text = editingUnit.contentValue;
-            if (editingUnit.coverImage) content.coverImage = editingUnit.coverImage;
 
             await updateUnit(editingUnit._id, { title: editingUnit.title, content });
             setShowEditUnitModal(false);
             setEditingUnit(null);
             setEditingPdfFileName('');
-            setEditingUnitImageFileName('');
             loadCourseData();
             showToast.success('Unit updated successfully!');
         } catch (err) { handleApiError(err, 'Failed to update unit'); }
@@ -370,41 +361,6 @@ const CourseEditor = () => {
             }
         };
         reader.onerror = () => showToast.error('Failed to read PDF file');
-        reader.readAsDataURL(file);
-    };
-
-    const handleUnitImageUpload = (event, mode = 'create') => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-
-        if (!file.type.startsWith('image/')) {
-            showToast.error('Please upload a valid image file');
-            return;
-        }
-
-        const maxSizeBytes = 5 * 1024 * 1024;
-        if (file.size > maxSizeBytes) {
-            showToast.error('Image must be smaller than 5MB');
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = () => {
-            const fileDataUrl = reader.result;
-            if (typeof fileDataUrl !== 'string') {
-                showToast.error('Failed to read image file');
-                return;
-            }
-
-            if (mode === 'create') {
-                setUnitForm((prev) => ({ ...prev, coverImage: fileDataUrl }));
-                setUnitImageFileName(file.name);
-            } else {
-                setEditingUnit((prev) => ({ ...prev, coverImage: fileDataUrl }));
-                setEditingUnitImageFileName(file.name);
-            }
-        };
-        reader.onerror = () => showToast.error('Failed to read image file');
         reader.readAsDataURL(file);
     };
 
@@ -753,7 +709,7 @@ const CourseEditor = () => {
                     <div className="modal-content animate-fade-in" style={{ maxWidth: '450px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
                             <h2 className="gradient-text">Add {unitType.charAt(0).toUpperCase() + unitType.slice(1)} Unit</h2>
-                            <Button onClick={() => { setShowUnitModal(false); setPdfFileName(''); setUnitImageFileName(''); }} variant="ghost" size="sm">
+                            <Button onClick={() => { setShowUnitModal(false); setPdfFileName(''); }} variant="ghost" size="sm">
                                 <X size={24} />
                             </Button>
                         </div>
@@ -805,38 +761,6 @@ const CourseEditor = () => {
                                         required
                                         fullWidth
                                     />
-                                )}
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
-                                <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                                    Module Study Image (Optional)
-                                </label>
-                                <span style={{ ...typography.small, color: colors.textMuted }}>
-                                    This image is shown when the student returns to the module they were last studying.
-                                </span>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(event) => handleUnitImageUpload(event, 'create')}
-                                    style={{
-                                        background: '#f9fafb',
-                                        color: 'var(--text-main)',
-                                        border: '1px dashed var(--border)',
-                                        borderRadius: '10px',
-                                        padding: '12px'
-                                    }}
-                                />
-                                <span style={{ ...typography.small, color: colors.textMuted }}>
-                                    {unitImageFileName ? `Selected: ${unitImageFileName}` : 'No image selected'}
-                                </span>
-                                {unitForm.coverImage && (
-                                    <div style={{ borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border)' }}>
-                                        <img
-                                            src={unitForm.coverImage}
-                                            alt="Module intro preview"
-                                            style={{ width: '100%', maxHeight: '160px', objectFit: 'cover', display: 'block' }}
-                                        />
-                                    </div>
                                 )}
                             </div>
                             <Button type="submit" variant="primary" fullWidth style={{ marginTop: spacing.md }}>
@@ -982,7 +906,7 @@ const CourseEditor = () => {
                     <div className="modal-content animate-fade-in" style={{ maxWidth: '450px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
                             <h2 className="gradient-text">Edit {editingUnit.type.charAt(0).toUpperCase() + editingUnit.type.slice(1)} Unit</h2>
-                            <Button onClick={() => { setShowEditUnitModal(false); setEditingUnit(null); setEditingPdfFileName(''); setEditingUnitImageFileName(''); }} variant="ghost" size="sm">
+                            <Button onClick={() => { setShowEditUnitModal(false); setEditingUnit(null); setEditingPdfFileName(''); }} variant="ghost" size="sm">
                                 <X size={24} />
                             </Button>
                         </div>
@@ -1033,38 +957,6 @@ const CourseEditor = () => {
                                         required
                                         fullWidth
                                     />
-                                )}
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
-                                <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                                    Module Study Image (Optional)
-                                </label>
-                                <span style={{ ...typography.small, color: colors.textMuted }}>
-                                    This image is shown when the student returns to the module they were last studying.
-                                </span>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(event) => handleUnitImageUpload(event, 'edit')}
-                                    style={{
-                                        background: '#f9fafb',
-                                        color: 'var(--text-main)',
-                                        border: '1px dashed var(--border)',
-                                        borderRadius: '10px',
-                                        padding: '12px'
-                                    }}
-                                />
-                                <span style={{ ...typography.small, color: colors.textMuted }}>
-                                    {editingUnitImageFileName ? `Selected: ${editingUnitImageFileName}` : 'No new image selected (keeps current image)'}
-                                </span>
-                                {editingUnit.coverImage && (
-                                    <div style={{ borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border)' }}>
-                                        <img
-                                            src={editingUnit.coverImage}
-                                            alt="Module intro preview"
-                                            style={{ width: '100%', maxHeight: '160px', objectFit: 'cover', display: 'block' }}
-                                        />
-                                    </div>
                                 )}
                             </div>
                             <Button type="submit" variant="primary" fullWidth style={{ marginTop: spacing.md }}>

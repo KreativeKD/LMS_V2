@@ -22,7 +22,6 @@ const TeacherDashboard = () => {
   const [showCourseForm, setShowCourseForm] = useState(false);
   const [courseTitle, setCourseTitle] = useState('');
   const [descriptionPdf, setDescriptionPdf] = useState('');
-  const [courseImage, setCourseImage] = useState('');
   const [courseType, setCourseType] = useState('academic');
   const [contentHours, setContentHours] = useState('');
   const [completionDate, setCompletionDate] = useState('');
@@ -85,14 +84,12 @@ const TeacherDashboard = () => {
         description: '',
         courseType,
         descriptionPdf,
-        image: courseImage,
         contentHours: Number(contentHours),
         completionDate,
       });
 
       setCourseTitle('');
       setDescriptionPdf('');
-      setCourseImage('');
       setCourseType('academic');
       setContentHours('');
       setCompletionDate('');
@@ -124,23 +121,6 @@ const TeacherDashboard = () => {
 
     const reader = new FileReader();
     reader.onload = (e) => setDescriptionPdf(e.target.result);
-    reader.readAsDataURL(file);
-  };
-
-  const handleCourseImageChange = (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      showToast.error('Please upload a valid image file.');
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      showToast.error('Image must be smaller than 5MB.');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (e) => setCourseImage(e.target.result);
     reader.readAsDataURL(file);
   };
 
@@ -413,32 +393,9 @@ const TeacherDashboard = () => {
                 </div>
               )}
             </div>
-            <div style={{ width: '100%' }}>
-              <label style={{ display: 'block', marginBottom: spacing.sm, ...typography.label }}>Course Card / First-Visit Image</label>
-              <div style={{ ...typography.small, color: colors.textMuted, marginBottom: spacing.sm }}>
-                This image is used on the course card and shown the first time a student enters the course.
-              </div>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleCourseImageChange}
-                style={{
-                  width: '100%',
-                  padding: spacing.md,
-                  borderRadius: '8px',
-                  border: `2px dashed ${colors.border}`,
-                  background: colors.surface,
-                }}
-              />
-              {courseImage && (
-                <div style={{ marginTop: spacing.sm, borderRadius: '10px', overflow: 'hidden', maxWidth: '360px' }}>
-                  <img src={courseImage} alt="Course intro preview" style={{ width: '100%', height: '180px', objectFit: 'cover', display: 'block' }} />
-                </div>
-              )}
-            </div>
             <Input type="date" value={completionDate} onChange={(event) => setCompletionDate(event.target.value)} />
             <Button type="submit" variant="primary">Create</Button>
-            <Button type="button" variant="secondary" onClick={() => { setShowCourseForm(false); setDescriptionPdf(''); setCourseImage(''); setCourseType('academic'); setContentHours(''); }}>Cancel</Button>
+            <Button type="button" variant="secondary" onClick={() => { setShowCourseForm(false); setDescriptionPdf(''); setCourseType('academic'); setContentHours(''); }}>Cancel</Button>
           </form>
         </Card>
       )}
