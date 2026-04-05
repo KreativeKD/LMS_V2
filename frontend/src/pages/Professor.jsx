@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    Award, Briefcase, Star, Lightbulb, Building,
-    Mail, Phone, ExternalLink, Linkedin, BarChart2, Zap, Users,
+    Award, Star,
+    Mail, ExternalLink, Linkedin, BarChart2, Zap,
     ChevronLeft, ChevronRight, MoreHorizontal
 } from 'lucide-react';
 import PublicFooter from '../components/PublicFooter';
@@ -24,6 +24,37 @@ const Professor = () => {
             .replace(/\([^)]*\)/g, '')
             .replace(/[^a-z0-9]+/g, ' ')
             .trim();
+
+    const normalizeProfessorName = (name) =>
+        String(name || '')
+            .toLowerCase()
+            .split('@')[0]
+            .replace(/\b(dr|prof|professor)\.?\s*/g, '')
+            .replace(/\b(teacher|student|admin)\b/g, '')
+            .replace(/[^a-z]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+    const isSameProfessorName = (left, right) => {
+        const a = normalizeProfessorName(left);
+        const b = normalizeProfessorName(right);
+        if (!a || !b) return false;
+        return a === b || a.includes(b) || b.includes(a);
+    };
+
+    const getPreferredProfessorRecord = (existing, incoming) => {
+        if (!existing) return incoming;
+
+        const existingPriority = Number(Boolean(existing?.teacherId && existing?.isProfileComplete));
+        const incomingPriority = Number(Boolean(incoming?.teacherId && incoming?.isProfileComplete));
+        if (incomingPriority !== existingPriority) {
+            return incomingPriority > existingPriority ? incoming : existing;
+        }
+
+        const existingUpdatedAt = new Date(existing?.updatedAt || 0).getTime();
+        const incomingUpdatedAt = new Date(incoming?.updatedAt || 0).getTime();
+        return incomingUpdatedAt >= existingUpdatedAt ? incoming : existing;
+    };
 
     const openPdfDocument = (pdfSource) => {
         if (!pdfSource) {
@@ -69,9 +100,17 @@ const Professor = () => {
                 const filteredData = (data || []).filter(
                     (prof) => !(prof?.name || '').toLowerCase().includes('michael chen')
                 );
-                setProfessorsData(filteredData);
+                const uniqueByName = new Map();
+                filteredData.forEach((prof) => {
+                    const normalizedName = normalizeProfessorName(prof?.name);
+                    if (!normalizedName) return;
+                    const preferred = getPreferredProfessorRecord(uniqueByName.get(normalizedName), prof);
+                    uniqueByName.set(normalizedName, preferred);
+                });
+                const uniqueProfessors = Array.from(uniqueByName.values());
+                setProfessorsData(uniqueProfessors);
                 setLiveCourses(coursesResponse?.courses || []);
-                if (filteredData.length > 0) setActiveProfId(filteredData[0]._id);
+                if (uniqueProfessors.length > 0) setActiveProfId(uniqueProfessors[0]._id);
             } catch (err) {
                 console.error(err);
             } finally {
@@ -82,9 +121,37 @@ const Professor = () => {
     }, []);
 
     const selectedProf = professorsData.find(p => p._id === activeProfId) || professorsData[0];
-    const isKiranProfile = selectedProf?.name?.toLowerCase().includes('kiran');
-    const experienceStat = isKiranProfile ? '37+' : selectedProf?.stats?.experience;
-    const patentsStat = isKiranProfile ? '25' : selectedProf?.stats?.patents;
+    const selectedProfTeacherId = String(selectedProf?.teacherId?._id || selectedProf?.teacherId || '');
+    const selectedProfNormalizedName = normalizeProfessorName(selectedProf?.name);
+    const professorBioParagraphs = String(selectedProf?.bio || '')
+        .split(/\n+/)
+        .map((paragraph) => paragraph.trim())
+        .filter(Boolean);
+    const experienceStat = selectedProf?.stats?.experience || 'N/A';
+    const publicationsStat = selectedProf?.stats?.publications || 'N/A';
+    const patentsStat = selectedProf?.stats?.patents || 'N/A';
+    const startupsStat = selectedProf?.stats?.startups || 'N/A';
+    const profileCourses = selectedProf?.courses || [];
+    const fallbackCourses = liveCourses
+        .filter((course) => {
+            const instructorId = String(course?.instructor?._id || course?.instructor || '');
+            const assignedTeacherIds = (course?.assignedTeachers || []).map((teacher) => String(teacher?._id || teacher || ''));
+            const isTeacherLinked = selectedProfTeacherId && (instructorId === selectedProfTeacherId || assignedTeacherIds.includes(selectedProfTeacherId));
+            if (isTeacherLinked) return true;
+
+            const instructorNames = [
+                course?.instructor?.username,
+                ...(course?.assignedTeachers || []).map((teacher) => teacher?.username)
+            ];
+
+            return instructorNames.some((name) => isSameProfessorName(name, selectedProfNormalizedName));
+        })
+        .map((course) => ({
+            id: course?._id || course?.id || course?.title,
+            title: course?.title || 'Untitled Course',
+            description: course?.description || 'Course details will be available soon.'
+        }));
+    const displayedCourses = profileCourses.length > 0 ? profileCourses : fallbackCourses;
 
 
     useEffect(() => {
@@ -155,21 +222,19 @@ const Professor = () => {
                                 {/* Top Section: Photo and Name with Paragraph */}
                                 <div className="professor-photo-section" style={{ gap: '2rem', marginBottom: '2rem' }}>
                                     <div className="photo-wrapper" style={{ maxWidth: '250px' }}>
-                                        <img src={selectedProf.photo} alt={selectedProf.name} className="professor-photo" style={{ width: '100%', height: '250px' }} />
+                                        <img src={selectedProf.photo || '/default-prof.png'} alt={selectedProf.name} className="professor-photo" style={{ width: '100%', height: '250px' }} />
                                     </div>
 
                                     <div className="professor-quick-info">
                                         {/* Professor Information Paragraph */}
                                         <div style={{ marginTop: 0, lineHeight: '1.6', color: '#555' }}>
-                                            {/* PROFESSOR INFORMATION HERE - Paste the professor's paragraph/bio here */}
-                                            <p style={{ fontSize: '0.95rem' }}>
-                                                Dr. Kiran Talele is an academician, entrepreneur, and mentor dedicated to fostering innovation
-                                                and professional excellence. With a strong focus on student development and entrepreneurial mindset,
-                                                he has contributed significantly to academic programs, startups, and skill-building initiatives.
-                                                Dr. Talele combines 37+ years of experience with a passion for teaching, guiding students and
-                                                professionals to achieve meaningful growth and career success.
-                                            </p>
-                                            <p>He serves as a Mentor for Startup Incubation and Intellectual Asset Creation, guiding innovation and entrepreneurial initiatives. He has authored more than 85 research papers published in reputed national and international conferences and journals. In addition, he holds over 25 patents filed and published in India, the United Kingdom, and Germany. He is also the co-founder of Vehiscrap, Serenitysphere, and Anudan Jagruti, contributing actively to technology-driven entrepreneurship and innovation.</p>
+                                            {professorBioParagraphs.length > 0 ? (
+                                                professorBioParagraphs.map((paragraph, index) => (
+                                                    <p key={`bio-${index}`} style={{ fontSize: '0.95rem' }}>{paragraph}</p>
+                                                ))
+                                            ) : (
+                                                <p style={{ fontSize: '0.95rem' }}>Instructor biography will appear here once published from the Instructor Profile page.</p>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -182,7 +247,7 @@ const Professor = () => {
                                             <span>Years Experience</span>
                                         </div>
                                         <div className="quick-stat">
-                                            <strong>{selectedProf.stats.publications}</strong>
+                                            <strong>{publicationsStat}</strong>
                                             <span>Publications</span>
                                         </div>
                                         <div className="quick-stat">
@@ -190,7 +255,7 @@ const Professor = () => {
                                             <span>Patents</span>
                                         </div>
                                         <div className="quick-stat">
-                                            <strong>{selectedProf.stats.startups}</strong>
+                                            <strong>{startupsStat}</strong>
                                             <span>Startups</span>
                                         </div>
                                     </div>
@@ -198,36 +263,38 @@ const Professor = () => {
 
                                 {/* Contact Buttons */}
                                 <div className="contact-buttons" style={{ marginBottom: '2rem' }}>
-                                    {selectedProf.contact.website !== '#' && (
+                                    {selectedProf.contact?.website && selectedProf.contact.website !== '#' && (
                                         <a href={selectedProf.contact.website} target="_blank" rel="noopener noreferrer" className="contact-btn">
                                             <ExternalLink size={18} />
                                             <span>Website</span>
                                         </a>
                                     )}
-                                    {selectedProf.contact.linkedin !== '#' && (
+                                    {selectedProf.contact?.linkedin && selectedProf.contact.linkedin !== '#' && (
                                         <a href={selectedProf.contact.linkedin} target="_blank" rel="noopener noreferrer" className="contact-btn">
                                             <Linkedin size={18} />
                                             <span>LinkedIn</span>
                                         </a>
                                     )}
-                                    <a href={`mailto:${selectedProf.contact.email}`} className="contact-btn">
-                                        <Mail size={18} />
-                                        <span>Email</span>
-                                    </a>
+                                    {selectedProf.contact?.email && (
+                                        <a href={`mailto:${selectedProf.contact.email}`} className="contact-btn">
+                                            <Mail size={18} />
+                                            <span>Email</span>
+                                        </a>
+                                    )}
                                 </div>
 
                                 {/* Courses Section */}
                                 <div className="professor-courses-section" style={{ margin: '2rem 0' }}>
                                     <h4 className="courses-section-title">Courses by {selectedProf.name}</h4>
                                     <div className="courses-grid">
-                                        {selectedProf.courses.map(course => (
+                                        {displayedCourses.map(course => (
                                             <div key={course.id} className="landing-course-card">
                                                 <div className="course-card-content">
                                                     <div className="course-icon">
                                                         {course.id === 'dsp' ? <BarChart2 size={32} /> : <Zap size={32} />}
                                                     </div>
                                                     <h3>{course.title}</h3>
-                                                    <p>{course.description.substring(0, 100)}...</p>
+                                                    <p>{String(course.description || '').substring(0, 100)}...</p>
                                                     <button
                                                         className="know-more-btn"
                                                         onClick={() => handleKnowMore(course)}
@@ -238,6 +305,11 @@ const Professor = () => {
                                                 </div>
                                             </div>
                                         ))}
+                                        {displayedCourses.length === 0 && (
+                                            <p style={{ color: '#666', textAlign: 'left' }}>
+                                                No courses linked yet. Assign this instructor to courses to show them here.
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
 
