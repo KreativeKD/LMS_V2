@@ -44,7 +44,7 @@ export const AdminTeachersTab = ({ teachers, courses, onTeachersUpdate, loading,
     setFormLoading(true);
     try {
       await addTeacher(teacherForm.name, teacherForm.password);
-      handleSuccess('Teacher added successfully!');
+      handleSuccess('Instructor added successfully!');
       setTeacherForm({ name: '', password: '' });
       setShowModal(false);
       onTeachersUpdate();
@@ -58,7 +58,7 @@ export const AdminTeachersTab = ({ teachers, courses, onTeachersUpdate, loading,
   const handleDelete = async () => {
     try {
       await deleteTeacher(deleteTarget._id);
-      handleSuccess('Teacher deleted successfully');
+      handleSuccess('Instructor deleted successfully');
       setShowDeleteDialog(false);
       onTeachersUpdate();
     } catch (err) {
@@ -74,22 +74,22 @@ export const AdminTeachersTab = ({ teachers, courses, onTeachersUpdate, loading,
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.lg }}>
-        <h2 style={typography.h3}>Manage Teachers</h2>
+        <h2 style={typography.h3}>Manage Instructors</h2>
         <Button variant="primary" onClick={() => setShowModal(true)}>
-          <Plus size={18} /> Add Teacher
+          <Plus size={18} /> Add Instructor
         </Button>
       </div>
 
       {loading && (
-        <AdminDataState type="loading" message="Loading teacher accounts..." />
+        <AdminDataState type="loading" message="Loading instructor accounts..." />
       )}
 
       {!loading && error && (
-        <AdminDataState type="error" message={error} onAction={onRetry} actionLabel="Reload Teachers" />
+        <AdminDataState type="error" message={error} onAction={onRetry} actionLabel="Reload Instructors" />
       )}
 
       {!loading && !error && teachers.length === 0 && (
-        <AdminDataState type="empty" message="No teachers yet. Add one to get started." />
+        <AdminDataState type="empty" message="No instructors yet. Add one to get started." />
       )}
 
       {!loading && !error && teachers.length > 0 && (
@@ -133,7 +133,7 @@ export const AdminTeachersTab = ({ teachers, courses, onTeachersUpdate, loading,
                       fontFamily: '"Aptos Display", "Segoe UI", sans-serif'
                     }}
                   >
-                    {formatTeacherDisplayName(teacher.username) || 'Unknown Teacher'}
+                    {formatTeacherDisplayName(teacher.username) || 'Unknown Instructor'}
                   </h3>
                   <p
                     style={{
@@ -146,7 +146,7 @@ export const AdminTeachersTab = ({ teachers, courses, onTeachersUpdate, loading,
                       fontFamily: '"Aptos", "Segoe UI", sans-serif'
                     }}
                   >
-                    Teacher Account
+                    Instructor Account
                   </p>
                   <p
                     style={{
@@ -178,14 +178,14 @@ export const AdminTeachersTab = ({ teachers, courses, onTeachersUpdate, loading,
       </div>
       )}
 
-      {/* Add Teacher Modal */}
+      {/* Add Instructor Modal */}
       {showModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <Card style={{ maxWidth: '500px', width: '90%' }}>
-            <h2 style={typography.h3}>Add Teacher</h2>
+            <h2 style={typography.h3}>Add Instructor</h2>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg, marginTop: spacing.lg }}>
               <Input
-                label="Teacher Name"
+                label="Instructor Name"
                 placeholder="e.g., John Doe"
                 value={teacherForm.name}
                 onChange={(e) => setTeacherForm({ ...teacherForm, name: e.target.value })}
@@ -207,7 +207,7 @@ export const AdminTeachersTab = ({ teachers, courses, onTeachersUpdate, loading,
                   Cancel
                 </Button>
                 <Button variant="primary" type="submit" loading={formLoading} fullWidth>
-                  Add Teacher
+                  Add Instructor
                 </Button>
               </div>
             </form>
@@ -221,7 +221,7 @@ export const AdminTeachersTab = ({ teachers, courses, onTeachersUpdate, loading,
             <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: spacing.md }}>
                 <div>
-                  <h2 style={{ ...typography.h3, margin: 0 }}>{selectedTeacher.username?.split('@')[0] || 'Teacher'}</h2>
+                  <h2 style={{ ...typography.h3, margin: 0 }}>{selectedTeacher.username?.split('@')[0] || 'Instructor'}</h2>
                   <p style={{ ...typography.bodySmall, color: colors.textMuted, margin: `${spacing.xs} 0 0 0` }}>
                     {selectedTeacher.username}
                   </p>
@@ -234,7 +234,7 @@ export const AdminTeachersTab = ({ teachers, courses, onTeachersUpdate, loading,
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: spacing.md }}>
                 <div style={{ padding: spacing.md, borderRadius: 12, border: `1px solid ${colors.border}`, background: colors.surfaceAlt }}>
                   <p style={{ ...typography.small, color: colors.textMuted, margin: 0 }}>Role</p>
-                  <p style={{ ...typography.label, margin: `${spacing.xs} 0 0 0` }}>Teacher</p>
+                  <p style={{ ...typography.label, margin: `${spacing.xs} 0 0 0` }}>Instructor</p>
                 </div>
                 <div style={{ padding: spacing.md, borderRadius: 12, border: `1px solid ${colors.border}`, background: colors.surfaceAlt }}>
                   <p style={{ ...typography.small, color: colors.textMuted, margin: 0 }}>Courses Assigned</p>
@@ -247,7 +247,7 @@ export const AdminTeachersTab = ({ teachers, courses, onTeachersUpdate, loading,
                 <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm, marginTop: spacing.md }}>
                   {getTeacherCourses(selectedTeacher, courses).length === 0 ? (
                     <p style={{ ...typography.bodySmall, color: colors.textMuted, margin: 0 }}>
-                      No courses are currently assigned to this teacher.
+                      No courses are currently assigned to this instructor.
                     </p>
                   ) : (
                     getTeacherCourses(selectedTeacher, courses).map((course) => (
@@ -288,7 +288,7 @@ export const AdminTeachersTab = ({ teachers, courses, onTeachersUpdate, loading,
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog
         isOpen={showDeleteDialog}
-        title="Delete Teacher?"
+        title="Delete Instructor?"
         message="This action cannot be undone."
         confirmText="Delete"
         cancelText="Cancel"

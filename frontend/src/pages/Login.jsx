@@ -26,7 +26,7 @@ const Login = () => {
 
   const validateForm = () => {
     const nextErrors = {
-      username: validateRequired(username, 'Username'),
+      username: validateRequired(username, 'Email or Username'),
       password: validateRequired(password, 'Password')
     };
     setFieldErrors(nextErrors);
@@ -147,7 +147,7 @@ const Login = () => {
                         id="username"
                         label="Email or Username"
                         type="text"
-                        placeholder="Enter your email"
+                        placeholder="Enter your email or username"
                         value={username}
                         onChange={(event) => {
                           setUsername(event.target.value);

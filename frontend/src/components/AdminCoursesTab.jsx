@@ -142,7 +142,7 @@ export const AdminCoursesTab = ({ courses, teachers, onCoursesUpdate, loading, e
     e.preventDefault();
     try {
       await assignTeacher(editingCourse._id, selectedTeacherId);
-      handleSuccess('Teacher assigned successfully');
+      handleSuccess('Instructor assigned successfully');
       setSelectedTeacherId('');
       await onCoursesUpdate();
       setEditingCourse((prev) => {
@@ -166,7 +166,7 @@ export const AdminCoursesTab = ({ courses, teachers, onCoursesUpdate, loading, e
     setTeacherActionLoadingId(teacherId);
     try {
       await unassignTeacher(editingCourse._id, teacherId);
-      handleSuccess('Teacher unassigned successfully');
+      handleSuccess('Instructor unassigned successfully');
       await onCoursesUpdate();
       setEditingCourse((prev) => {
         if (!prev) return prev;
@@ -297,13 +297,13 @@ export const AdminCoursesTab = ({ courses, teachers, onCoursesUpdate, loading, e
                 {course.title}
               </h3>
 
-              {/* Teachers Info */}
+              {/* Instructor Info */}
               <p style={{ 
                 ...typography.small,
                 margin: '0 0 ' + spacing.md + ' 0',
                 color: colors.textMuted 
               }}>
-                <strong>Teacher:</strong> {getTeacherNames(course)}
+                <strong>Instructor:</strong> {getTeacherNames(course)}
               </p>
 
               {/* Spacer */}
@@ -350,7 +350,7 @@ export const AdminCoursesTab = ({ courses, teachers, onCoursesUpdate, loading, e
                           setOpenDropdown(null);
                         }}
                       >
-                        <User size={14} /> Assign Teacher
+                        <User size={14} /> Assign Instructor
                       </button>
                       <button
                         style={dropdownItemStyle}
@@ -444,6 +444,7 @@ export const AdminCoursesTab = ({ courses, teachers, onCoursesUpdate, loading, e
                 >
                   <option value="academic">Academic</option>
                   <option value="professional">Professional</option>
+                  <option value="short-term">Short Term</option>
                   <option value="both">Both</option>
                 </select>
               </div>
@@ -605,14 +606,14 @@ export const AdminCoursesTab = ({ courses, teachers, onCoursesUpdate, loading, e
         </div>
       )}
 
-      {/* Assign Teacher Modal */}
+      {/* Assign Instructor Modal */}
       {showAssignModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <Card style={{ maxWidth: '400px', width: '90%' }}>
-            <h2 style={typography.h3}>Assign Teacher</h2>
+            <h2 style={typography.h3}>Assign Instructor</h2>
             <form onSubmit={handleAssignTeacher} style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg, marginTop: spacing.lg }}>
               <div>
-                <label style={{ ...typography.label, display: 'block', marginBottom: spacing.sm }}>Select Teacher</label>
+                <label style={{ ...typography.label, display: 'block', marginBottom: spacing.sm }}>Select Instructor</label>
                 <select
                   value={selectedTeacherId}
                   onChange={(e) => setSelectedTeacherId(e.target.value)}
@@ -627,7 +628,7 @@ export const AdminCoursesTab = ({ courses, teachers, onCoursesUpdate, loading, e
                   }}
                   required
                 >
-                  <option value="">-- Select a Teacher --</option>
+                  <option value="">-- Select an Instructor --</option>
                   {teachers.map(t => (
                     <option key={t._id} value={t._id}>{t.username}</option>
                   ))}
@@ -635,9 +636,9 @@ export const AdminCoursesTab = ({ courses, teachers, onCoursesUpdate, loading, e
               </div>
 
               <div>
-                <label style={{ ...typography.label, display: 'block', marginBottom: spacing.sm }}>Assigned Teachers</label>
+                <label style={{ ...typography.label, display: 'block', marginBottom: spacing.sm }}>Assigned Instructors</label>
                 {(editingCourse?.assignedTeachers || []).length === 0 ? (
-                  <p style={{ ...typography.small, color: colors.textMuted, margin: 0 }}>No teachers assigned yet.</p>
+                  <p style={{ ...typography.small, color: colors.textMuted, margin: 0 }}>No instructors assigned yet.</p>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
                     {(editingCourse?.assignedTeachers || []).map((teacher) => (
@@ -655,7 +656,7 @@ export const AdminCoursesTab = ({ courses, teachers, onCoursesUpdate, loading, e
                         }}
                       >
                         <span style={{ ...typography.small, color: colors.text }}>
-                          {getDisplayName(teacher) || teacher.username || 'Teacher'}
+                          {getDisplayName(teacher) || teacher.username || 'Instructor'}
                         </span>
                         <Button
                           type="button"

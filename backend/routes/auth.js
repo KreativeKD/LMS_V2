@@ -14,6 +14,8 @@ const { loginLimiter, registrationLimiter, authLimiter } = require('../middlewar
 const router = express.Router();
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '12h';
 
+const escapeRegex = (value = '') => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 const normalizeUsernameAlias = (value = '') => {
     const trimmed = String(value || '').trim();
     const atIndex = trimmed.lastIndexOf('@');
@@ -54,7 +56,23 @@ const findUserByUsernameAlias = async (username, projection = '') => {
     return candidates.find((candidate) => normalizeUsernameAlias(candidate.username) === normalizedInput) || null;
 };
 
-// Login route with name@role logic
+const findUserByLoginIdentifier = async (identifier, projection = '') => {
+    const trimmed = String(identifier || '').trim();
+    if (!trimmed) return null;
+
+    const userByUsername = await findUserByUsernameAlias(trimmed, projection);
+    if (userByUsername) return userByUsername;
+
+    const emailRegex = new RegExp(`^${escapeRegex(trimmed)}$`, 'i');
+    let query = User.findOne({ role: 'student', email: emailRegex });
+    if (projection) {
+        query = query.select(projection);
+    }
+
+    return await query;
+};
+
+// Login route supporting username aliases and student email addresses
 router.post('/toggle-hidden-content', auth, async (req, res) => {
     try {
         const { courseId, contentId } = req.body;
@@ -114,26 +132,18 @@ router.post('/toggle-hidden-content', auth, async (req, res) => {
 router.post('/login', loginLimiter, validate(loginSchema), async (req, res) => {
     try {
         const { username, password } = req.body;
-        logger.info('Login attempt', { username });
+        logger.info('Login attempt', { identifier: username });
 
-        // The username is expected to be name@role
-        const parts = username.split('@');
-        if (parts.length !== 2) {
-            logger.error('Invalid username format', { username });
-            return res.status(400).send({ error: 'Invalid username format. Use name@role' });
-        }
+        const user = await findUserByLoginIdentifier(username, '+password');
 
-        const [name, role] = parts;
-        const user = await findUserByUsernameAlias(username, '+password');
-
-        if (!user || user.role !== role) {
-            logger.error('User authentication failed', { username, role });
+        if (!user) {
+            logger.error('User authentication failed', { identifier: username });
             return res.status(400).send({ error: 'Invalid login credentials' });
         }
 
         const isPasswordValid = await user.comparePassword(password);
         if (!isPasswordValid) {
-            logger.error('User authentication failed: invalid password', { username, role });
+            logger.error('User authentication failed: invalid password', { identifier: username, role: user.role });
             return res.status(400).send({ error: 'Invalid login credentials' });
         }
 
@@ -145,7 +155,7 @@ router.post('/login', loginLimiter, validate(loginSchema), async (req, res) => {
         user.lastLogin = Date.now();
         await user.save();
 
-        logger.info('User login successful', { username, role: user.role });
+        logger.info('User login successful', { identifier: username, role: user.role, userId: user._id });
         const token = jwt.sign(
             { _id: user._id.toString() },
             process.env.JWT_SECRET,

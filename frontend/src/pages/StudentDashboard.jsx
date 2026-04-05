@@ -211,14 +211,15 @@ const StudentDashboard = () => {
     };
 
     const normalizeCourseType = (courseType) => {
-        if (courseType === 'professional' || courseType === 'both') return courseType;
+        if (['professional', 'short-term', 'both'].includes(courseType)) return courseType;
         return 'academic';
     };
 
     const matchesSelectedType = (course) => {
         const type = normalizeCourseType(course.courseType);
         if (selectedCourseType === 'academic') return type === 'academic' || type === 'both';
-        return type === 'professional' || type === 'both';
+        if (selectedCourseType === 'professional') return type === 'professional' || type === 'both';
+        return type === 'short-term' || type === 'both';
     };
 
     const displayedCourses = courses.filter((course) => {
@@ -415,6 +416,14 @@ const StudentDashboard = () => {
                                         >
                                             Professional
                                         </Button>
+                                        <Button
+                                            variant={selectedCourseType === 'short-term' ? 'primary' : 'ghost'}
+                                            size="sm"
+                                            style={{ textTransform: 'none', width: '100%', justifyContent: 'center' }}
+                                            onClick={() => setSelectedCourseType('short-term')}
+                                        >
+                                            Short Term
+                                        </Button>
                                     </div>
                                 </div>
                             )}
@@ -543,7 +552,7 @@ const StudentDashboard = () => {
                                     <span>No. of enrollments - {enrolledStudentsCount}</span>
                                 </div>
 
-                                {/* Teachers Info */}
+                                {/* Instructor Info */}
                                 <p style={{ 
                                     ...typography.small,
                                     margin: '0 0 ' + spacing.md + ' 0',
@@ -551,7 +560,7 @@ const StudentDashboard = () => {
                                     fontSize: '0.86rem',
                                     fontWeight: 600 
                                 }}>
-                                    <span style={{ color: colors.text, fontWeight: 700 }}>Teacher:</span>{' '}
+                                    <span style={{ color: colors.text, fontWeight: 700 }}>Instructor:</span>{' '}
                                     <span style={{ color: colors.text }}>{getTeacherNames(course)}</span>
                                 </p>
 

@@ -308,7 +308,7 @@ const TeacherDashboard = () => {
       >
         <div style={{ width: '100%' }}>
           <div style={{ marginBottom: spacing.md }}>
-            <h2 style={{ ...typography.h3, margin: 0 }}>Teacher Studio</h2>
+            <h2 style={{ ...typography.h3, margin: 0 }}>Instructor Studio</h2>
             <p style={{ ...typography.small, color: colors.textMuted, margin: `${spacing.xs} 0 0 0` }}>
               Manage curriculum and monitor enrollment from one place.
             </p>
@@ -361,6 +361,7 @@ const TeacherDashboard = () => {
               >
                 <option value="academic">Academic</option>
                 <option value="professional">Professional</option>
+                <option value="short-term">Short Term</option>
                 <option value="both">Both</option>
               </select>
             </div>
@@ -677,7 +678,7 @@ const TeacherDashboard = () => {
         to { transform: translateX(0); opacity: 1; }
       }`}</style>
       <PageLayout
-        title="Teacher Studio"
+        title="Instructor Studio"
         header={mobileHeader}
         sidebar={!isMobile ? sidebar : null}
         hasSidebar={!isMobile}
