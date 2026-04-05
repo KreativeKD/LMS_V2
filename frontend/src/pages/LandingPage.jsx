@@ -4,11 +4,10 @@ import {
     BookOpen, Award, BarChart2, Shield, Users, Globe,
     Star, Check, Target, TrendingUp, Sparkles,
     Clock, Trophy, Rocket, Heart, Zap,
-    GraduationCap, FileText, Mail, Phone, Megaphone, CalendarDays,
+    GraduationCap, FileText, Phone, Megaphone, CalendarDays,
     ArrowRight, Building, MessageCircle
 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
-import { showToast } from '../utils/toast';
 import PublicFooter from '../components/PublicFooter';
 import {
     fetchAcademicCourses,
@@ -500,18 +499,6 @@ const LandingPage = () => {
                             )}
                         </div>
                         <p style={{ fontStyle: 'italic', color: 'var(--text-muted)', marginTop: '2rem' }}>Positions limited. Early access guarantees premium mentorship opportunities.</p>
-                    </div>
-                    <div className="email-capture" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '16px', padding: '2rem', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.05)' }}>
-                        <h3 style={{ marginBottom: '1rem' }}>Join 500+ Students on the Waitlist</h3>
-                        <p style={{ marginBottom: '2rem', color: 'var(--text-muted)' }}>Get notified when courses launch and receive exclusive early access.</p>
-                        <form onSubmit={(e) => { e.preventDefault(); showToast.success("Thank you! We'll notify you when courses launch."); }} style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-                            <input type="email" placeholder="Enter your email" required style={{ flex: '1', minWidth: '250px' }} />
-                            <button type="submit" className="btn-primary" style={{ whiteSpace: 'nowrap' }}>
-                                <Mail size={18} />
-                                <span>Notify Me</span>
-                            </button>
-                        </form>
-                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '1rem' }}>No spam, unsubscribe anytime.</p>
                     </div>
                 </div>
             </section>

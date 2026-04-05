@@ -110,7 +110,7 @@ const professorsData = [
             },
             {
                 id: 'nlp',
-                title: 'Natural Language Processing',
+                title: 'Drone Design',
                 description: 'Learn to process and understand human language using computational methods and deep learning techniques.',
                 chapters: [
                     'Text Processing Fundamentals', 'Language Models', 'Named Entity Recognition', 'Sentiment Analysis', 'Machine Translation', 'Question Answering Systems', 'NLP Applications'
@@ -183,7 +183,7 @@ const academicCoursesData = [
     { id: 'dsp', title: 'Digital Signal Processing (DSP)', description: 'Master the fundamentals of processing discrete-time signals and systems. This course covers everything from basic signal theory to advanced filter design and implementation.', professor: 'Dr. Kiran TALELE', duration: '12 weeks', level: 'Intermediate', students: '150+', icon: 'BarChart2', chapters: 7 },
     { id: 'dip', title: 'Digital Image Processing (DIP)', description: 'Dive into the world of digital image processing. Learn how to manipulate, enhance, and extract information from digital images using state-of-the-art algorithms.', professor: 'Dr. Kiran TALELE', duration: '10 weeks', level: 'Intermediate', students: '120+', icon: 'Sparkles', chapters: 7 },
     { id: 'ai-ml', title: 'Artificial Intelligence and Machine Learning', description: 'Comprehensive course covering AI fundamentals, machine learning algorithms, and practical applications in various domains.', professor: 'Dr. Sarah Johnson', duration: '16 weeks', level: 'Advanced', students: '200+', icon: 'Zap', chapters: 7 },
-    { id: 'nlp', title: 'Natural Language Processing', description: 'Learn to process and understand human language using computational methods and deep learning techniques.', professor: 'Dr. Sarah Johnson', duration: '14 weeks', level: 'Advanced', students: '180+', icon: 'BookOpen', chapters: 7 },
+    { id: 'nlp', title: 'Drone Design', description: 'Learn to process and understand human language using computational methods and deep learning techniques.', professor: 'Dr. Sarah Johnson', duration: '14 weeks', level: 'Advanced', students: '180+', icon: 'BookOpen', chapters: 7 },
     { id: 'embedded', title: 'Embedded Systems Design', description: 'Design and implement embedded systems for real-world applications, covering hardware-software integration and optimization.', professor: 'Dr. Michael Chen', duration: '12 weeks', level: 'Intermediate', students: '100+', icon: 'Zap', chapters: 7 },
     { id: 'iot', title: 'Internet of Things (IoT)', description: 'Explore the world of connected devices and IoT ecosystems, learning to build scalable and secure IoT solutions.', professor: 'Dr. Michael Chen', duration: '10 weeks', level: 'Intermediate', students: '90+', icon: 'Sparkles', chapters: 7 }
 ];
