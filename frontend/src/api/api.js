@@ -525,6 +525,34 @@ export const updateUserProfile = async (data) => {
     return response.json();
 };
 
+export const fetchMyInstructorProfile = async () => {
+    const response = await fetch(`${API_URL}/auth/me/instructor-profile`, {
+        headers: getHeaders()
+    });
+    if (!response.ok) {
+        const data = await safeJsonParse(response);
+        throw new Error(data?.error || 'Failed to fetch instructor profile');
+    }
+    return response.json();
+};
+
+export const updateMyInstructorProfile = async (data) => {
+    const response = await fetch(`${API_URL}/auth/me/instructor-profile`, {
+        method: 'PUT',
+        headers: getHeaders(),
+        body: JSON.stringify(data)
+    });
+
+    const responseData = await safeJsonParse(response);
+    if (!response.ok) {
+        const error = new Error(responseData?.error || 'Failed to update instructor profile');
+        error.profile = responseData?.profile;
+        throw error;
+    }
+
+    return responseData;
+};
+
 // --- Public Data API ---
 
 export const fetchPublicProfessors = async () => {

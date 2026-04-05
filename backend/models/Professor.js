@@ -1,11 +1,14 @@
 const mongoose = require('mongoose');
 
 const professorSchema = new mongoose.Schema({
+    teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', unique: true, sparse: true },
     name: { type: String, required: true },
     designation: { type: String, required: true },
     dept: { type: String },
     institution: { type: String },
     photo: { type: String },
+    bio: { type: String },
+    isProfileComplete: { type: Boolean, default: false },
     stats: {
         experience: { type: String },
         publications: { type: String },

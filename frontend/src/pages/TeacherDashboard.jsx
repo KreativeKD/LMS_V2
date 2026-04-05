@@ -312,6 +312,14 @@ const TeacherDashboard = () => {
             <p style={{ ...typography.small, color: colors.textMuted, margin: `${spacing.xs} 0 0 0` }}>
               Manage curriculum and monitor enrollment from one place.
             </p>
+            <div style={{ marginTop: spacing.sm }}>
+              <Button
+                variant="secondary"
+                onClick={() => navigate('/teacher/instructor-profile')}
+              >
+                Setup Instructor Profile
+              </Button>
+            </div>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: spacing.md }}>
             <div style={{ padding: spacing.md, borderRadius: 10, background: colors.surface, border: `1px solid ${colors.border}` }}>

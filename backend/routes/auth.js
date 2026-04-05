@@ -1,6 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Professor = require('../models/Professor');
 const RegistrationRequest = require('../models/RegistrationRequest');
 const PasswordResetRequest = require('../models/PasswordResetRequest');
 const SystemSetting = require('../models/SystemSetting');
@@ -70,6 +71,18 @@ const findUserByLoginIdentifier = async (identifier, projection = '') => {
     }
 
     return await query;
+};
+
+const isInstructorProfileComplete = (profile = {}) => {
+    const hasName = String(profile.name || '').trim().length > 0;
+    const hasDesignation = String(profile.designation || '').trim().length > 0;
+    const hasPhoto = String(profile.photo || '').trim().length > 0;
+    const hasBio = String(profile.bio || '').trim().length >= 50;
+    const stats = profile.stats || {};
+    const hasStats = ['experience', 'publications', 'patents', 'startups']
+        .every((key) => String(stats[key] || '').trim().length > 0);
+
+    return hasName && hasDesignation && hasPhoto && hasBio && hasStats;
 };
 
 // Login route supporting username aliases and student email addresses
@@ -198,6 +211,84 @@ router.patch('/me', auth, validate(updateProfileSchema), async (req, res) => {
     } catch (e) {
         console.error('Profile update error:', e);
         res.status(400).send({ error: e.message || 'Failed to update profile' });
+    }
+});
+
+router.get('/me/instructor-profile', auth, authorize('teacher'), async (req, res) => {
+    try {
+        const teacher = await User.findById(req.user._id).select('username email');
+        if (!teacher) return res.status(404).send({ error: 'Instructor not found' });
+
+        let profile = await Professor.findOne({ teacherId: teacher._id });
+        if (!profile) {
+            const fallbackName = String(teacher.username || '').split('@')[0] || 'Instructor';
+            profile = await Professor.create({
+                teacherId: teacher._id,
+                name: fallbackName,
+                designation: 'Professor',
+                contact: {
+                    email: teacher.email || ''
+                },
+                stats: {
+                    experience: '',
+                    publications: '',
+                    patents: '',
+                    startups: ''
+                },
+                isProfileComplete: false
+            });
+        }
+
+        res.send(profile);
+    } catch (e) {
+        res.status(500).send({ error: e.message });
+    }
+});
+
+router.put('/me/instructor-profile', auth, authorize('teacher'), async (req, res) => {
+    try {
+        const teacher = await User.findById(req.user._id);
+        if (!teacher) return res.status(404).send({ error: 'Instructor not found' });
+
+        const payload = {
+            teacherId: teacher._id,
+            name: String(req.body?.name || '').trim() || String(teacher.username || '').split('@')[0],
+            designation: String(req.body?.designation || '').trim() || 'Professor',
+            dept: String(req.body?.dept || '').trim(),
+            institution: String(req.body?.institution || '').trim(),
+            photo: String(req.body?.photo || '').trim(),
+            bio: String(req.body?.bio || '').trim(),
+            stats: {
+                experience: String(req.body?.stats?.experience || '').trim(),
+                publications: String(req.body?.stats?.publications || '').trim(),
+                patents: String(req.body?.stats?.patents || '').trim(),
+                startups: String(req.body?.stats?.startups || '').trim()
+            },
+            contact: {
+                website: String(req.body?.contact?.website || '').trim(),
+                linkedin: String(req.body?.contact?.linkedin || '').trim(),
+                email: String(req.body?.contact?.email || teacher.email || '').trim()
+            }
+        };
+
+        payload.isProfileComplete = isInstructorProfileComplete(payload);
+
+        const profile = await Professor.findOneAndUpdate(
+            { teacherId: teacher._id },
+            { $set: payload },
+            { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true }
+        );
+
+        if (!profile.isProfileComplete) {
+            return res.status(400).send({
+                error: 'Complete all required profile fields before publishing to the Professor tab.',
+                profile
+            });
+        }
+
+        res.send(profile);
+    } catch (e) {
+        res.status(400).send({ error: e.message });
     }
 });
 
@@ -463,6 +554,26 @@ router.post('/admin/add-teacher', auth, authorize('admin'), async (req, res) => 
         const username = `${name}@teacher`;
         const user = new User({ username, password, role: 'teacher' });
         await user.save();
+
+        await Professor.findOneAndUpdate(
+            { teacherId: user._id },
+            {
+                $setOnInsert: {
+                    teacherId: user._id,
+                    name,
+                    designation: 'Professor',
+                    stats: {
+                        experience: '',
+                        publications: '',
+                        patents: '',
+                        startups: ''
+                    },
+                    isProfileComplete: false
+                }
+            },
+            { upsert: true, new: true }
+        );
+
         res.status(201).send({ message: 'Teacher added successfully', username });
     } catch (e) {
         res.status(400).send(e.message);
@@ -507,6 +618,8 @@ router.delete('/admin/teachers/:id', auth, authorize('admin'), async (req, res) 
         await Notification.deleteMany({
             $or: [{ recipient: teacher._id }, { actor: teacher._id }]
         });
+
+        await Professor.deleteOne({ teacherId: teacher._id });
 
         res.send({ message: 'Teacher deleted successfully' });
     } catch (e) {

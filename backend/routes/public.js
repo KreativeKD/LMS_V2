@@ -12,7 +12,12 @@ const { auth, authorize } = require('../middleware/auth');
 
 const PUBLIC_PROFESSOR_EXCLUDE_REGEX = /michael chen/i;
 const getPublicProfessorQuery = () => ({
-    name: { $not: PUBLIC_PROFESSOR_EXCLUDE_REGEX }
+    name: { $not: PUBLIC_PROFESSOR_EXCLUDE_REGEX },
+    $or: [
+        { teacherId: { $exists: false } },
+        { teacherId: null },
+        { isProfileComplete: true }
+    ]
 });
 
 const serializeGeneralTestimonial = (item) => {
