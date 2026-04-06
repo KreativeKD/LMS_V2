@@ -36,6 +36,7 @@ const StudentCourseView = () => {
 
   const [course, setCourse] = useState(null);
   const [selectedUnit, setSelectedUnit] = useState(null);
+  const [selectedChapter, setSelectedChapter] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [expandedChapter, setExpandedChapter] = useState(null);
   const [likes, setLikes] = useState({});
@@ -414,9 +415,9 @@ const StudentCourseView = () => {
         await loadCourseTestimonials();
 
         const firstChapter = data.chapters?.[0];
-        const firstUnit = firstChapter?.units?.[0];
         if (firstChapter?._id) setExpandedChapter(firstChapter._id);
-        if (firstUnit) setSelectedUnit(firstUnit);
+        setSelectedUnit(null);
+        setSelectedChapter(null);
       } catch (error) {
         console.error(error);
         showToast.error('Failed to load course content');
@@ -480,7 +481,12 @@ const StudentCourseView = () => {
                 return (
                   <div key={chapter._id}>
                     <button
-                      onClick={() => !chapterHidden && setExpandedChapter(isExpanded ? null : chapter._id)}
+                      onClick={() => {
+                        if (chapterHidden) return;
+                        setExpandedChapter(isExpanded ? null : chapter._id);
+                        setSelectedChapter(chapter);
+                        setSelectedUnit(null);
+                      }}
                       style={{
                         width: '100%',
                         display: 'flex',
@@ -566,7 +572,11 @@ const StudentCourseView = () => {
                           return (
                             <div
                               key={unit._id}
-                              onClick={() => !unitHidden && setSelectedUnit(unit)}
+                              onClick={() => {
+                                if (unitHidden) return;
+                                setSelectedUnit(unit);
+                                setSelectedChapter(chapter);
+                              }}
                               style={{
                                 borderLeft: `3px solid ${active ? colors.primary : 'transparent'}`,
                                 background: active ? 'rgba(16, 185, 129, 0.08)' : 'transparent',
@@ -962,11 +972,64 @@ const StudentCourseView = () => {
                 </Card>
               )}
             </div>
+          ) : selectedChapter ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+              <div style={{ marginBottom: spacing.sm }}>
+                <h2 style={{ ...typography.h2, marginBottom: spacing.xs }}>{selectedChapter.title}</h2>
+                <p style={{ ...typography.small, color: colors.textMuted, margin: 0 }}>
+                  Module selected
+                </p>
+              </div>
+
+              <Card style={{ padding: 0, overflow: 'hidden' }}>
+                {selectedChapter.moduleImage ? (
+                  <img
+                    src={selectedChapter.moduleImage}
+                    alt={`${selectedChapter.title} module`}
+                    style={{
+                      width: '100%',
+                      height: '420px',
+                      objectFit: 'contain',
+                      objectPosition: 'center',
+                      background: '#0b1220',
+                      display: 'block'
+                    }}
+                  />
+                ) : (
+                  <div style={{ padding: spacing.lg }}>
+                    <p style={{ ...typography.bodySmall, color: colors.textMuted, margin: 0 }}>
+                      No module image available for this module.
+                    </p>
+                  </div>
+                )}
+              </Card>
+
+              {selectedChapter.moduleDescriptionPdf && (
+                <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                  <Button
+                    variant="secondary"
+                    onClick={() => openPdfDocument(selectedChapter.moduleDescriptionPdf)}
+                  >
+                    <FileText size={16} /> Open Module Description PDF
+                  </Button>
+                </div>
+              )}
+            </div>
           ) : (
             <Card>
-              <p style={{ ...typography.bodySmall, color: colors.textMuted, margin: 0 }}>
-                Select a unit from the outline to begin learning.
-              </p>
+              {course.image ? (
+                <div style={{ borderRadius: borderRadius.md, overflow: 'hidden' }}>
+                  <img
+                    src={course.image}
+                    alt={`${course.title} course`}
+                    style={{ width: '100%', maxHeight: '420px', objectFit: 'cover', display: 'block' }}
+                  />
+                </div>
+              ) : (
+                <p style={{ ...typography.bodySmall, color: colors.textMuted, margin: 0 }}>
+                  Select a module or unit from the outline to begin learning.
+                </p>
+              )}
             </Card>
           )}
         </div>

@@ -153,6 +153,19 @@ export const reorderChapters = async (courseId, chapterIds) => {
     return response.json();
 };
 
+export const reorderCourses = async (courseIds) => {
+    const response = await fetch(`${API_URL}/courses/admin/reorder`, {
+        method: 'PATCH',
+        headers: getHeaders(),
+        body: JSON.stringify({ courseIds })
+    });
+    if (!response.ok) {
+        const data = await safeJsonParse(response);
+        throw new Error(data?.error || 'Failed to reorder courses');
+    }
+    return response.json();
+};
+
 export const addUnit = async (chapterId, unitData) => {
     const response = await fetch(`${API_URL}/courses/chapters/${chapterId}/units`, {
         method: 'POST',

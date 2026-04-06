@@ -11,6 +11,7 @@ const courseSchema = new mongoose.Schema({
     descriptionPdf: { type: String }, // Base64 data URL for course description PDF
     contentHours: { type: Number, min: 0, default: 0 },
     image: { type: String }, // Base64 encoded image or URL
+    courseOrder: { type: Number, default: 0 },
     students: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     instructor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     assignedTeachers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],

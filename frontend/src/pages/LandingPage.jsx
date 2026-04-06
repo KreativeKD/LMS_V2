@@ -78,7 +78,7 @@ const LandingPage = () => {
     const showcaseSlides = [
         {
             image: '/generated/img1.png',
-            title: 'Launch Your Engineering Career',
+            title: 'Kickstart Your Engineering Career',
             subtitle: 'Industry-ready learning pathways with guided progress.'
         },
         {
@@ -90,6 +90,11 @@ const LandingPage = () => {
             image: '/generated/img3.png',
             title: 'Build Skills That Matter',
             subtitle: 'From foundations to advanced topics, all in one place.'
+        },
+        {
+            image: '/generated/img4.png',
+            title: 'Unlock the power of Machine intelligence',
+            subtitle: 'Practical pathways for intelligent systems and real-world innovation.'
         }
     ];
 

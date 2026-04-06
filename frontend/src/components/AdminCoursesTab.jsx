@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Eye, Edit, Trash2, User, Layout, Users, MoreVertical, BookOpen, UserMinus } from 'lucide-react';
 import { spacing, colors, typography } from '../theme';
@@ -7,7 +7,7 @@ import { Input } from './Input';
 import { Card } from './Card';
 import { AdminDataState } from './AdminDataState';
 import { ConfirmDialog } from './ConfirmDialog';
-import { createCourse, updateCourse, deleteCourse, fetchEnrolledStudents, assignTeacher, unassignTeacher } from '../api/api';
+import { createCourse, updateCourse, deleteCourse, fetchEnrolledStudents, assignTeacher, unassignTeacher, reorderCourses } from '../api/api';
 import { handleSuccess, handleApiError } from '../utils/toast';
 
 const getDisplayName = (person) => {
@@ -60,6 +60,56 @@ export const AdminCoursesTab = ({ courses, teachers, onCoursesUpdate, loading, e
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [formLoading, setFormLoading] = useState(false);
   const [teacherActionLoadingId, setTeacherActionLoadingId] = useState(null);
+  const [orderedCourses, setOrderedCourses] = useState([]);
+  const [draggedCourseId, setDraggedCourseId] = useState(null);
+  const [dragOverCourseId, setDragOverCourseId] = useState(null);
+  const [isReorderingCourses, setIsReorderingCourses] = useState(false);
+
+  useEffect(() => {
+    setOrderedCourses(courses || []);
+  }, [courses]);
+
+  const getReorderedCourses = (list, fromCourseId, toCourseId) => {
+    const fromIndex = list.findIndex((course) => course._id === fromCourseId);
+    const toIndex = list.findIndex((course) => course._id === toCourseId);
+    if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return list;
+
+    const updated = [...list];
+    const [moved] = updated.splice(fromIndex, 1);
+    updated.splice(toIndex, 0, moved);
+    return updated;
+  };
+
+  const handleCourseDrop = async (targetCourseId) => {
+    if (!draggedCourseId || draggedCourseId === targetCourseId || isReorderingCourses) {
+      setDraggedCourseId(null);
+      setDragOverCourseId(null);
+      return;
+    }
+
+    const reordered = getReorderedCourses(orderedCourses, draggedCourseId, targetCourseId);
+    if (reordered === orderedCourses) {
+      setDraggedCourseId(null);
+      setDragOverCourseId(null);
+      return;
+    }
+
+    const previousOrder = orderedCourses;
+    setOrderedCourses(reordered);
+    setIsReorderingCourses(true);
+    try {
+      await reorderCourses(reordered.map((course) => course._id));
+      handleSuccess('Course order updated');
+      await onCoursesUpdate();
+    } catch (err) {
+      setOrderedCourses(previousOrder);
+      handleApiError(err, 'Failed to reorder courses');
+    } finally {
+      setIsReorderingCourses(false);
+      setDraggedCourseId(null);
+      setDragOverCourseId(null);
+    }
+  };
 
   const handleEdit = (course) => {
     setEditingCourse(course);
@@ -243,20 +293,44 @@ export const AdminCoursesTab = ({ courses, teachers, onCoursesUpdate, loading, e
       )}
 
       {!loading && !error && courses.length > 0 && (
+      <p style={{ ...typography.small, color: colors.textMuted, marginBottom: spacing.md }}>
+        Drag courses to reorder them.
+        {isReorderingCourses ? ' Saving new order...' : ''}
+      </p>
+      )}
+
+      {!loading && !error && courses.length > 0 && (
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: spacing.md }}>
-        {courses.map(course => (
+        {orderedCourses.map(course => (
           <div 
             key={course._id} 
+            draggable={!isReorderingCourses}
+            onDragStart={() => setDraggedCourseId(course._id)}
+            onDragOver={(e) => {
+              e.preventDefault();
+              if (dragOverCourseId !== course._id) {
+                setDragOverCourseId(course._id);
+              }
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              handleCourseDrop(course._id);
+            }}
+            onDragEnd={() => {
+              setDraggedCourseId(null);
+              setDragOverCourseId(null);
+            }}
             style={{
               display: 'flex',
               flexDirection: 'column',
               background: colors.surface,
               borderRadius: '12px',
-              border: `1px solid ${colors.border}`,
+              border: dragOverCourseId === course._id ? `1px solid ${colors.accent}` : `1px solid ${colors.border}`,
               boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
               transition: 'all 0.2s ease',
               height: '100%',
-              position: 'relative'
+              position: 'relative',
+              opacity: draggedCourseId === course._id ? 0.65 : 1
             }}
           >
             {/* Image Section */}

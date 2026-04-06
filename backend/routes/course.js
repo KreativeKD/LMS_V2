@@ -141,12 +141,12 @@ router.get('/', async (req, res) => {
 
         // Fetch courses with pagination and minimal populate (no chapters/units)
         const courses = await Course.find()
-            .select('title description courseType descriptionPdf contentHours image instructor assignedTeachers students chapters completionDate createdAt')
+            .select('title description courseType descriptionPdf contentHours image courseOrder instructor assignedTeachers students chapters completionDate createdAt')
             .populate('instructor', 'username')
             .populate('assignedTeachers', 'username')
             .skip(skip)
             .limit(limit)
-            .sort({ createdAt: -1 })
+            .sort({ courseOrder: 1, createdAt: -1 })
             .lean(); // Use lean() for better performance
 
         // Add chapter count without loading full chapter data
@@ -178,7 +178,7 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
     try {
         const course = await Course.findById(req.params.id)
-            .select('title description courseType descriptionPdf contentHours image instructor assignedTeachers students chapters completionDate createdAt')
+            .select('title description courseType descriptionPdf contentHours image courseOrder instructor assignedTeachers students chapters completionDate createdAt')
             .populate('instructor', 'username')
             .populate('assignedTeachers', 'username')
             .lean();
@@ -206,7 +206,7 @@ router.get('/:id/full', auth, async (req, res) => {
             .populate('assignedTeachers', 'username')
             .populate({
                 path: 'chapters',
-                select: 'title moduleDescriptionPdf courseId units',
+                select: 'title moduleDescriptionPdf moduleImage courseId units',
                 populate: { 
                     path: 'units',
                     select: 'title type content chapterId'
@@ -232,7 +232,7 @@ router.get('/:id/chapters', auth, async (req, res) => {
             .select('chapters students instructor assignedTeachers')
             .populate({
                 path: 'chapters',
-                select: 'title moduleDescriptionPdf courseId units',
+                select: 'title moduleDescriptionPdf moduleImage courseId units',
                 options: { sort: { createdAt: 1 } }
             })
             .lean();
@@ -430,8 +430,12 @@ router.delete('/:courseId/testimonials/:testimonialId', auth, authorize('admin',
 // Admin/Teacher: Create Course
 router.post('/', auth, authorize('admin', 'teacher'), validate(courseSchema), async (req, res) => {
     try {
+        const lastCourseByOrder = await Course.findOne().sort({ courseOrder: -1, createdAt: -1 }).select('courseOrder').lean();
+        const nextCourseOrder = Number.isFinite(lastCourseByOrder?.courseOrder) ? lastCourseByOrder.courseOrder + 1 : 0;
+
         const course = new Course({
             ...req.body,
+            courseOrder: nextCourseOrder,
             instructor: req.user._id
         });
         await course.save();
@@ -465,6 +469,39 @@ router.patch('/:id', auth, authorize('admin', 'teacher'), validate(courseSchema)
         res.send(updatedCourse);
     } catch (e) {
         res.status(400).send(e.message);
+    }
+});
+
+// Admin: Reorder Courses
+router.patch('/admin/reorder', auth, authorize('admin'), async (req, res) => {
+    try {
+        const { courseIds } = req.body;
+        if (!Array.isArray(courseIds) || courseIds.length === 0) {
+            return res.status(400).send({ error: 'courseIds must be a non-empty array' });
+        }
+
+        const existingCourses = await Course.find({ _id: { $in: courseIds } }).select('_id').lean();
+        if (existingCourses.length !== courseIds.length) {
+            return res.status(400).send({ error: 'Course order contains invalid course IDs' });
+        }
+
+        const uniqueIds = new Set(courseIds.map((id) => String(id)));
+        if (uniqueIds.size !== courseIds.length) {
+            return res.status(400).send({ error: 'Course order contains duplicate IDs' });
+        }
+
+        const bulkOps = courseIds.map((courseId, index) => ({
+            updateOne: {
+                filter: { _id: courseId },
+                update: { $set: { courseOrder: index } }
+            }
+        }));
+
+        await Course.bulkWrite(bulkOps);
+        invalidateCache('GET:/api/courses*');
+        res.send({ message: 'Course order updated successfully' });
+    } catch (e) {
+        res.status(500).send({ error: e.message });
     }
 });
 
@@ -583,7 +620,8 @@ router.patch('/chapters/:id', auth, authorize('admin', 'teacher'), validate(chap
             req.params.id,
             {
                 title: req.body.title,
-                moduleDescriptionPdf: req.body.moduleDescriptionPdf || ''
+                moduleDescriptionPdf: req.body.moduleDescriptionPdf || '',
+                moduleImage: req.body.moduleImage || ''
             },
             { new: true }
         );

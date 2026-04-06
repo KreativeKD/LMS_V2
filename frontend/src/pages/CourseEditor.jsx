@@ -11,7 +11,10 @@ const CourseEditor = () => {
     const navigate = useNavigate();
     const [course, setCourse] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [newChapterTitle, setNewChapterTitle] = useState('');
+    const [showAddChapterModal, setShowAddChapterModal] = useState(false);
+    const [chapterForm, setChapterForm] = useState({ title: '', moduleDescriptionPdf: '', moduleImage: '' });
+    const [chapterPdfFileName, setChapterPdfFileName] = useState('');
+    const [chapterImageFileName, setChapterImageFileName] = useState('');
     const [expandedChapters, setExpandedChapters] = useState({});
 
     // Quiz State
@@ -32,6 +35,7 @@ const CourseEditor = () => {
     const [showEditChapterModal, setShowEditChapterModal] = useState(false);
     const [editingChapter, setEditingChapter] = useState(null);
     const [editingChapterPdfFileName, setEditingChapterPdfFileName] = useState('');
+    const [editingChapterImageFileName, setEditingChapterImageFileName] = useState('');
     const [showEditUnitModal, setShowEditUnitModal] = useState(false);
     const [editingUnit, setEditingUnit] = useState(null);
     const [editingPdfFileName, setEditingPdfFileName] = useState('');
@@ -69,11 +73,78 @@ const CourseEditor = () => {
     const handleAddChapter = async (e) => {
         e.preventDefault();
         try {
-            await addChapter(id, { title: newChapterTitle });
-            setNewChapterTitle('');
+            await addChapter(id, {
+                title: chapterForm.title,
+                moduleDescriptionPdf: chapterForm.moduleDescriptionPdf || '',
+                moduleImage: chapterForm.moduleImage || ''
+            });
+            setChapterForm({ title: '', moduleDescriptionPdf: '', moduleImage: '' });
+            setChapterPdfFileName('');
+            setChapterImageFileName('');
+            setShowAddChapterModal(false);
             loadCourseData();
-            showToast.success('Chapter added successfully!');
+            showToast.success('Module added successfully!');
         } catch (err) { handleApiError(err, 'Failed to add chapter'); }
+    };
+
+    const handleAddChapterPdfUpload = (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const isPdfMime = file.type === 'application/pdf';
+        const hasPdfExtension = file.name.toLowerCase().endsWith('.pdf');
+        if (!isPdfMime && !hasPdfExtension) {
+            showToast.error('Please upload a valid PDF file');
+            return;
+        }
+
+        const maxSizeBytes = 10 * 1024 * 1024;
+        if (file.size > maxSizeBytes) {
+            showToast.error('PDF must be smaller than 10MB');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            const fileDataUrl = reader.result;
+            if (typeof fileDataUrl !== 'string') {
+                showToast.error('Failed to read PDF file');
+                return;
+            }
+            setChapterForm((prev) => ({ ...prev, moduleDescriptionPdf: fileDataUrl }));
+            setChapterPdfFileName(file.name);
+        };
+        reader.onerror = () => showToast.error('Failed to read PDF file');
+        reader.readAsDataURL(file);
+    };
+
+    const handleAddChapterImageUpload = (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            showToast.error('Please upload a valid image file');
+            return;
+        }
+
+        const maxSizeBytes = 5 * 1024 * 1024;
+        if (file.size > maxSizeBytes) {
+            showToast.error('Image must be smaller than 5MB');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            const fileDataUrl = reader.result;
+            if (typeof fileDataUrl !== 'string') {
+                showToast.error('Failed to read image file');
+                return;
+            }
+            setChapterForm((prev) => ({ ...prev, moduleImage: fileDataUrl }));
+            setChapterImageFileName(file.name);
+        };
+        reader.onerror = () => showToast.error('Failed to read image file');
+        reader.readAsDataURL(file);
     };
 
     const getReorderedChapters = (chapters, fromChapterId, toChapterId) => {
@@ -252,6 +323,7 @@ const CourseEditor = () => {
     const handleEditChapter = (chapter) => {
         setEditingChapter(chapter);
         setEditingChapterPdfFileName(chapter.moduleDescriptionPdf ? 'Current uploaded PDF' : '');
+        setEditingChapterImageFileName(chapter.moduleImage ? 'Current uploaded image' : '');
         setShowEditChapterModal(true);
     };
 
@@ -260,11 +332,13 @@ const CourseEditor = () => {
         try {
             await updateChapter(editingChapter._id, {
                 title: editingChapter.title,
-                moduleDescriptionPdf: editingChapter.moduleDescriptionPdf || ''
+                moduleDescriptionPdf: editingChapter.moduleDescriptionPdf || '',
+                moduleImage: editingChapter.moduleImage || ''
             });
             setShowEditChapterModal(false);
             setEditingChapter(null);
             setEditingChapterPdfFileName('');
+            setEditingChapterImageFileName('');
             loadCourseData();
             showToast.success('Chapter updated successfully!');
         } catch (err) { handleApiError(err, 'Failed to update chapter'); }
@@ -298,6 +372,35 @@ const CourseEditor = () => {
             setEditingChapterPdfFileName(file.name);
         };
         reader.onerror = () => showToast.error('Failed to read PDF file');
+        reader.readAsDataURL(file);
+    };
+
+    const handleChapterImageUpload = (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            showToast.error('Please upload a valid image file');
+            return;
+        }
+
+        const maxSizeBytes = 5 * 1024 * 1024;
+        if (file.size > maxSizeBytes) {
+            showToast.error('Image must be smaller than 5MB');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            const fileDataUrl = reader.result;
+            if (typeof fileDataUrl !== 'string') {
+                showToast.error('Failed to read image file');
+                return;
+            }
+            setEditingChapter((prev) => ({ ...prev, moduleImage: fileDataUrl }));
+            setEditingChapterImageFileName(file.name);
+        };
+        reader.onerror = () => showToast.error('Failed to read image file');
         reader.readAsDataURL(file);
     };
 
@@ -523,15 +626,13 @@ const CourseEditor = () => {
             <section>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.lg, flexWrap: 'wrap', gap: spacing.sm }}>
                     <h2>Curriculum (Chapters & Units)</h2>
-                    <form onSubmit={handleAddChapter} style={{ display: 'flex', gap: spacing.sm }}>
-                        <Input
-                            placeholder="New Chapter Title"
-                            value={newChapterTitle}
-                            onChange={e => setNewChapterTitle(e.target.value)}
-                            required
-                        />
-                        <Button type="submit" variant="primary"><Plus size={16} /> Add</Button>
-                    </form>
+                    <Button
+                        type="button"
+                        variant="primary"
+                        onClick={() => setShowAddChapterModal(true)}
+                    >
+                        <Plus size={16} /> Add Module
+                    </Button>
                 </div>
                 <p style={{ ...typography.small, color: colors.textMuted, marginBottom: spacing.md }}>
                     Drag chapters up or down to reorder them.
@@ -704,6 +805,96 @@ const CourseEditor = () => {
                 </div>
             </section>
 
+            {/* Add Chapter Modal */}
+            {showAddChapterModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content animate-fade-in" style={{ maxWidth: '500px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                            <h2 className="gradient-text">Add Module</h2>
+                            <Button
+                                type="button"
+                                onClick={() => {
+                                    setShowAddChapterModal(false);
+                                    setChapterForm({ title: '', moduleDescriptionPdf: '', moduleImage: '' });
+                                    setChapterPdfFileName('');
+                                    setChapterImageFileName('');
+                                }}
+                                variant="ghost"
+                                size="sm"
+                            >
+                                <X size={24} />
+                            </Button>
+                        </div>
+
+                        <form onSubmit={handleAddChapter} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                            <Input
+                                label="Module Title"
+                                placeholder="Enter module title"
+                                value={chapterForm.title}
+                                onChange={(event) => setChapterForm((prev) => ({ ...prev, title: event.target.value }))}
+                                required
+                                fullWidth
+                            />
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
+                                <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                                    Module Description PDF (Optional)
+                                </label>
+                                <input
+                                    type="file"
+                                    accept="application/pdf"
+                                    onChange={handleAddChapterPdfUpload}
+                                    style={{
+                                        background: '#f9fafb',
+                                        color: 'var(--text-main)',
+                                        border: '1px dashed var(--border)',
+                                        borderRadius: '10px',
+                                        padding: '12px'
+                                    }}
+                                />
+                                <span style={{ ...typography.small, color: colors.textMuted }}>
+                                    {chapterPdfFileName ? `Selected: ${chapterPdfFileName}` : 'No PDF selected'}
+                                </span>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
+                                <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                                    Module Image (Optional)
+                                </label>
+                                {chapterForm.moduleImage && (
+                                    <div style={{ borderRadius: '10px', overflow: 'hidden', maxHeight: '180px', border: '1px solid var(--border)' }}>
+                                        <img
+                                            src={chapterForm.moduleImage}
+                                            alt="New module preview"
+                                            style={{ width: '100%', height: '180px', objectFit: 'cover' }}
+                                        />
+                                    </div>
+                                )}
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleAddChapterImageUpload}
+                                    style={{
+                                        background: '#f9fafb',
+                                        color: 'var(--text-main)',
+                                        border: '1px dashed var(--border)',
+                                        borderRadius: '10px',
+                                        padding: '12px'
+                                    }}
+                                />
+                                <span style={{ ...typography.small, color: colors.textMuted }}>
+                                    {chapterImageFileName ? `Selected: ${chapterImageFileName}` : 'No image selected'}
+                                </span>
+                            </div>
+
+                            <Button type="submit" variant="primary" fullWidth>
+                                Create Module
+                            </Button>
+                        </form>
+                    </div>
+                </div>
+            )}
+
             {/* Unit Modal */}
             {showUnitModal && (
                 <div className="modal-overlay">
@@ -855,6 +1046,7 @@ const CourseEditor = () => {
                                 onClick={() => {
                                     setShowEditChapterModal(false);
                                     setEditingChapterPdfFileName('');
+                                    setEditingChapterImageFileName('');
                                 }}
                                 variant="ghost"
                                 size="sm"
@@ -891,6 +1083,37 @@ const CourseEditor = () => {
                                     {editingChapterPdfFileName
                                         ? `Selected: ${editingChapterPdfFileName}`
                                         : (editingChapter.moduleDescriptionPdf ? 'Using existing PDF' : 'No PDF selected')}
+                                </span>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
+                                <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                                    Module Image (Optional)
+                                </label>
+                                {editingChapter.moduleImage && (
+                                    <div style={{ borderRadius: '10px', overflow: 'hidden', maxHeight: '180px', border: '1px solid var(--border)' }}>
+                                        <img
+                                            src={editingChapter.moduleImage}
+                                            alt="Module preview"
+                                            style={{ width: '100%', height: '180px', objectFit: 'cover' }}
+                                        />
+                                    </div>
+                                )}
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleChapterImageUpload}
+                                    style={{
+                                        background: '#f9fafb',
+                                        color: 'var(--text-main)',
+                                        border: '1px dashed var(--border)',
+                                        borderRadius: '10px',
+                                        padding: '12px'
+                                    }}
+                                />
+                                <span style={{ ...typography.small, color: colors.textMuted }}>
+                                    {editingChapterImageFileName
+                                        ? `Selected: ${editingChapterImageFileName}`
+                                        : (editingChapter.moduleImage ? 'Using existing image' : 'No image selected')}
                                 </span>
                             </div>
                             <Button type="submit" variant="primary" fullWidth style={{ marginTop: spacing.md }}>

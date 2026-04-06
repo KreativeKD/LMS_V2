@@ -117,7 +117,8 @@ const chapterSchema = Joi.object({
     }),
     moduleDescriptionPdf: Joi.string().allow('').max(45000000).messages({
         'string.max': 'Module description PDF is too large. Please upload a smaller file.'
-    })
+    }),
+    moduleImage: Joi.string().allow('').optional().max(5000000)
 });
 
 // Unit validation
