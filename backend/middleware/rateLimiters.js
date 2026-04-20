@@ -12,18 +12,6 @@ const authLimiter = rateLimit({
     skipSuccessfulRequests: false // Count successful requests
 });
 
-// Stricter rate limiter for login - 5 attempts per 2 minutes
-const loginLimiter = rateLimit({
-    windowMs: 2 * 60 * 1000, // 2 minutes
-    max: 5,
-    message: {
-        error: 'Too many login attempts from this IP, please try again after 2 minutes'
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-    skipSuccessfulRequests: false
-});
-
 // Rate limiter for registration - 3 attempts per hour
 const registrationLimiter = rateLimit({
     windowMs: 60 * 60 * 1000, // 1 hour
@@ -48,7 +36,6 @@ const apiLimiter = rateLimit({
 
 module.exports = {
     authLimiter,
-    loginLimiter,
     registrationLimiter,
     apiLimiter
 };

@@ -1,8 +1,8 @@
 import { fetchWithRetry, safeJsonParse } from "./interceptor";
 
-// ⚠️ Do NOT change this fallback URL.
-// For local testing, define VITE_API_URL in your .env file instead.
-const API_URL = import.meta.env.VITE_API_URL || "https://api2.coursez.in/api";
+// Keep the local backend as the fallback so dev builds work even when
+// VITE_API_URL is not set.
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const getHeaders = () => {
   const token = localStorage.getItem("token");

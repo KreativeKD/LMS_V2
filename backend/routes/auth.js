@@ -11,7 +11,7 @@ const { createNotification, createNotificationsForRecipients } = require('../uti
 const logger = require('../utils/logger');
 const { auth, authorize } = require('../middleware/auth');
 const { validate, loginSchema, requestAccessSchema, completeRegistrationSchema, registerSchema, updateProfileSchema } = require('../middleware/validation');
-const { loginLimiter, registrationLimiter, authLimiter } = require('../middleware/rateLimiters');
+const { registrationLimiter, authLimiter } = require('../middleware/rateLimiters');
 const router = express.Router();
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '12h';
 
@@ -142,7 +142,7 @@ router.post('/toggle-hidden-content', auth, async (req, res) => {
     }
 });
 
-router.post('/login', loginLimiter, validate(loginSchema), async (req, res) => {
+router.post('/login', validate(loginSchema), async (req, res) => {
     try {
         const { username, password } = req.body;
         logger.info('Login attempt', { identifier: username });

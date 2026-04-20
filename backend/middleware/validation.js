@@ -109,6 +109,7 @@ const courseSchema = Joi.object({
 });
 
 // Chapter validation
+const MAX_MODULE_IMAGE_BASE64_LENGTH = 8 * 1024 * 1024;
 const chapterSchema = Joi.object({
     title: Joi.string().required().min(3).max(200).trim().messages({
         'string.min': 'Chapter title must be at least 3 characters',
@@ -118,7 +119,9 @@ const chapterSchema = Joi.object({
     moduleDescriptionPdf: Joi.string().allow('').max(45000000).messages({
         'string.max': 'Module description PDF is too large. Please upload a smaller file.'
     }),
-    moduleImage: Joi.string().allow('').optional().max(5000000)
+    moduleImage: Joi.string().allow('').optional().max(MAX_MODULE_IMAGE_BASE64_LENGTH).messages({
+        'string.max': 'Module image is too large. Please upload a smaller image.'
+    })
 });
 
 // Unit validation
