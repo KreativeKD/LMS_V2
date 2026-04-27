@@ -583,7 +583,11 @@ export const fetchMyInstructorProfile = async () => {
   });
   if (!response.ok) {
     const data = await safeJsonParse(response);
-    throw new Error(data?.error || "Failed to fetch instructor profile");
+    const error = new Error(
+      data?.error || data?.message || "Failed to fetch instructor profile",
+    );
+    error.response = { status: response.status, data };
+    throw error;
   }
   return response.json();
 };
