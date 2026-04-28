@@ -1,8 +1,32 @@
 import { fetchWithRetry, safeJsonParse } from "./interceptor";
 
-// Keep the local backend as the fallback so dev builds work even when
-// VITE_API_URL is not set.
-const API_URL = import.meta.env.VITE_API_URL || "https://api2.coursez.in/api";
+const resolveApiUrl = () => {
+  const configuredUrl = import.meta.env.VITE_API_URL;
+
+  if (typeof window !== "undefined") {
+    const hostname = window.location.hostname;
+    const isPublicSite =
+      hostname === "coursez.in" || hostname === "www.coursez.in";
+
+    // Guard against accidentally deploying a build that still points to a
+    // localhost API. Public users can never reach that target.
+    if (isPublicSite && configuredUrl?.includes("localhost")) {
+      return "https://api2.coursez.in/api";
+    }
+
+    if (configuredUrl) {
+      return configuredUrl;
+    }
+
+    if (hostname === "localhost" || hostname === "127.0.0.1") {
+      return "http://localhost:5000/api";
+    }
+  }
+
+  return configuredUrl || "https://api2.coursez.in/api";
+};
+
+const API_URL = resolveApiUrl();
 
 const getHeaders = () => {
   const token = localStorage.getItem("token");
