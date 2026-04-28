@@ -310,7 +310,17 @@ export const updateChapter = async (chapterId, data) => {
     headers: getHeaders(),
     body: JSON.stringify(data),
   });
-  if (!response.ok) throw new Error("Failed to update chapter");
+  if (!response.ok) {
+    const responseData = await safeJsonParse(response);
+    const detailsText = Array.isArray(responseData?.details)
+      ? responseData.details.join(". ")
+      : null;
+    const error = new Error(
+      detailsText || responseData?.error || "Failed to update chapter",
+    );
+    error.response = { status: response.status, data: responseData };
+    throw error;
+  }
   return response.json();
 };
 

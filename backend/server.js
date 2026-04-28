@@ -98,7 +98,7 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/announcements", announcementRoutes);
 
 app.get("/", (req, res) => {
-  res.send("LMS API is running... w changes");
+  res.send("LMS API is running... with changes");
 });
 
 // 404 handler

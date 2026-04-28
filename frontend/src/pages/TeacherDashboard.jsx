@@ -79,14 +79,19 @@ const TeacherDashboard = () => {
     event.preventDefault();
 
     try {
-      await createCourse({
+      const payload = {
         title: courseTitle,
         description: '',
         courseType,
         descriptionPdf,
         contentHours: Number(contentHours),
-        completionDate,
-      });
+      };
+
+      if (completionDate) {
+        payload.completionDate = completionDate;
+      }
+
+      await createCourse(payload);
 
       setCourseTitle('');
       setDescriptionPdf('');
