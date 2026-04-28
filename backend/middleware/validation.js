@@ -184,6 +184,11 @@ const validate = (schema) => {
       return res.status(400).json({
         error: "Validation failed",
         details: errors,
+        debugBodyKeys: Object.keys(req.body || {}),
+        debugSchemaKeys:
+          schema && typeof schema.describe === "function"
+            ? Object.keys(schema.describe().keys || {})
+            : [],
       });
     }
 
