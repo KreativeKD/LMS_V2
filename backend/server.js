@@ -16,6 +16,7 @@ const { errorHandlerMiddleware } = require("./utils/errorHandler");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+let server;
 
 // Validate required environment variables
 if (!process.env.JWT_SECRET) {
@@ -80,7 +81,10 @@ app.use(mongoSanitize());
 
 // Connect to MongoDB
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(process.env.MONGO_URI, {
+    maxPoolSize: Number(process.env.MONGO_MAX_POOL_SIZE) || 5,
+    minPoolSize: 0,
+  })
   .then(() => {
     logger.info("Connected to MongoDB Atlas");
     seedAdmin();
@@ -113,6 +117,47 @@ app.use((req, res) => {
 // Global error handler (must be last)
 app.use(errorHandlerMiddleware);
 
-app.listen(PORT, () => {
-  logger.info(`Server started on port ${PORT}`);
+const startServer = () => {
+  if (server) {
+    return server;
+  }
+
+  server = app.listen(PORT, () => {
+    logger.info(`Server started on port ${PORT}`);
+  });
+
+  return server;
+};
+
+const shutdown = async (signal) => {
+  logger.info(`${signal} received. Shutting down server.`);
+
+  if (server) {
+    server.close(() => {
+      logger.info("HTTP server closed");
+    });
+  }
+
+  await mongoose.connection.close(false);
+  process.exit(0);
+};
+
+process.once("SIGTERM", () => {
+  shutdown("SIGTERM").catch((err) => {
+    logger.error("Error during shutdown", { error: err.message });
+    process.exit(1);
+  });
 });
+
+process.once("SIGINT", () => {
+  shutdown("SIGINT").catch((err) => {
+    logger.error("Error during shutdown", { error: err.message });
+    process.exit(1);
+  });
+});
+
+if (require.main === module) {
+  startServer();
+}
+
+module.exports = app;
