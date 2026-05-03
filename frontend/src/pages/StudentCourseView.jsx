@@ -393,24 +393,6 @@ const StudentCourseView = () => {
       try {
         const data = await fetchCourseFull(id);
 
-        const isEnrolled = data.students?.some(
-          (studentId) => String(studentId) === String(user?._id)
-        );
-        const assignedTeacherIds = (data.assignedTeachers || []).map((teacher) =>
-          String(teacher?._id || teacher)
-        );
-        const isInstructor =
-          user?.role === 'teacher' &&
-          (String(data.instructor?._id) === String(user?._id) ||
-            assignedTeacherIds.includes(String(user?._id)));
-        const isAdmin = user?.role === 'admin';
-
-        if (!isEnrolled && !isAdmin && !isInstructor) {
-          showToast.error('You must be enrolled and approved to view this course content.');
-          navigate(getBackPath());
-          return;
-        }
-
         setCourse(data);
         await loadCourseTestimonials();
 

@@ -57,7 +57,7 @@ const formatDateWithShortMonth = (value) => {
 };
 
 const StudentDashboard = () => {
-    const { user } = useAuth();
+    const { user, login } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const [courses, setCourses] = useState([]);
@@ -89,6 +89,7 @@ const StudentDashboard = () => {
         try {
             const data = await fetchCurrentUser();
             setUserData(data);
+            login(data, localStorage.getItem('token'));
         } catch (err) {
             console.error(err);
         }
@@ -156,7 +157,9 @@ const StudentDashboard = () => {
             await enrollInCourse(courseId);
             handleSuccess('Successfully enrolled!');
             await loadCourses();
-            await loadUser();
+            const updatedUser = await fetchCurrentUser();
+            setUserData(updatedUser);
+            login(updatedUser, localStorage.getItem('token'));
             // Navigate to the course page
             navigate(`/course/read/${courseId}`);
         } catch (err) {
