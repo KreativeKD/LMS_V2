@@ -3,6 +3,55 @@ import { fetchCurrentUser } from '../api/api';
 
 const AuthContext = createContext(null);
 
+const getPersistedUser = (userData) => {
+    if (!userData) return null;
+
+    const {
+        _id,
+        username,
+        role,
+        firstName,
+        lastName,
+        email,
+        phone,
+        city,
+        country,
+        profilePhoto,
+    } = userData;
+
+    return {
+        _id,
+        username,
+        role,
+        firstName,
+        lastName,
+        email,
+        phone,
+        city,
+        country,
+        profilePhoto,
+    };
+};
+
+const persistUserToStorage = (userData) => {
+    const persistedUser = getPersistedUser(userData);
+
+    try {
+        if (persistedUser) {
+            localStorage.setItem('user', JSON.stringify(persistedUser));
+        } else {
+            localStorage.removeItem('user');
+        }
+    } catch (error) {
+        if (error?.name === 'QuotaExceededError') {
+            localStorage.removeItem('user');
+            return;
+        }
+
+        throw error;
+    }
+};
+
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [token, setToken] = useState(null);
@@ -41,7 +90,7 @@ export const AuthProvider = ({ children }) => {
                     try {
                         const userData = await fetchCurrentUser();
                         setUser(userData);
-                        localStorage.setItem('user', JSON.stringify(userData));
+                        persistUserToStorage(userData);
                     } catch (err) {
                         const status = err?.response?.status;
                         if (status === 401 || status === 403) {
@@ -72,11 +121,7 @@ export const AuthProvider = ({ children }) => {
 
     // Sync user changes to localStorage
     useEffect(() => {
-        if (user) {
-            localStorage.setItem('user', JSON.stringify(user));
-        } else {
-            localStorage.removeItem('user');
-        }
+        persistUserToStorage(user);
     }, [user]);
 
     const login = useCallback((userData, userToken) => {
