@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import PublicFooter from '../components/PublicFooter';
+import StatCard from '../components/StatCard';
 import {
     fetchAcademicCourses,
     fetchPublicAnnouncements,
@@ -16,6 +17,7 @@ import {
     fetchPublicTicker,
     fetchPublicStats
 } from '../api/api';
+import { fetchPublicProfessors } from '../api/api';
 
 const FALLBACK_ANNOUNCEMENTS = [
     { date: '10-Mar-2026', text: 'New module description PDFs are now available in course outlines.' },
@@ -101,19 +103,27 @@ const LandingPage = () => {
     useEffect(() => {
         const loadData = async () => {
             try {
-                const [courses, announcementData, tickerData, stats, testimonials] = await Promise.all([
+                const [courses, announcementData, tickerData, stats, testimonials, professors] = await Promise.all([
                     fetchAcademicCourses(),
                     fetchPublicAnnouncements(),
                     fetchPublicTicker(),
                     fetchPublicStats(),
-                    fetchPublicTestimonials(12)
+                    fetchPublicTestimonials(12),
+                    fetchPublicProfessors()
                 ]);
                 setPublicCourses(courses);
                 setPublicTestimonials(Array.isArray(testimonials) ? testimonials : []);
+                // Prefer authoritative count from professors list but fall back to stats endpoint
+                const spitProfessorsCount = Array.isArray(professors)
+                    ? professors.filter((p) => /sardar patel|spit/i.test(String(p.institution || ''))).length
+                    : null;
+
                 setPlatformStats({
                     studentsEnrolled: Number.isFinite(stats?.studentsEnrolled) ? stats.studentsEnrolled : null,
                     coursesPlanned: Number.isFinite(stats?.coursesPlanned) ? stats.coursesPlanned : null,
-                    expertProfessors: Number.isFinite(stats?.expertProfessors) ? stats.expertProfessors : null
+                    expertProfessors: Number.isFinite(spitProfessorsCount) && spitProfessorsCount > 0
+                        ? spitProfessorsCount
+                        : Number.isFinite(stats?.expertProfessors) ? stats.expertProfessors : null
                 });
                 setAnnouncements(
                     (announcementData || []).map((item) => ({
@@ -141,6 +151,34 @@ const LandingPage = () => {
         };
         loadData();
 
+        // Poll stats periodically so the figures update dynamically
+        const pollInterval = 30000; // 30s
+        let pollId = null;
+        const pollStats = async () => {
+            try {
+                const [stats, professors] = await Promise.all([
+                    fetchPublicStats(),
+                    fetchPublicProfessors()
+                ]);
+
+                const spitProfessorsCount = Array.isArray(professors)
+                    ? professors.filter((p) => /sardar patel|spit/i.test(String(p.institution || ''))).length
+                    : null;
+
+                setPlatformStats((prev) => ({
+                    studentsEnrolled: Number.isFinite(stats?.studentsEnrolled) ? stats.studentsEnrolled : prev.studentsEnrolled,
+                    coursesPlanned: Number.isFinite(stats?.coursesPlanned) ? stats.coursesPlanned : prev.coursesPlanned,
+                    expertProfessors: Number.isFinite(spitProfessorsCount) && spitProfessorsCount > 0
+                        ? spitProfessorsCount
+                        : Number.isFinite(stats?.expertProfessors) ? stats.expertProfessors : prev.expertProfessors
+                }));
+            } catch (err) {
+                // ignore polling errors silently
+            }
+        };
+
+        pollId = setInterval(pollStats, pollInterval);
+
         // Handle initial hash scroll
         if (window.location.hash === '#testimonials') {
             const element = document.getElementById('testimonials');
@@ -148,6 +186,10 @@ const LandingPage = () => {
                 element.scrollIntoView({ behavior: 'smooth' });
             }
         }
+
+        return () => {
+            if (pollId) clearInterval(pollId);
+        };
     }, []);
 
     useEffect(() => {
@@ -191,6 +233,9 @@ const LandingPage = () => {
                                 />
                             ))}
                             <div className="showcase-overlay">
+
+                            
+
                                 <h1>
                                     {showcaseSlides[activeSlide].title} with <span className="brand-course">Course</span><span className="brand-z">Z</span>
                                 </h1>
@@ -198,6 +243,8 @@ const LandingPage = () => {
                             </div>
                         </div>
                         <div className="showcase-dots">
+
+                            
                             {showcaseSlides.map((_, index) => (
                                 <button
                                     key={`dot-${index}`}
@@ -296,171 +343,14 @@ const LandingPage = () => {
                 </div>
 
                 <div className="hero-stats animate-slide-up" style={{ justifyContent: 'center', display: 'flex', gap: '2rem', flexWrap: 'wrap', animationDelay: '0.4s' }}>
-                    <div className="stat-card" style={{ minWidth: '200px' }}>
-                        <div className="stat-icon">
-                            <Users size={32} />
-                        </div>
-                        <div className="stat-content">
-                            <h3 style={{ fontSize: '2rem' }}>{formatStatValue(platformStats.studentsEnrolled, true)}</h3>
-                            <p>Students Enrolled</p>
-                        </div>
-                    </div>
-                    <div className="stat-card" style={{ minWidth: '200px' }}>
-                        <div className="stat-icon">
-                            <BookOpen size={32} />
-                        </div>
-                        <div className="stat-content">
-                            <h3 style={{ fontSize: '2rem' }}>{formatStatValue(platformStats.coursesPlanned, true)}</h3>
-                            <p>Courses Planned</p>
-                        </div>
-                    </div>
-                    <div className="stat-card" style={{ minWidth: '200px' }}>
-                        <div className="stat-icon">
-                            <Award size={32} />
-                        </div>
-                        <div className="stat-content">
-                            <h3 style={{ fontSize: '2rem' }}>{formatStatValue(platformStats.expertProfessors)}</h3>
-                            <p>Expert Professors</p>
-                        </div>
-                    </div>
+                    <StatCard Icon={Users} label="Students Enrolled" value={platformStats.studentsEnrolled} withPlus={true} />
+                    <StatCard Icon={BookOpen} label="Courses Planned" value={platformStats.coursesPlanned} withPlus={true} />
+                    <StatCard Icon={Award} label="Expert Professors" value={platformStats.expertProfessors} withPlus={false} />
                 </div>
             </section>
-            {/* How It Works Section */}
-            <section className="how-it-works-section">
-                <div className="section-header">
-                    <h2 className="section-title">How It Works</h2>
-                    <p className="section-subtitle">Your journey to mastery in three simple steps</p>
-                </div>
+            {/* How It Works section removed per request */}
 
-                <div className="steps-grid">
-                    <div className="step-card animate-fade-in">
-                        <div className="step-number">1</div>
-                        <Target className="step-icon" size={48} />
-                        <h3>Choose Your Path</h3>
-                        <p>
-                            Select from expertly designed, curriculum-based courses by academic experts.
-                            Each course is structured to build practical skills progressively.
-                        </p>
-                        <ul className="step-features">
-                            <li>Structured learning modules</li>
-                            <li>Interactive quizzes</li>
-                            <li>Real-world applications</li>
-                        </ul>
-                    </div>
-
-                    <div className="step-card animate-fade-in" style={{ animationDelay: '0.1s' }}>
-                        <div className="step-number">2</div>
-                        <BookOpen className="step-icon" size={48} />
-                        <h3>Learn & Practice</h3>
-                        <p>
-                            Engage with content backed by 33+ years of teaching experience. Benefit from
-                            industry-aligned curriculum and hands-on projects.
-                        </p>
-                        <ul className="step-features">
-                            <li>Video lectures by academic experts</li>
-                            <li>Practical assignments</li>
-                            <li>Expert guidance</li>
-                        </ul>
-                    </div>
-
-                    <div className="step-card animate-fade-in" style={{ animationDelay: '0.2s' }}>
-                        <div className="step-number">3</div>
-                        <TrendingUp className="step-icon" size={48} />
-                        <h3>Achieve & Grow</h3>
-                        <p>
-                            Earn recognized certificates and build a portfolio that demonstrates your expertise.
-                            Join successful alumni in top companies.
-                        </p>
-                        <ul className="step-features">
-                            <li>Professional certificates</li>
-                            <li>Portfolio projects</li>
-                            <li>Career advancement</li>
-                        </ul>
-                    </div>
-                </div>
-            </section>
-
-            {/* Features Grid */}
-            <section id="features" className="features-section">
-                <div className="section-header">
-                    <h2 className="section-title">Powerful Features</h2>
-                    <p className="section-subtitle">Everything you need to succeed in your learning journey</p>
-                </div>
-
-                <div className="features-grid">
-                    <div className="feature-card">
-                        <div className="feature-icon-wrapper">
-                            <GraduationCap size={32} />
-                        </div>
-                        <h3>Expert-Led Curriculum</h3>
-                        <p>
-                            Learn from courses designed by SPIT's elite faculty, with 50+ years of combined teaching experience
-                            and deep industry connections.
-                        </p>
-                        <div className="feature-badge">PhD Instructor</div>
-                    </div>
-
-                    <div className="feature-card">
-                        <div className="feature-icon-wrapper">
-                            <BarChart2 size={32} />
-                        </div>
-                        <h3>Progress Analytics</h3>
-                        <p>
-                            Track your learning with comprehensive dashboards showing module completion,
-                            quiz scores, and skill development.
-                        </p>
-                        <div className="feature-badge">Real-time Tracking</div>
-                    </div>
-
-                    <div className="feature-card">
-                        <div className="feature-icon-wrapper">
-                            <Shield size={32} />
-                        </div>
-                        <h3>Secure Platform</h3>
-                        <p>
-                            Your data and progress are protected with enterprise-grade security.
-                            Focus on learning without worries.
-                        </p>
-                        <div className="feature-badge">Bank-level Security</div>
-                    </div>
-
-                    <div className="feature-card">
-                        <div className="feature-icon-wrapper">
-                            <Globe size={32} />
-                        </div>
-                        <h3>Learn Anywhere</h3>
-                        <p>
-                            Access courses on any device with one login. Study at your pace,
-                            whether you're at home or on the go.
-                        </p>
-                        <div className="feature-badge">Multi-device</div>
-                    </div>
-
-                    <div className="feature-card">
-                        <div className="feature-icon-wrapper">
-                            <Users size={32} />
-                        </div>
-                        <h3>Student Community</h3>
-                        <p>
-                            Connect with SPIT students and learners worldwide. Collaborate on projects
-                            and grow together.
-                        </p>
-                        <div className="feature-badge">500+ Students</div>
-                    </div>
-
-                    <div className="feature-card">
-                        <div className="feature-icon-wrapper">
-                            <Award size={32} />
-                        </div>
-                        <h3>Industry Certificates</h3>
-                        <p>
-                            Earn recognized certificates signed by SPIT faculty that validate your skills
-                            and enhance your resume.
-                        </p>
-                        <div className="feature-badge">Verified Credentials</div>
-                    </div>
-                </div>
-            </section>
+            {/* Features section removed per request */}
 
             {/* Courses Section */}
             <section className="courses-section" style={{ background: 'linear-gradient(180deg, transparent 0%, rgba(16, 185, 129, 0.02) 50%, transparent 100%)' }}>
@@ -626,90 +516,7 @@ const LandingPage = () => {
             </section>
             )}
 
-            {/* FAQ Section */}
-            <section className="faq-section">
-                <div className="faq-container">
-                    <div className="section-header">
-                        <h2 className="section-title">Frequently Asked Questions</h2>
-                        <p className="section-subtitle">Everything you need to know about <span className="brand-course">Course</span><span className="brand-z">Z</span></p>
-                    </div>
-
-                    <div className="faq-grid">
-                        <div className="faq-item">
-                            <div className="faq-question">
-                                <MessageCircle size={24} className="faq-icon" />
-                                <h4>Who is this platform for?</h4>
-                            </div>
-                            <p className="faq-answer">
-                                <span className="brand-course">Course</span><span className="brand-z">Z</span> is designed for SPIT students, engineering students, and professionals looking to
-                                enhance their skills in Electronics, Signal Processing, Machine Learning, and related fields.
-                                Whether you're a beginner or advanced learner, our curriculum adapts to your level.
-                            </p>
-                        </div>
-
-                        <div className="faq-item">
-                            <div className="faq-question">
-                                <Award size={24} className="faq-icon" />
-                                <h4>Are the certificates recognized?</h4>
-                            </div>
-                            <p className="faq-answer">
-                                Yes! All certificates are signed by Dr. Kiran TALELE and include verification codes.
-                                They are recognized by employers and can be added to your LinkedIn profile and resume.
-                                Pro members receive additional verified digital credentials.
-                            </p>
-                        </div>
-
-                        <div className="faq-item">
-                            <div className="faq-question">
-                                <Clock size={24} className="faq-icon" />
-                                <h4>How much time do I need to invest?</h4>
-                            </div>
-                            <p className="faq-answer">
-                                Courses are self-paced! Most students spend 3-5 hours per week. Complete courses at your
-                                own speed, with lifetime access to all materials. Our mobile app lets you learn on the go,
-                                making it easy to fit learning into your schedule.
-                            </p>
-                        </div>
-
-                        <div className="faq-item">
-                            <div className="faq-question">
-                                <Users size={24} className="faq-icon" />
-                                <h4>Can I interact with Dr. TALELE?</h4>
-                            </div>
-                            <p className="faq-answer">
-                                Pro members get access to monthly live Q&A sessions, discussion forums moderated by Dr. TALELE,
-                                and can book 1-on-1 mentorship sessions. Free members can participate in community discussions
-                                and attend select webinars.
-                            </p>
-                        </div>
-
-                        <div className="faq-item">
-                            <div className="faq-question">
-                                <Shield size={24} className="faq-icon" />
-                                <h4>What if I'm not satisfied?</h4>
-                            </div>
-                            <p className="faq-answer">
-                                We offer a 30-day money-back guarantee for Pro subscriptions. If you're not completely
-                                satisfied with the quality and value, contact us within 30 days for a full refund.
-                                No questions asked!
-                            </p>
-                        </div>
-
-                        <div className="faq-item">
-                            <div className="faq-question">
-                                <Rocket size={24} className="faq-icon" />
-                                <h4>How often is content updated?</h4>
-                            </div>
-                            <p className="faq-answer">
-                                Courses are regularly updated to reflect the latest industry trends and technologies.
-                                Dr. TALELE adds new modules quarterly, and Pro members get immediate access to all new
-                                content and updates at no additional cost.
-                            </p>
-                        </div>
-                    </div>
-
-                </div>
-            </section>
+            {/* FAQ section removed per request */}
 
 
 
