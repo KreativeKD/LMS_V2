@@ -192,8 +192,8 @@ router.get("/", async (req, res) => {
       .select(
         "title description courseType descriptionPdf contentHours image courseOrder instructor assignedTeachers students chapters completionDate createdAt",
       )
-      .populate("instructor", "username")
-      .populate("assignedTeachers", "username")
+      .populate("instructor", "username firstName lastName role")
+      .populate("assignedTeachers", "username firstName lastName role")
       .skip(skip)
       .limit(limit)
       .sort({ courseOrder: 1, createdAt: -1 })
@@ -231,8 +231,8 @@ router.get("/:id", async (req, res) => {
       .select(
         "title description courseType descriptionPdf contentHours image courseOrder instructor assignedTeachers students chapters completionDate createdAt",
       )
-      .populate("instructor", "username")
-      .populate("assignedTeachers", "username")
+      .populate("instructor", "username firstName lastName role")
+      .populate("assignedTeachers", "username firstName lastName role")
       .lean();
 
     if (!course) return res.status(404).send({ error: "Course not found" });
@@ -254,8 +254,8 @@ router.get("/:id", async (req, res) => {
 router.get("/:id/full", auth, async (req, res) => {
   try {
     const course = await Course.findById(req.params.id)
-      .populate("instructor", "username")
-      .populate("assignedTeachers", "username")
+      .populate("instructor", "username firstName lastName role")
+      .populate("assignedTeachers", "username firstName lastName role")
       .populate({
         path: "chapters",
         select: "title moduleDescriptionPdf moduleImage courseId units",

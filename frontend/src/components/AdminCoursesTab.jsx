@@ -23,13 +23,13 @@ const getDisplayName = (person) => {
 const isAdminIdentity = (person) => {
   if (!person) return false;
   if (person.role === 'admin') return true;
-  return false;
+  const username = stripRoleSuffix(person.username || '').trim().toLowerCase();
+  return username === 'admin';
 };
 
 const getTeacherNames = (course) => {
   const people = [course.instructor, ...(course.assignedTeachers || [])].filter(Boolean);
-  const hasNonAdminTeacher = people.some((person) => !isAdminIdentity(person));
-  const filtered = hasNonAdminTeacher ? people.filter((person) => !isAdminIdentity(person)) : people;
+  const filtered = people.filter((person) => !isAdminIdentity(person));
 
   const seen = new Set();
   const uniqueNames = [];

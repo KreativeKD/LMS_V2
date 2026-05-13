@@ -35,7 +35,8 @@ const stripRoleSuffix = (username = "") =>
 const isAdminIdentity = (person) => {
   if (!person) return false;
   if (person.role === "admin") return true;
-  return false;
+  const username = stripRoleSuffix(person.username || "").trim().toLowerCase();
+  return username === "admin";
 };
 
 const StudentCourseView = () => {
@@ -117,10 +118,7 @@ const StudentCourseView = () => {
     const seen = new Set();
     const uniqueNames = [];
     const people = [course.instructor, ...(course.assignedTeachers || [])].filter(Boolean);
-    const hasNonAdminTeacher = people.some((person) => !isAdminIdentity(person));
-    const filteredPeople = hasNonAdminTeacher
-      ? people.filter((person) => !isAdminIdentity(person))
-      : people;
+    const filteredPeople = people.filter((person) => !isAdminIdentity(person));
 
     filteredPeople.forEach((person) => {
       const idKey = person._id ? String(person._id) : null;
