@@ -21,7 +21,7 @@ const getTeacherCourses = (teacher, courses = []) => {
 };
 
 const formatTeacherDisplayName = (username = '') => {
-  const rawName = username.split('@')[0] || '';
+  const rawName = username.replace(/@(admin|teacher|student)$/i, '') || '';
   return rawName
     .replace(/[._-]+/g, ' ')
     .split(' ')
@@ -200,7 +200,7 @@ export const AdminTeachersTab = ({ teachers, courses, onTeachersUpdate, loading,
                 required
               />
               <p style={{ ...typography.small, color: colors.primary, margin: spacing.sm }}>
-                Login credentials: <strong>{teacherForm.name || 'name'}@teacher</strong>
+                Login username: <strong>{teacherForm.name || 'name'}</strong>
               </p>
               <div style={{ display: 'flex', gap: spacing.md }}>
                 <Button variant="secondary" onClick={() => { setShowModal(false); setTeacherForm({ name: '', password: '' }); }} fullWidth>
@@ -221,7 +221,7 @@ export const AdminTeachersTab = ({ teachers, courses, onTeachersUpdate, loading,
             <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: spacing.md }}>
                 <div>
-                  <h2 style={{ ...typography.h3, margin: 0 }}>{selectedTeacher.username?.split('@')[0] || 'Instructor'}</h2>
+                  <h2 style={{ ...typography.h3, margin: 0 }}>{formatTeacherDisplayName(selectedTeacher.username) || 'Instructor'}</h2>
                   <p style={{ ...typography.bodySmall, color: colors.textMuted, margin: `${spacing.xs} 0 0 0` }}>
                     {selectedTeacher.username}
                   </p>

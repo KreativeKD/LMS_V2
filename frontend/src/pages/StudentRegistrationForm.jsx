@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { registerStudent } from '../api/api';
@@ -23,11 +23,6 @@ const StudentRegistrationForm = () => {
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const loginPreview = useMemo(() => {
-    const base = (form.username || 'username').trim().toLowerCase();
-    return `${base || 'username'}@student`;
-  }, [form.username]);
 
   const updateField = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -166,7 +161,7 @@ const StudentRegistrationForm = () => {
                   required
                 />
                 <p style={{ ...typography.small, color: colors.textMuted, margin: `${spacing.xs} 0 0 0` }}>
-                  Your login username will be <strong>{loginPreview}</strong>
+                  This will be your login username.
                 </p>
               </div>
               <Input

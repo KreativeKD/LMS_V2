@@ -3,11 +3,19 @@ const logger = require('./logger');
 
 const seedAdmin = async () => {
     try {
-        const username = 'admin@admin';
+        const username = 'admin';
         const password = 'adminpassword123';
         const role = 'admin';
 
         let admin = await User.findOne({ username });
+        const legacyAdmin = await User.findOne({ username: 'admin@admin', role });
+
+        if (!admin && legacyAdmin) {
+            legacyAdmin.username = username;
+            await legacyAdmin.save();
+            logger.info('Default Admin username migrated', { username });
+            return;
+        }
 
         if (!admin) {
             admin = new User({

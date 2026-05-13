@@ -29,10 +29,12 @@ import { showToast } from "../utils/toast";
 import { Button, Card, PageLayout } from "../components";
 import { borderRadius, colors, spacing, typography } from "../theme";
 
+const stripRoleSuffix = (username = "") =>
+  username.replace(/@(admin|teacher|student)$/i, "");
+
 const isAdminIdentity = (person) => {
   if (!person) return false;
   if (person.role === "admin") return true;
-  if (person.username && person.username.toLowerCase().includes("@admin")) return true;
   return false;
 };
 
@@ -75,7 +77,7 @@ const StudentCourseView = () => {
       .filter(Boolean)
       .join(" ")
       .trim();
-    const fallbackName = person.username ? person.username.split("@")[0] : null;
+    const fallbackName = person.username ? stripRoleSuffix(person.username) : null;
     const resolvedName = fullName || fallbackName;
 
     if (!resolvedName) return null;
@@ -1326,7 +1328,7 @@ const StudentCourseView = () => {
                                     <p
                                       style={{ ...typography.label, margin: 0 }}
                                     >
-                                      {comment.user?.username?.split("@")[0] ||
+                                      {stripRoleSuffix(comment.user?.username || "") ||
                                         "Unknown user"}
                                     </p>
                                     <p

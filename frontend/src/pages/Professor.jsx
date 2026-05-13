@@ -28,7 +28,7 @@ const Professor = () => {
     const normalizeProfessorName = (name) =>
         String(name || '')
             .toLowerCase()
-            .split('@')[0]
+            .replace(/@(admin|teacher|student)$/i, '')
             .replace(/\b(dr|prof|professor)\.?\s*/g, '')
             .replace(/\b(teacher|student|admin)\b/g, '')
             .replace(/[^a-z]/g, ' ')

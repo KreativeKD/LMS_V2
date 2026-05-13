@@ -8,7 +8,7 @@ async function run() {
         // 1. Login
         console.log('Logging in...');
         const loginRes = await axios.post(`${API_URL}/auth/login`, {
-            username: 'admin@admin',
+            username: 'admin',
             password: 'adminpassword123'
         });
         const token = loginRes.data.token;

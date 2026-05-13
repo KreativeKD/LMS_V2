@@ -162,7 +162,7 @@ export const ERROR_MESSAGES = {
     
     // Validation errors
     'All fields are required': 'Please fill in all required fields.',
-    'Invalid username format': 'Username must be in the format: name@role (e.g., john@student)',
+    'Invalid username format': 'Username must be a plain username without a role suffix',
     'Username already taken': 'This username is already in use. Please choose a different one.',
     'Invalid email': 'Please provide a valid email address.',
     

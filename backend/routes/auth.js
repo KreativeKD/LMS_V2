@@ -47,6 +47,14 @@ const normalizeUsernameAlias = (value = "") => {
   return `${localPart}@${rolePart}`;
 };
 
+const ROLE_SUFFIX_REGEX = /@(admin|teacher|student)$/i;
+
+const stripRoleSuffix = (value = "") =>
+  String(value || "").trim().replace(ROLE_SUFFIX_REGEX, "");
+
+const normalizePlainUsername = (value = "") =>
+  stripRoleSuffix(value).toLowerCase().replace(/\s+/g, "");
+
 const findUserByUsernameAlias = async (username, projection = "") => {
   const trimmed = String(username || "").trim();
   if (!trimmed) return null;
@@ -58,26 +66,40 @@ const findUserByUsernameAlias = async (username, projection = "") => {
   let user = await query;
   if (user) return user;
 
+  const exactRegex = new RegExp(`^${escapeRegex(trimmed)}$`, "i");
+  query = User.findOne({ username: exactRegex });
+  if (projection) {
+    query = query.select(projection);
+  }
+  user = await query;
+  if (user) return user;
+
   const atIndex = trimmed.lastIndexOf("@");
-  if (atIndex === -1) return null;
+  const normalizedInput = normalizePlainUsername(trimmed);
+  const legacySuffixRole =
+    atIndex === -1
+      ? null
+      : trimmed
+          .slice(atIndex + 1)
+          .trim()
+          .toLowerCase();
 
-  const role = trimmed
-    .slice(atIndex + 1)
-    .trim()
-    .toLowerCase();
-  if (!["admin", "teacher", "student"].includes(role)) return null;
+  if (legacySuffixRole && !["admin", "teacher", "student"].includes(legacySuffixRole)) {
+    return null;
+  }
 
-  let candidatesQuery = User.find({ role });
+  let candidatesQuery = User.find(
+    legacySuffixRole ? { role: legacySuffixRole } : {},
+  );
   if (projection) {
     candidatesQuery = candidatesQuery.select(projection);
   }
   const candidates = await candidatesQuery;
-  const normalizedInput = normalizeUsernameAlias(trimmed);
 
   return (
     candidates.find(
       (candidate) =>
-        normalizeUsernameAlias(candidate.username) === normalizedInput,
+        normalizePlainUsername(candidate.username) === normalizedInput,
     ) || null
   );
 };
@@ -293,7 +315,7 @@ router.get(
       let profile = await Professor.findOne({ teacherId: teacher._id });
       if (!profile) {
         const fallbackName =
-          String(teacher.username || "").split("@")[0] || "Instructor";
+          stripRoleSuffix(teacher.username) || "Instructor";
         profile = await Professor.create({
           teacherId: teacher._id,
           name: fallbackName,
@@ -332,7 +354,7 @@ router.put(
         teacherId: teacher._id,
         name:
           String(req.body?.name || "").trim() ||
-          String(teacher.username || "").split("@")[0],
+          stripRoleSuffix(teacher.username),
         designation: String(req.body?.designation || "").trim() || "Professor",
         dept: String(req.body?.dept || "").trim(),
         institution: String(req.body?.institution || "").trim(),
@@ -473,7 +495,7 @@ router.post(
   validate(completeRegistrationSchema),
   async (req, res) => {
     try {
-      const { firstName, lastName, username, password } = req.body; // username is just the part before @
+      const { firstName, lastName, username, password } = req.body;
 
       // Verify Approval
       const request = await RegistrationRequest.findOne({
@@ -488,8 +510,8 @@ router.post(
           .send({ error: "Registration not approved or not found." });
       }
 
-      const finalUsername = `${username}@student`;
-      const existingUser = await User.findOne({ username: finalUsername });
+      const finalUsername = username.trim();
+      const existingUser = await findUserByUsernameAlias(finalUsername);
       if (existingUser) {
         return res.status(400).send({ error: "Username already taken." });
       }
@@ -550,8 +572,8 @@ router.post(
         return res.status(400).send({ error: "All fields are required" });
       }
 
-      const finalUsername = `${username}@student`;
-      const existingUser = await User.findOne({ username: finalUsername });
+      const finalUsername = username.trim();
+      const existingUser = await findUserByUsernameAlias(finalUsername);
       if (existingUser) {
         return res.status(400).send({ error: "Username already taken." });
       }
@@ -727,7 +749,12 @@ router.post(
   async (req, res) => {
     try {
       const { name, password } = req.body;
-      const username = `${name}@teacher`;
+      const username = String(name || "").trim();
+      const existingUser = await findUserByUsernameAlias(username);
+      if (existingUser) {
+        return res.status(400).send({ error: "Username already taken." });
+      }
+
       const user = new User({ username, password, role: "teacher" });
       await user.save();
 
@@ -765,7 +792,12 @@ router.post(
   async (req, res) => {
     try {
       const { name, password } = req.body;
-      const username = `${name}@student`;
+      const username = String(name || "").trim();
+      const existingUser = await findUserByUsernameAlias(username);
+      if (existingUser) {
+        return res.status(400).send({ error: "Username already taken." });
+      }
+
       const user = new User({ username, password, role: "student" });
       await user.save();
       res.status(201).send({ message: "Student added successfully", username });
@@ -843,7 +875,7 @@ router.delete(
 
       // Cleanup: Delete registration requests associated with this student
       // We use userId link AND name-based search (fallback for older records)
-      const usernamePrefix = student.username.split("@")[0];
+      const usernamePrefix = stripRoleSuffix(student.username);
       const nameQuery = [];
       if (student.firstName && student.lastName) {
         nameQuery.push({

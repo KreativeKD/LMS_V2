@@ -7,6 +7,8 @@ import { Button, Card, Input, PageLayout } from '../components';
 import { borderRadius, colors, spacing, typography } from '../theme';
 import { COUNTRIES } from '../constants/countries';
 
+const stripRoleSuffix = (username = '') => username.replace(/@(admin|teacher|student)$/i, '');
+
 const UserProfile = () => {
   const navigate = useNavigate();
   const { user: authUser, login } = useAuth();
@@ -159,7 +161,7 @@ const UserProfile = () => {
   const displayName =
     formData.firstName && formData.lastName
       ? `${formData.firstName} ${formData.lastName}`
-      : formData.username?.split('@')[0] || 'User';
+      : stripRoleSuffix(formData.username || '') || 'User';
 
   if (loading) {
     return (

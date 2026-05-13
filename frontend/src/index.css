@@ -1188,6 +1188,7 @@ input:focus {
   grid-template-columns: 260px minmax(0, 1fr);
 }
 
+.student-dashboard-sidebar,
 .student-dashboard-filter-card {
   position: sticky;
 }
@@ -1195,6 +1196,10 @@ input:focus {
 .student-dashboard-courses-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+}
+
+.student-dashboard-course-section {
+  scroll-margin-top: 120px;
 }
 
 /* Hero Section */

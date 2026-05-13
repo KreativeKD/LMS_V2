@@ -65,6 +65,9 @@ const canManageCourse = (course, user) => {
   return isAssociatedTeacherForCourse(course, user);
 };
 
+const stripRoleSuffix = (username = "") =>
+  String(username || "").replace(/@(admin|teacher|student)$/i, "");
+
 const resolveDisplayName = (person) => {
   if (!person) return "Anonymous";
 
@@ -72,7 +75,7 @@ const resolveDisplayName = (person) => {
     .filter(Boolean)
     .join(" ")
     .trim();
-  const fallbackName = person.username ? person.username.split("@")[0] : "";
+  const fallbackName = person.username ? stripRoleSuffix(person.username) : "";
   return fullName || fallbackName || "Anonymous";
 };
 

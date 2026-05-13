@@ -13,6 +13,8 @@ import { showToast, handleApiError } from '../utils/toast';
 import { Button, Input, Card, PageLayout, SkeletonLoader } from '../components';
 import { spacing, colors, typography } from '../theme';
 
+const stripRoleSuffix = (username = '') => username.replace(/@(admin|teacher|student)$/i, '');
+
 const TeacherDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -723,7 +725,7 @@ const TeacherDashboard = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
                 {enrolledStudents.map((student) => (
                   <Card key={student._id} variant="ghost">
-                    <div style={{ ...typography.label }}>{student.username?.split('@')[0]}</div>
+                    <div style={{ ...typography.label }}>{stripRoleSuffix(student.username || '')}</div>
                     <div style={{ ...typography.small, color: colors.textMuted }}>{student.username}</div>
                   </Card>
                 ))}

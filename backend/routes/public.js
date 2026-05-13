@@ -20,9 +20,12 @@ const getPublicProfessorQuery = () => ({
     ]
 });
 
+const stripRoleSuffix = (username = '') =>
+    String(username || '').replace(/@(admin|teacher|student)$/i, '');
+
 const serializeGeneralTestimonial = (item) => {
     const fullName = [item.user?.firstName, item.user?.lastName].filter(Boolean).join(' ').trim();
-    const fallbackName = item.user?.username ? item.user.username.split('@')[0] : 'Anonymous';
+    const fallbackName = item.user?.username ? stripRoleSuffix(item.user.username) : 'Anonymous';
     const authorName = fullName || fallbackName;
     const initials = authorName
         .split(/\s+/)

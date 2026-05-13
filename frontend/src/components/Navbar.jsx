@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationsContext';
 import { LogOut, Bell, CheckCheck, Trash2 } from 'lucide-react';
 
+const stripRoleSuffix = (username = '') => username.replace(/@(admin|teacher|student)$/i, '');
+
 const Navbar = () => {
     const { user, isAuthenticated, logout } = useAuth();
     const {
@@ -255,7 +257,7 @@ const Navbar = () => {
                                 </div>
                             )}
                             <span className="auth-profile-name">
-                                {(user?.username || 'user').split('@')[0]}
+                                {stripRoleSuffix(user?.username || 'user')}
                             </span>
                         </Link>
 

@@ -7,17 +7,18 @@ import { showToast, handleApiError, handleSuccess } from '../utils/toast';
 import { Button, Card, PageLayout, Input } from '../components';
 import { spacing, colors, typography } from '../theme';
 
+const stripRoleSuffix = (username = '') => username.replace(/@(admin|teacher|student)$/i, '');
+
 const isAdminIdentity = (person) => {
     if (!person) return false;
     if (person.role === 'admin') return true;
-    if (person.username && person.username.toLowerCase().includes('@admin')) return true;
     return false;
 };
 
 const getDisplayName = (person) => {
     if (!person) return null;
     const fullName = [person.firstName, person.lastName].filter(Boolean).join(' ').trim();
-    const fallbackName = person.username ? person.username.split('@')[0] : null;
+    const fallbackName = person.username ? stripRoleSuffix(person.username) : null;
     const resolvedName = fullName || fallbackName;
 
     if (!resolvedName) return null;
@@ -55,6 +56,12 @@ const formatDateWithShortMonth = (value) => {
     const year = date.getFullYear();
     return `${day}-${month}-${year}`;
 };
+
+const COURSE_SECTIONS = [
+    { id: 'academic', title: 'Academic Courses', label: 'Academic' },
+    { id: 'short-term', title: 'Short-term Courses', label: 'Short Term' },
+    { id: 'professional', title: 'Professional Courses', label: 'Professional' }
+];
 
 const StudentDashboard = () => {
     const { user, login } = useAuth();
@@ -218,10 +225,10 @@ const StudentDashboard = () => {
         return 'academic';
     };
 
-    const matchesSelectedType = (course) => {
+    const courseMatchesType = (course, courseType) => {
         const type = normalizeCourseType(course.courseType);
-        if (selectedCourseType === 'academic') return type === 'academic' || type === 'both';
-        if (selectedCourseType === 'professional') return type === 'professional' || type === 'both';
+        if (courseType === 'academic') return type === 'academic' || type === 'both';
+        if (courseType === 'professional') return type === 'professional' || type === 'both';
         return type === 'short-term' || type === 'both';
     };
 
@@ -236,7 +243,7 @@ const StudentDashboard = () => {
             return isEnrolled;
         }
 
-        return matchesSelectedType(course);
+        return true;
     });
 
     const searchedCourses = isMyCoursesPage
@@ -250,6 +257,124 @@ const StudentDashboard = () => {
             const teachers = getTeacherNames(course).toLowerCase();
             return title.includes(query) || description.includes(query) || teachers.includes(query);
         });
+
+    const groupedCourseSections = COURSE_SECTIONS.map((section) => ({
+        ...section,
+        courses: searchedCourses.filter((course) => courseMatchesType(course, section.id))
+    })).filter((section) => section.courses.length > 0);
+
+    const handleCategoryJump = (courseType) => {
+        setSelectedCourseType(courseType);
+        const sectionElement = document.getElementById(`course-section-${courseType}`);
+        if (sectionElement) {
+            sectionElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    };
+
+    const testimonialCard = !isMyCoursesPage && user?.role === 'student' ? (
+        <Card style={{ padding: spacing.md }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+                <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.xs }}>
+                        <MessageSquareQuote size={18} color={colors.primary} />
+                        <p style={{ ...typography.small, color: colors.primary, margin: 0, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                            Testimonials
+                        </p>
+                    </div>
+                    <h3 style={{ ...typography.h5, margin: 0 }}>Share a general testimonial</h3>
+                    <p style={{ ...typography.small, color: colors.textMuted, margin: `${spacing.sm} 0 0 0`, lineHeight: 1.5 }}>
+                        This testimonial goes to admin for approval and may appear on the landing page.
+                    </p>
+                </div>
+
+                {publicTestimonial?.status && (
+                    <div
+                        style={{
+                            alignSelf: 'flex-start',
+                            padding: `${spacing.xs} ${spacing.sm}`,
+                            borderRadius: '999px',
+                            background:
+                                publicTestimonial.status === 'approved'
+                                    ? 'rgba(16, 185, 129, 0.12)'
+                                    : publicTestimonial.status === 'rejected'
+                                        ? 'rgba(239, 68, 68, 0.12)'
+                                        : 'rgba(245, 158, 11, 0.14)',
+                            color:
+                                publicTestimonial.status === 'approved'
+                                    ? colors.success
+                                    : publicTestimonial.status === 'rejected'
+                                        ? colors.danger
+                                        : colors.warning,
+                            ...typography.small,
+                            fontWeight: 700
+                        }}
+                    >
+                        {publicTestimonial.status === 'approved'
+                            ? 'Approved'
+                            : publicTestimonial.status === 'rejected'
+                                ? 'Rejected'
+                                : 'Pending approval'}
+                    </div>
+                )}
+
+                <form onSubmit={handleSubmitPublicTestimonial} style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
+                        <span style={{ ...typography.small, color: colors.text, fontWeight: 600 }}>Rating</span>
+                        <div style={{ display: 'flex', gap: spacing.xs, flexWrap: 'wrap' }}>
+                            {[1, 2, 3, 4, 5].map((value) => {
+                                const active = value <= testimonialRating;
+                                return (
+                                    <button
+                                        key={`public-testimonial-star-${value}`}
+                                        type="button"
+                                        onClick={() => setTestimonialRating(value)}
+                                        style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            background: 'transparent',
+                                            border: 'none',
+                                            padding: 0,
+                                            color: active ? '#fbbf24' : 'rgba(148, 163, 184, 0.75)'
+                                        }}
+                                    >
+                                        <Star size={22} fill={active ? 'currentColor' : 'none'} />
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    <textarea
+                        value={testimonialText}
+                        onChange={(event) => setTestimonialText(event.target.value)}
+                        rows={4}
+                        maxLength={600}
+                        placeholder="Write a testimonial..."
+                        style={{
+                            width: '100%',
+                            resize: 'vertical',
+                            borderRadius: '12px',
+                            border: `1px solid ${colors.border}`,
+                            padding: spacing.sm,
+                            fontFamily: 'inherit',
+                            fontSize: typography.bodySmall.fontSize,
+                            lineHeight: 1.6
+                        }}
+                    />
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.sm }}>
+                        <span style={{ ...typography.small, color: colors.textMuted }}>
+                            {testimonialText.trim().length}/600
+                        </span>
+                        <Button type="submit" loading={testimonialLoading} fullWidth>
+                            {publicTestimonial ? 'Update Testimonial' : 'Submit Testimonial'}
+                        </Button>
+                    </div>
+                </form>
+            </div>
+        </Card>
+    ) : null;
 
     if (selectedCourse) {
         return (
@@ -389,54 +514,53 @@ const StudentDashboard = () => {
 
             <div className="student-dashboard-layout" style={{ gap: spacing.lg, alignItems: 'start', gridTemplateColumns: isMyCoursesPage ? '1fr' : undefined }}>
                 {!isMyCoursesPage && (
-                    <Card className="student-dashboard-filter-card" style={{ top: '106px' }}>
-                        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: spacing.md }}>
-                            <h3 style={{ ...typography.h5, margin: 0 }}>Search & Filter</h3>
-                            <Input
-                                placeholder="Search courses..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                fullWidth
-                            />
+                    <div className="student-dashboard-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg, top: '106px' }}>
+                        <Card>
+                            <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: spacing.md }}>
+                                <h3 style={{ ...typography.h5, margin: 0 }}>Search & Filter</h3>
+                                <Input
+                                    placeholder="Search courses..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    fullWidth
+                                />
 
-                            {user.role === 'student' && (
-                                <div>
-                                    <p style={{ ...typography.small, color: colors.textMuted, marginBottom: spacing.sm }}>Category</p>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: spacing.sm }}>
-                                        <Button
-                                            variant={selectedCourseType === 'academic' ? 'primary' : 'ghost'}
-                                            size="sm"
-                                            style={{ textTransform: 'none', width: '100%', justifyContent: 'center' }}
-                                            onClick={() => setSelectedCourseType('academic')}
-                                        >
-                                            Academic
-                                        </Button>
-                                        <Button
-                                            variant={selectedCourseType === 'short-term' ? 'primary' : 'ghost'}
-                                            size="sm"
-                                            style={{ textTransform: 'none', width: '100%', justifyContent: 'center' }}
-                                            onClick={() => setSelectedCourseType('short-term')}
-                                        >
-                                            Short Term
-                                        </Button>
-                                        <Button
-                                            variant={selectedCourseType === 'professional' ? 'primary' : 'ghost'}
-                                            size="sm"
-                                            style={{ textTransform: 'none', width: '100%', justifyContent: 'center' }}
-                                            onClick={() => setSelectedCourseType('professional')}
-                                        >
-                                            Professional
-                                        </Button>
+                                {user.role === 'student' && (
+                                    <div>
+                                        <p style={{ ...typography.small, color: colors.textMuted, marginBottom: spacing.sm }}>Category</p>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: spacing.sm }}>
+                                            {COURSE_SECTIONS.map((section) => (
+                                                <Button
+                                                    key={section.id}
+                                                    variant={selectedCourseType === section.id ? 'primary' : 'ghost'}
+                                                    size="sm"
+                                                    style={{ textTransform: 'none', width: '100%', justifyContent: 'center' }}
+                                                    onClick={() => handleCategoryJump(section.id)}
+                                                >
+                                                    {section.label}
+                                                </Button>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
-                            )}
-                        </div>
-                    </Card>
+                                )}
+                            </div>
+                        </Card>
+                        {testimonialCard}
+                    </div>
                 )}
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg }}>
-                <div className="student-dashboard-courses-grid" style={{ gap: spacing.lg }}>
-                {searchedCourses.map(course => {
+                <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xl }}>
+                {groupedCourseSections.map((courseSection) => (
+                    <section
+                        key={courseSection.id}
+                        id={`course-section-${courseSection.id}`}
+                        className="student-dashboard-course-section"
+                    >
+                        <h2 style={{ ...typography.h4, margin: `0 0 ${spacing.md} 0`, color: colors.text }}>
+                            {courseSection.title}
+                        </h2>
+                        <div className="student-dashboard-courses-grid" style={{ gap: spacing.lg }}>
+                {courseSection.courses.map(course => {
                     const enrollmentRecord = userData?.enrolledCourses?.find((entry) => {
                         const enrolledId = entry.course?._id || entry.course;
                         return String(enrolledId) === String(course._id);
@@ -662,123 +786,22 @@ const StudentDashboard = () => {
                     );
                 })}
 
+                        </div>
+                    </section>
+                ))}
+
                 {!loading && searchedCourses.length === 0 && (
-                    <Card style={{ gridColumn: '1 / -1', textAlign: 'center', padding: spacing.xl }}>
+                    <Card style={{ textAlign: 'center', padding: spacing.xl }}>
                         <p style={{ ...typography.bodySmall, color: colors.textMuted, margin: 0 }}>
                             {isMyCoursesPage
                                 ? 'You have not enrolled in any courses yet.'
                                 : searchQuery.trim()
                                     ? 'No courses matched your search.'
-                                    : `No ${selectedCourseType} courses are available right now.`}
+                                    : 'No courses are available right now.'}
                         </p>
                     </Card>
                 )}
-                </div>
 
-                {!isMyCoursesPage && user?.role === 'student' && (
-                    <Card style={{ padding: spacing.lg }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
-                            <div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.xs }}>
-                                    <MessageSquareQuote size={18} color={colors.primary} />
-                                    <p style={{ ...typography.small, color: colors.primary, margin: 0, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                                        Testimonials
-                                    </p>
-                                </div>
-                                <h3 style={{ ...typography.h4, margin: 0 }}>Share a general testimonial</h3>
-                                <p style={{ ...typography.bodySmall, color: colors.textMuted, margin: `${spacing.sm} 0 0 0` }}>
-                                    This testimonial is not course-based. It goes to admin for approval, and approved testimonials appear on the landing page.
-                                </p>
-                            </div>
-
-                            {publicTestimonial?.status && (
-                                <div
-                                    style={{
-                                        alignSelf: 'flex-start',
-                                        padding: `${spacing.xs} ${spacing.sm}`,
-                                        borderRadius: '999px',
-                                        background:
-                                            publicTestimonial.status === 'approved'
-                                                ? 'rgba(16, 185, 129, 0.12)'
-                                                : publicTestimonial.status === 'rejected'
-                                                    ? 'rgba(239, 68, 68, 0.12)'
-                                                    : 'rgba(245, 158, 11, 0.14)',
-                                        color:
-                                            publicTestimonial.status === 'approved'
-                                                ? colors.success
-                                                : publicTestimonial.status === 'rejected'
-                                                    ? colors.danger
-                                                    : colors.warning,
-                                        ...typography.small,
-                                        fontWeight: 700
-                                    }}
-                                >
-                                    {publicTestimonial.status === 'approved'
-                                        ? 'Approved'
-                                        : publicTestimonial.status === 'rejected'
-                                            ? 'Rejected'
-                                            : 'Pending approval'}
-                                </div>
-                            )}
-
-                            <form onSubmit={handleSubmitPublicTestimonial} style={{ display: 'flex', flexDirection: 'column', gap: spacing.md }}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.xs }}>
-                                    <span style={{ ...typography.small, color: colors.text, fontWeight: 600 }}>Rating</span>
-                                    <div style={{ display: 'flex', gap: spacing.xs, flexWrap: 'wrap' }}>
-                                        {[1, 2, 3, 4, 5].map((value) => {
-                                            const active = value <= testimonialRating;
-                                            return (
-                                                <button
-                                                    key={`public-testimonial-star-${value}`}
-                                                    type="button"
-                                                    onClick={() => setTestimonialRating(value)}
-                                                    style={{
-                                                        display: 'inline-flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        background: 'transparent',
-                                                        border: 'none',
-                                                        padding: 0,
-                                                        color: active ? '#fbbf24' : 'rgba(148, 163, 184, 0.75)'
-                                                    }}
-                                                >
-                                                    <Star size={22} fill={active ? 'currentColor' : 'none'} />
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-
-                                <textarea
-                                    value={testimonialText}
-                                    onChange={(event) => setTestimonialText(event.target.value)}
-                                    rows={4}
-                                    maxLength={600}
-                                    placeholder="Write a testimonial about your experience with CourseZ..."
-                                    style={{
-                                        width: '100%',
-                                        resize: 'vertical',
-                                        borderRadius: '12px',
-                                        border: `1px solid ${colors.border}`,
-                                        padding: spacing.md,
-                                        fontFamily: 'inherit',
-                                        fontSize: typography.bodySmall.fontSize,
-                                        lineHeight: 1.6
-                                    }}
-                                />
-
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: spacing.md, flexWrap: 'wrap' }}>
-                                    <span style={{ ...typography.small, color: colors.textMuted }}>
-                                        {testimonialText.trim().length}/600
-                                    </span>
-                                    <Button type="submit" loading={testimonialLoading}>
-                                        {publicTestimonial ? 'Update Testimonial' : 'Submit Testimonial'}
-                                    </Button>
-                                </div>
-                            </form>
-                        </div>
-                    </Card>
-                )}
                 </div>
             </div>
         </div>

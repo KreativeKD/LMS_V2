@@ -9,6 +9,8 @@ import { ConfirmDialog } from './ConfirmDialog';
 import { deleteStudent, freezeStudent, unfreezeStudent } from '../api/api';
 import { handleSuccess, handleApiError } from '../utils/toast';
 
+const stripRoleSuffix = (username = '') => username.replace(/@(admin|teacher|student)$/i, '');
+
 export const AdminStudentsTab = ({ students, semesterDate, onStudentsUpdate, loading, error, onRetry }) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -103,7 +105,7 @@ export const AdminStudentsTab = ({ students, semesterDate, onStudentsUpdate, loa
         (statusFilter === 'active' && !student.isFrozen) ||
         (statusFilter === 'frozen' && student.isFrozen);
 
-      const name = (student.username || '').split('@')[0].toLowerCase();
+      const name = stripRoleSuffix(student.username || '').toLowerCase();
       const username = (student.username || '').toLowerCase();
       const searchMatch = !query || name.includes(query) || username.includes(query);
 
@@ -248,7 +250,7 @@ export const AdminStudentsTab = ({ students, semesterDate, onStudentsUpdate, loa
       >
         {filteredStudents.map(student => {
           const isFrozen = student.isFrozen;
-          const displayName = student.username?.split('@')[0] || 'Student';
+          const displayName = stripRoleSuffix(student.username || '') || 'Student';
 
           return (
             <Card

@@ -128,7 +128,7 @@ const ForgotPassword = () => {
             <div style={{ textAlign: 'center', marginBottom: spacing.lg }}>
               <h2 style={{ ...typography.h2, marginBottom: spacing.sm }}>Forgot Password?</h2>
               <p style={{ ...typography.bodySmall, color: colors.textMuted, margin: 0 }}>
-                Enter your username in `name@role` format to request password reset approval.
+                Enter your username to request password reset approval.
               </p>
             </div>
             <Card style={{ padding: spacing.xl }}>
@@ -138,7 +138,7 @@ const ForgotPassword = () => {
                   id="username"
                   label="Username"
                   type="text"
-                  placeholder="name@teacher"
+                  placeholder="Enter your username"
                   value={username}
                   onChange={(event) => {
                     setUsername(event.target.value);
