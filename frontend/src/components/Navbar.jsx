@@ -96,7 +96,7 @@ const Navbar = () => {
 
             <div className="nav-links">
                 <Link to="/" className={`nav-link ${isPathActive('/') ? 'active' : ''}`}>Home</Link>
-                <Link to="/professor" className={`nav-link ${isPathActive('/professor') ? 'active' : ''}`}>Professor</Link>
+                <Link to="/professor" className={`nav-link ${isPathActive('/professor') ? 'active' : ''}`}>Instructor</Link>
                 <a href="/#testimonials" className={`nav-link ${isTestimonialsActive ? 'active' : ''}`} onClick={onTestimonialsClick}>Testimonials</a>
                 <a
                     href="https://anudaanjagruti.com/#/pages/home"

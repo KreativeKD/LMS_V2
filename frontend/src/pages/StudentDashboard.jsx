@@ -412,20 +412,20 @@ const StudentDashboard = () => {
                                             Academic
                                         </Button>
                                         <Button
-                                            variant={selectedCourseType === 'professional' ? 'primary' : 'ghost'}
-                                            size="sm"
-                                            style={{ textTransform: 'none', width: '100%', justifyContent: 'center' }}
-                                            onClick={() => setSelectedCourseType('professional')}
-                                        >
-                                            Professional
-                                        </Button>
-                                        <Button
                                             variant={selectedCourseType === 'short-term' ? 'primary' : 'ghost'}
                                             size="sm"
                                             style={{ textTransform: 'none', width: '100%', justifyContent: 'center' }}
                                             onClick={() => setSelectedCourseType('short-term')}
                                         >
                                             Short Term
+                                        </Button>
+                                        <Button
+                                            variant={selectedCourseType === 'professional' ? 'primary' : 'ghost'}
+                                            size="sm"
+                                            style={{ textTransform: 'none', width: '100%', justifyContent: 'center' }}
+                                            onClick={() => setSelectedCourseType('professional')}
+                                        >
+                                            Professional
                                         </Button>
                                     </div>
                                 </div>

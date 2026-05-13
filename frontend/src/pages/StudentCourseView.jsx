@@ -29,6 +29,13 @@ import { showToast } from "../utils/toast";
 import { Button, Card, PageLayout } from "../components";
 import { borderRadius, colors, spacing, typography } from "../theme";
 
+const isAdminIdentity = (person) => {
+  if (!person) return false;
+  if (person.role === "admin") return true;
+  if (person.username && person.username.toLowerCase().includes("@admin")) return true;
+  return false;
+};
+
 const StudentCourseView = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -107,11 +114,13 @@ const StudentCourseView = () => {
 
     const seen = new Set();
     const uniqueNames = [];
-    const people = [course.instructor, ...(course.assignedTeachers || [])];
+    const people = [course.instructor, ...(course.assignedTeachers || [])].filter(Boolean);
+    const hasNonAdminTeacher = people.some((person) => !isAdminIdentity(person));
+    const filteredPeople = hasNonAdminTeacher
+      ? people.filter((person) => !isAdminIdentity(person))
+      : people;
 
-    people.forEach((person) => {
-      if (!person) return;
-
+    filteredPeople.forEach((person) => {
       const idKey = person._id ? String(person._id) : null;
       const name = getDisplayName(person);
       const nameKey = name ? name.toLowerCase() : null;
