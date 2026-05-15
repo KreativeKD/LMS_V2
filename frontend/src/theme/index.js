@@ -102,6 +102,7 @@ export const colors = {
   // Backgrounds
   background: '#ffffff',
   surface: '#f9fafb',
+  surfaceAlt: '#f3f4f6',
   surfaceHover: '#f3f4f6',
   surfaceDisabled: '#e5e7eb',
   
@@ -119,6 +120,7 @@ export const colors = {
   // Glass/Overlay
   glass: 'rgba(0, 0, 0, 0.05)',
   glassLight: 'rgba(0, 0, 0, 0.02)',
+  skeleton: 'linear-gradient(90deg, #e5e7eb 0%, #f8fafc 42%, #e5e7eb 78%)',
   
   // Gradients
   gradient: 'linear-gradient(135deg, #4f46e5 0%, #4338ca 100%)',

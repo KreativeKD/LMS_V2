@@ -1,5 +1,5 @@
 import React from 'react';
-import { spacing, typography, colors, borderRadius, shadows } from '../theme';
+import { spacing, typography, colors, borderRadius, shadows, transitions } from '../theme';
 
 /**
  * Table Component
@@ -33,6 +33,8 @@ export const Table = ({
   style = {},
   ...props
 }) => {
+  const [hoveredRow, setHoveredRow] = React.useState(null);
+
   const tableStyle = {
     width: '100%',
     borderCollapse: 'collapse',
@@ -63,14 +65,13 @@ export const Table = ({
 
   const tbodyStyle = {};
 
-  const trStyle = (isEven) => ({
+  const trStyle = (isEven, isHovered = false) => ({
     borderBottom: `1px solid ${colors.border}`,
-    background: striped && isEven ? colors.surfaceAlt : colors.surface,
-    transition: 'all 0.2s ease',
+    background: isHovered ? colors.surfaceHover : (striped && isEven ? (colors.surfaceAlt || colors.surfaceHover) : colors.surface),
+    transition: `background ${transitions.md}, transform ${transitions.sm}, box-shadow ${transitions.md}`,
+    transform: isHovered && onRowClick ? 'translateY(-1px)' : 'none',
+    boxShadow: isHovered && onRowClick ? '0 8px 18px rgba(79, 70, 229, 0.08)' : 'none',
     cursor: onRowClick ? 'pointer' : 'default',
-    '&:hover': hoverable ? {
-      background: colors.surfaceHover,
-    } : {},
   });
 
   const tdStyle = {
@@ -80,18 +81,9 @@ export const Table = ({
     borderBottom: `1px solid ${colors.border}`,
   };
 
-  const skeletonRowStyle = {
-    height: '48px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacing.md,
-    padding: spacing.lg,
-  };
-
   const skeletonStyle = {
-    background: colors.skeleton,
+    background: colors.skeleton || 'var(--skeleton-base)',
     borderRadius: borderRadius.sm,
-    animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
   };
 
   const emptyStateStyle = {
@@ -132,6 +124,7 @@ export const Table = ({
                         height: '16px',
                         width: '80%',
                       }}
+                      className="vibrant-skeleton"
                     />
                   </td>
                 ))}
@@ -143,6 +136,7 @@ export const Table = ({
                         height: '32px',
                         width: '60px',
                       }}
+                      className="vibrant-skeleton"
                     />
                   </td>
                 )}
@@ -164,8 +158,10 @@ export const Table = ({
             data.map((row, rowIdx) => (
               <tr
                 key={row.id || rowIdx}
-                style={trStyle(rowIdx % 2 === 0)}
+                style={trStyle(rowIdx % 2 === 0, hoverable && hoveredRow === rowIdx)}
                 onClick={() => onRowClick && onRowClick(row)}
+                onMouseEnter={() => setHoveredRow(rowIdx)}
+                onMouseLeave={() => setHoveredRow(null)}
               >
                 {columns.map((column) => (
                   <td key={column.key} style={tdStyle}>

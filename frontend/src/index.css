@@ -12,6 +12,14 @@
   --text-muted: #6b7280;
   --brand-blue: #0d3386;
   --brand-orange: #f9760d;
+  --motion-fast: 150ms;
+  --motion-base: 200ms;
+  --motion-panel: 300ms;
+  --motion-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-pop: cubic-bezier(0.16, 1, 0.3, 1);
+  --focus-ring: rgba(79, 70, 229, 0.22);
+  --skeleton-base: #e5e7eb;
+  --skeleton-highlight: #f8fafc;
 }
 
 /* === Global Animations === */
@@ -49,6 +57,35 @@
     opacity: 0;
   }
   to {
+    opacity: 1;
+  }
+}
+
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes skeletonShimmer {
+  0% {
+    background-position: 180% 0;
+  }
+  100% {
+    background-position: -180% 0;
+  }
+}
+
+@keyframes softPulse {
+  0%, 100% {
+    opacity: 0.78;
+  }
+  50% {
     opacity: 1;
   }
 }
@@ -113,7 +150,12 @@ button {
   cursor: pointer;
   border: none;
   border-radius: 12px;
-  transition: opacity 0.2s ease;
+  transition:
+    opacity var(--motion-base) ease,
+    transform var(--motion-fast) var(--motion-ease),
+    box-shadow var(--motion-base) var(--motion-ease),
+    background var(--motion-base) ease,
+    border-color var(--motion-base) ease;
 }
 
 button:hover {
@@ -221,7 +263,10 @@ input {
   padding: 8px 12px;
   border-radius: 8px;
   outline: none;
-  transition: all 0.2s;
+  transition:
+    border-color var(--motion-base) ease,
+    box-shadow var(--motion-base) ease,
+    background var(--motion-base) ease;
 }
 
 input:focus {
@@ -238,7 +283,11 @@ input:focus {
 
   border: 1px solid var(--border);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    transform var(--motion-panel) var(--motion-pop),
+    border-color var(--motion-base) ease,
+    box-shadow var(--motion-panel) var(--motion-ease),
+    background var(--motion-base) ease;
 }
 
 .card:hover {
@@ -1191,6 +1240,76 @@ input:focus {
 .student-dashboard-sidebar,
 .student-dashboard-filter-card {
   position: sticky;
+}
+
+/* === Phase 9 Motion & Interaction Utilities === */
+.motion-rise-in {
+  animation: riseIn var(--motion-panel) var(--motion-pop) both;
+}
+
+.motion-fade-in {
+  animation: fadeIn var(--motion-panel) ease both;
+}
+
+.motion-pressable {
+  transition:
+    transform var(--motion-fast) var(--motion-ease),
+    box-shadow var(--motion-base) var(--motion-ease),
+    border-color var(--motion-base) ease,
+    background var(--motion-base) ease,
+    opacity var(--motion-base) ease;
+}
+
+.motion-pressable:hover {
+  transform: translateY(-2px);
+}
+
+.motion-pressable:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.motion-card {
+  transition:
+    transform var(--motion-panel) var(--motion-pop),
+    box-shadow var(--motion-panel) var(--motion-ease),
+    border-color var(--motion-base) ease,
+    background var(--motion-base) ease;
+}
+
+.motion-card:hover {
+  transform: translateY(-4px);
+}
+
+.motion-chip {
+  transition:
+    background var(--motion-base) ease,
+    border-color var(--motion-base) ease,
+    color var(--motion-base) ease,
+    transform var(--motion-fast) var(--motion-ease);
+}
+
+.motion-chip:hover {
+  transform: translateY(-1px);
+}
+
+.vibrant-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-base) 0%,
+    var(--skeleton-highlight) 42%,
+    var(--skeleton-base) 78%
+  );
+  background-size: 220% 100%;
+  animation: skeletonShimmer 1.35s ease-in-out infinite;
+}
+
+.loading-spinner,
+.ui-button__spinner {
+  animation: spin 0.8s linear infinite;
+}
+
+.motion-spin {
+  animation: spin 0.8s linear infinite;
 }
 
 .student-dashboard-courses-grid {

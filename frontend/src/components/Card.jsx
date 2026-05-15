@@ -1,5 +1,5 @@
 import React from 'react';
-import { spacing, colors, borderRadius, shadows, typography } from '../theme';
+import { spacing, colors, borderRadius, shadows, typography, transitions } from '../theme';
 
 /**
  * Card Component
@@ -53,7 +53,7 @@ export const Card = ({
     borderRadius: borderRadius.lg,
     overflow: overflow,
     cursor: onClick ? 'pointer' : 'default',
-    transition: 'all 0.3s ease',
+    transition: `transform ${transitions.lg}, box-shadow ${transitions.lg}, border-color ${transitions.md}, background ${transitions.md}`,
     width: '100%',
     ...style,
   };
@@ -100,15 +100,14 @@ export const Card = ({
   };
 
   const skeletonStyle = {
-    background: colors.skeleton,
+    background: colors.skeleton || 'var(--skeleton-base)',
     borderRadius: borderRadius.md,
-    animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
   };
 
   return (
     <div
       style={containerStyle}
-      className={className}
+      className={`ui-card motion-card motion-rise-in ${className}`.trim()}
       onClick={onClick}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
@@ -125,6 +124,7 @@ export const Card = ({
               width: '100%',
               height: '120px',
             }}
+            className="vibrant-skeleton"
           />
         </div>
       ) : (

@@ -18,10 +18,10 @@ const Modal = ({
   if (!isOpen) return null;
 
   const sizeClasses = {
-    small: 'max-width: 400px',
-    medium: 'max-width: 600px',
-    large: 'max-width: 900px',
-    fullWidth: 'max-width: 95vw'
+    small: '400px',
+    medium: '600px',
+    large: '900px',
+    fullWidth: '95vw'
   };
 
   return (
@@ -36,18 +36,20 @@ const Modal = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        zIndex: 1000
+        zIndex: 1000,
+        animation: 'fadeIn 200ms ease'
       }}
       onClick={onClose}
     >
       <div
         className={`card ${className}`}
         style={{
-          [sizeClasses[size]]: true,
+          width: `min(100% - 2rem, ${sizeClasses[size]})`,
+          maxWidth: sizeClasses[size],
           maxHeight: '90vh',
           overflowY: 'auto',
           position: 'relative',
-          animation: 'slideIn 0.3s ease'
+          animation: 'riseIn 300ms var(--motion-pop)'
         }}
         onClick={(e) => e.stopPropagation()}
       >

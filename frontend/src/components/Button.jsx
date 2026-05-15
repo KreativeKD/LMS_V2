@@ -1,5 +1,5 @@
 import React from 'react';
-import { spacing, typography, colors, borderRadius, shadows, transitions } from '../theme';
+import { spacing, typography, colors, borderRadius, transitions } from '../theme';
 
 /**
  * Button Component
@@ -37,7 +37,7 @@ export const Button = ({
         boxShadow: `0 8px 16px rgba(79, 70, 229, 0.3)`,
       },
       active: {
-        transform: 'scale(0.98)',
+        transform: 'translateY(0) scale(0.98)',
       },
     },
     secondary: {
@@ -49,7 +49,7 @@ export const Button = ({
         borderColor: colors.borderDark,
       },
       active: {
-        transform: 'scale(0.98)',
+        transform: 'translateY(0) scale(0.98)',
       },
     },
     danger: {
@@ -61,7 +61,7 @@ export const Button = ({
         boxShadow: `0 8px 16px rgba(239, 68, 68, 0.3)`,
       },
       active: {
-        transform: 'scale(0.98)',
+        transform: 'translateY(0) scale(0.98)',
       },
     },
     success: {
@@ -73,7 +73,7 @@ export const Button = ({
         boxShadow: `0 8px 16px rgba(16, 185, 129, 0.3)`,
       },
       active: {
-        transform: 'scale(0.98)',
+        transform: 'translateY(0) scale(0.98)',
       },
     },
     warning: {
@@ -85,7 +85,7 @@ export const Button = ({
         boxShadow: `0 8px 16px rgba(245, 158, 11, 0.3)`,
       },
       active: {
-        transform: 'scale(0.98)',
+        transform: 'translateY(0) scale(0.98)',
       },
     },
     ghost: {
@@ -136,7 +136,7 @@ export const Button = ({
     gap: spacing.sm,
     fontFamily: 'inherit',
     fontWeight: 600,
-    transition: `all ${transitions.md}`,
+    transition: `transform ${transitions.sm}, box-shadow ${transitions.md}, background ${transitions.md}, border-color ${transitions.md}, opacity ${transitions.md}`,
     opacity: disabled || loading ? 0.6 : 1,
     width: fullWidth ? '100%' : 'auto',
     whiteSpace: 'nowrap',
@@ -151,10 +151,11 @@ export const Button = ({
       type={type}
       disabled={disabled || loading}
       onClick={onClick}
-      className={className}
+      className={`ui-button motion-pressable ${className}`.trim()}
       style={{
         ...baseStyle,
         ...(isHovered && !disabled && !loading ? variantStyle.hover : {}),
+        ...(isHovered && !disabled && !loading ? { transform: 'translateY(-2px)' } : {}),
         ...(isActive && !disabled && !loading ? variantStyle.active : {}),
       }}
       onMouseEnter={() => setIsHovered(true)}
@@ -178,8 +179,8 @@ export const Button = ({
               border: '2px solid rgba(255, 255, 255, 0.3)',
               borderTopColor: 'currentColor',
               borderRadius: '50%',
-              animation: 'spin 0.8s linear infinite',
             }}
+            className="ui-button__spinner"
           />
           Loading...
         </>

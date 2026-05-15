@@ -19,6 +19,8 @@ export const EmptyState = ({
   actionButton = null,
   type = 'empty'
 }) => {
+  const StateIcon = type === 'error' ? AlertCircle : Icon;
+
   return (
     <div
       style={{
@@ -33,11 +35,12 @@ export const EmptyState = ({
         background: type === 'error' ? 'rgba(239, 68, 68, 0.05)' : 'rgba(0, 0, 0, 0.02)',
         border: `2px dashed ${type === 'error' ? '#fca5a5' : '#e5e7eb'}`,
       }}
+      className="motion-rise-in"
       role="status"
       aria-label={title}
     >
       {/* Icon */}
-      <Icon
+      <StateIcon
         size={48}
         style={{
           color: type === 'error' ? '#ef4444' : '#9ca3af',
@@ -84,8 +87,8 @@ export const EmptyState = ({
             fontSize: '0.95rem',
             fontWeight: '600',
             cursor: 'pointer',
-            transition: 'all 0.2s ease',
           }}
+          className="motion-pressable"
           onMouseOver={(e) => {
             e.target.style.transform = 'translateY(-2px)';
             e.target.style.boxShadow = '0 8px 16px rgba(79, 70, 229, 0.3)';

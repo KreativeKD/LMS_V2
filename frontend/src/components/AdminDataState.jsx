@@ -13,7 +13,7 @@ export const AdminDataState = ({
 }) => {
   const config = {
     loading: {
-      icon: <Loader2 size={24} color={colors.primary} className="spin-icon" />,
+      icon: <Loader2 size={24} color={colors.primary} className="motion-spin" />,
       defaultTitle: 'Loading data',
       defaultMessage: 'Fetching the latest records...'
     },
@@ -32,19 +32,6 @@ export const AdminDataState = ({
   const current = config[type] || config.loading;
 
   return (
-    <>
-      <style>
-        {`
-          .spin-icon {
-            animation: admin-spin 1s linear infinite;
-          }
-
-          @keyframes admin-spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-          }
-        `}
-      </style>
       <Card>
         <div
           style={{
@@ -70,7 +57,6 @@ export const AdminDataState = ({
           )}
         </div>
       </Card>
-    </>
   );
 };
 

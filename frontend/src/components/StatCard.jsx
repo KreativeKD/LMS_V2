@@ -12,8 +12,17 @@ const StatCard = ({ Icon, label, value, withPlus = false, duration = 1000 }) => 
 
   useEffect(() => {
     if (!Number.isFinite(value)) {
-      setDisplay('--');
-      return;
+      const frame = requestAnimationFrame(() => setDisplay('--'));
+      return () => cancelAnimationFrame(frame);
+    }
+
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+    if (prefersReducedMotion) {
+      const frame = requestAnimationFrame(() => setDisplay(formatValue(Number(value), withPlus)));
+      return () => cancelAnimationFrame(frame);
     }
 
     const start = performance.now();
