@@ -718,35 +718,36 @@ const StudentDashboard = () => {
                                                     Expires on: <strong style={{ color: isExpired ? colors.danger : colors.text, fontWeight: 700 }}>{expiresAtText}</strong>
                                                 </div>
                                             )}
-                                            <div style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: spacing.sm,
-                                                marginBottom: spacing.sm,
-                                                padding: spacing.sm,
-                                                background: isExpired ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
-                                                borderRadius: '6px',
-                                                border: isExpired ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(16, 185, 129, 0.3)'
-                                            }}>
-                                                <CheckCircle size={16} color={isExpired ? colors.danger : colors.success} />
-                                                <span style={{ 
-                                                    fontSize: '0.85rem', 
-                                                    fontWeight: 600,
-                                                    color: isExpired ? colors.danger : colors.success 
+                                            <div style={{ display: 'flex', gap: spacing.md, alignItems: 'center', marginBottom: spacing.sm }}>
+                                                <div style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: spacing.sm,
+                                                    padding: spacing.sm,
+                                                    background: isExpired ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                                                    borderRadius: '6px',
+                                                    border: isExpired ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(16, 185, 129, 0.3)',
+                                                    flex: '0 0 auto'
                                                 }}>
-                                                    {isExpired ? 'Course Expired' : 'Enrolled'}
-                                                </span>
+                                                    <CheckCircle size={16} color={isExpired ? colors.danger : colors.success} />
+                                                    <span style={{ 
+                                                        fontSize: '0.85rem', 
+                                                        fontWeight: 600,
+                                                        color: isExpired ? colors.danger : colors.success 
+                                                    }}>
+                                                        {isExpired ? 'Course Expired' : 'Enrolled'}
+                                                    </span>
+                                                </div>
+                                                <Button
+                                                    onClick={() => !isExpired && navigate(`/course/read/${course._id}`)}
+                                                    variant="primary"
+                                                    disabled={isExpired}
+                                                    size="sm"
+                                                    style={{ flex: '1 1 auto' }}
+                                                >
+                                                    <PlayCircle size={16} /> {isExpired ? 'Access Expired' : 'Go to Course'}
+                                                </Button>
                                             </div>
-                                            <Button
-                                                onClick={() => !isExpired && navigate(`/course/read/${course._id}`)}
-                                                variant="primary"
-                                                disabled={isExpired}
-                                                fullWidth
-                                                size="sm"
-                                                style={{ width: '100%' }}
-                                            >
-                                                <PlayCircle size={16} /> {isExpired ? 'Access Expired' : 'Go to Course'}
-                                            </Button>
                                         </>
                                     ) : user.role === 'student' ? (
                                         (() => {
