@@ -367,6 +367,10 @@ const LandingPage = () => {
               fontSize: "1.18rem",
               lineHeight: "1.75",
               color: "var(--text-main)",
+              textAlign: "justify",
+              textJustify: "auto",
+              hyphens: "auto",
+              WebkitHyphens: "auto",
               margin: 0,
             }}
           >
