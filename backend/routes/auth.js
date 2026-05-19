@@ -133,6 +133,54 @@ const isInstructorProfileComplete = (profile = {}) => {
   return hasName && hasDesignation && hasPhoto && hasBio && hasStats;
 };
 
+const cleanupStudentAccount = async (student) => {
+  const studentId = student._id;
+  const usernamePrefix = stripRoleSuffix(student.username);
+  const nameQuery = [];
+
+  if (student.firstName && student.lastName) {
+    nameQuery.push({
+      firstName: { $regex: new RegExp(`^${student.firstName}$`, "i") },
+      lastName: { $regex: new RegExp(`^${student.lastName}$`, "i") },
+    });
+  }
+
+  await RegistrationRequest.deleteMany({
+    $or: [
+      { userId: studentId },
+      ...nameQuery,
+      {
+        status: "completed",
+        $expr: {
+          $or: [
+            {
+              $eq: [
+                { $toLower: { $concat: ["$firstName", "$lastName"] } },
+                usernamePrefix.toLowerCase(),
+              ],
+            },
+            {
+              $eq: [
+                { $toLower: { $concat: ["$firstName", " ", "$lastName"] } },
+                usernamePrefix.toLowerCase(),
+              ],
+            },
+          ],
+        },
+      },
+    ],
+  });
+
+  await Course.updateMany(
+    { students: studentId },
+    { $pull: { students: studentId } },
+  );
+
+  await Notification.deleteMany({
+    $or: [{ recipient: studentId }, { actor: studentId }],
+  });
+};
+
 // Login route supporting username aliases and student email addresses
 router.post("/toggle-hidden-content", auth, async (req, res) => {
   try {
@@ -297,6 +345,25 @@ router.patch("/me", auth, validate(updateProfileSchema), async (req, res) => {
   } catch (e) {
     console.error("Profile update error:", e);
     res.status(400).send({ error: e.message || "Failed to update profile" });
+  }
+});
+
+router.delete("/me", auth, authorize("student"), async (req, res) => {
+  try {
+    const student = await User.findOneAndDelete({
+      _id: req.user._id,
+      role: "student",
+    });
+
+    if (!student) {
+      return res.status(404).send({ error: "Student not found" });
+    }
+
+    await cleanupStudentAccount(student);
+
+    res.send({ message: "Account deleted successfully" });
+  } catch (e) {
+    res.status(500).send({ error: e.message });
   }
 });
 
@@ -873,53 +940,7 @@ router.delete(
         return res.status(404).send({ error: "Student not found" });
       }
 
-      // Cleanup: Delete registration requests associated with this student
-      // We use userId link AND name-based search (fallback for older records)
-      const usernamePrefix = stripRoleSuffix(student.username);
-      const nameQuery = [];
-      if (student.firstName && student.lastName) {
-        nameQuery.push({
-          firstName: { $regex: new RegExp(`^${student.firstName}$`, "i") },
-          lastName: { $regex: new RegExp(`^${student.lastName}$`, "i") },
-        });
-      }
-
-      await RegistrationRequest.deleteMany({
-        $or: [
-          { userId: studentId },
-          ...nameQuery,
-          // Robust fallback for old students: Match concatenated firstName + lastName with username
-          {
-            status: "completed",
-            $expr: {
-              $or: [
-                {
-                  $eq: [
-                    { $toLower: { $concat: ["$firstName", "$lastName"] } },
-                    usernamePrefix.toLowerCase(),
-                  ],
-                },
-                {
-                  $eq: [
-                    { $toLower: { $concat: ["$firstName", " ", "$lastName"] } },
-                    usernamePrefix.toLowerCase(),
-                  ],
-                },
-              ],
-            },
-          },
-        ],
-      });
-
-      // Cleanup: Remove student from all course lists
-      await Course.updateMany(
-        { students: studentId },
-        { $pull: { students: studentId } },
-      );
-
-      await Notification.deleteMany({
-        $or: [{ recipient: studentId }, { actor: studentId }],
-      });
+      await cleanupStudentAccount(student);
 
       res.send({
         message: "Student deleted successfully and associated data cleaned up",

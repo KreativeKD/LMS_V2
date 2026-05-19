@@ -611,6 +611,20 @@ export const updateUserProfile = async (data) => {
   return response.json();
 };
 
+export const deleteMyAccount = async () => {
+  const response = await fetch(`${API_URL}/auth/me`, {
+    method: "DELETE",
+    headers: getHeaders(),
+  });
+
+  const responseData = await safeJsonParse(response);
+  if (!response.ok) {
+    throw new Error(responseData?.error || "Failed to delete account");
+  }
+
+  return responseData;
+};
+
 export const fetchMyInstructorProfile = async () => {
   const response = await fetch(`${API_URL}/auth/me/instructor-profile`, {
     headers: getHeaders(),

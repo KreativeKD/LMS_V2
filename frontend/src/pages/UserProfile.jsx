@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Check, ChevronDown, Save, Upload } from 'lucide-react';
-import { fetchCurrentUser, updateUserProfile } from '../api/api';
+import { deleteMyAccount, fetchCurrentUser, updateUserProfile } from '../api/api';
 import { useAuth } from '../context/AuthContext';
 import { Button, Card, Input, PageLayout } from '../components';
 import { borderRadius, colors, spacing, typography } from '../theme';
@@ -11,7 +11,7 @@ const stripRoleSuffix = (username = '') => username.replace(/@(admin|teacher|stu
 
 const UserProfile = () => {
   const navigate = useNavigate();
-  const { user: authUser, login } = useAuth();
+  const { user: authUser, login, logout } = useAuth();
   const fileInputRef = useRef(null);
   const countryDropdownRef = useRef(null);
 
@@ -27,6 +27,7 @@ const UserProfile = () => {
   const [photoPreview, setPhotoPreview] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [countrySearch, setCountrySearch] = useState('');
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
@@ -155,6 +156,28 @@ const UserProfile = () => {
       setMessage({ type: 'error', text: error.message || 'Failed to update profile' });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    const confirmed = window.confirm(
+      'This will permanently delete your student account and remove your access. Continue?',
+    );
+
+    if (!confirmed) return;
+
+    setDeleting(true);
+    setMessage({ type: '', text: '' });
+
+    try {
+      await deleteMyAccount();
+      logout();
+      navigate('/login', { replace: true });
+    } catch (error) {
+      console.error('Account deletion error:', error);
+      setMessage({ type: 'error', text: error.message || 'Failed to delete account' });
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -449,6 +472,30 @@ const UserProfile = () => {
               <Save size={16} /> {saving ? 'Saving...' : 'Save Changes'}
             </Button>
           </form>
+
+          {authUser?.role === 'student' && (
+            <div
+              style={{
+                marginTop: spacing.xl,
+                paddingTop: spacing.xl,
+                borderTop: `1px solid ${colors.border}`,
+                display: 'grid',
+                gap: spacing.md,
+              }}
+            >
+              <div>
+                <h3 style={{ ...typography.bodyMedium, fontWeight: 600, margin: 0, color: colors.textSecondary }}>
+                  Delete Account
+                </h3>
+                <p style={{ ...typography.bodySmall, color: colors.textMuted, margin: `${spacing.xs} 0 0` }}>
+                  This action permanently removes your student account, profile data, and enrolled-course links.
+                </p>
+              </div>
+              <Button variant="danger" type="button" onClick={handleDeleteAccount} loading={deleting}>
+                Delete My Account
+              </Button>
+            </div>
+          )}
 
           {/* Hidden file input for photo upload */}
           <input
