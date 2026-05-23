@@ -1361,9 +1361,10 @@ router.delete(
 // Get system settings
 router.get("/settings", async (req, res) => {
   try {
-    const settings = await SystemSetting.findOne();
+    let settings = await SystemSetting.findOne({ key: 'system' });
     if (!settings) {
-      return res.status(404).send({ error: "Settings not found" });
+      // Fallback/bootstrap setting if key: 'system' doesn't exist yet
+      settings = await SystemSetting.findOne() || new SystemSetting({ key: 'system', value: {} });
     }
     res.send({
       semesterCompletionDate: settings.semesterCompletionDate || null,
@@ -1381,14 +1382,20 @@ router.post("/admin/settings", auth, authorize("admin"), async (req, res) => {
   try {
     const { semesterCompletionDate, maintenanceMode } = req.body;
 
-    // Create or update settings
-    let settings = await SystemSetting.findOne();
+    // Create or update system settings
+    let settings = await SystemSetting.findOne({ key: 'system' });
     if (!settings) {
-      settings = new SystemSetting();
+      settings = new SystemSetting({ key: 'system', value: {} });
     }
 
     if (semesterCompletionDate !== undefined) {
       settings.semesterCompletionDate = semesterCompletionDate;
+      // For backwards compatibility with debug-freeze.js and older logic
+      await SystemSetting.findOneAndUpdate(
+        { key: 'semesterCompletionDate' },
+        { value: semesterCompletionDate },
+        { upsert: true }
+      );
     }
     if (maintenanceMode !== undefined) {
       settings.maintenanceMode = maintenanceMode;
@@ -1411,14 +1418,15 @@ router.post("/admin/settings", auth, authorize("admin"), async (req, res) => {
   }
 });
 
-module.exports = router;
-
 // Admin: upload banner image
 router.post('/admin/banner', auth, authorize('admin'), upload.single('file'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).send({ error: 'No file uploaded' });
 
-    const settings = (await SystemSetting.findOne()) || new SystemSetting({ key: 'system', value: {} });
+    let settings = await SystemSetting.findOne({ key: 'system' });
+    if (!settings) {
+      settings = new SystemSetting({ key: 'system', value: {} });
+    }
     settings.bannerImages = settings.bannerImages || [];
     const relativePath = `/uploads/banners/${req.file.filename}`;
     settings.bannerImages.push(relativePath);
@@ -1437,7 +1445,7 @@ router.delete('/admin/banner', auth, authorize('admin'), async (req, res) => {
     const { path: imgPath } = req.body;
     if (!imgPath) return res.status(400).send({ error: 'Path required' });
 
-    const settings = await SystemSetting.findOne();
+    let settings = await SystemSetting.findOne({ key: 'system' });
     if (!settings || !Array.isArray(settings.bannerImages)) {
       return res.status(404).send({ error: 'No banner images found' });
     }
@@ -1457,3 +1465,5 @@ router.delete('/admin/banner', auth, authorize('admin'), async (req, res) => {
     res.status(500).send({ error: e.message });
   }
 });
+
+module.exports = router;

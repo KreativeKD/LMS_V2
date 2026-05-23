@@ -60,6 +60,7 @@ const formatDateWithShortMonth = (value) => {
 const COURSE_SECTIONS = [
     { id: 'academic', title: 'Academic Courses', label: 'Academic' },
     { id: 'short-term', title: 'Short-term Courses', label: 'Short Term' },
+    { id: 'projects', title: 'Projects', label: 'Projects' },
     { id: 'professional', title: 'Professional Courses', label: 'Professional' }
 ];
 
@@ -221,7 +222,7 @@ const StudentDashboard = () => {
     };
 
     const normalizeCourseType = (courseType) => {
-        if (['professional', 'short-term', 'both'].includes(courseType)) return courseType;
+        if (['professional', 'short-term', 'projects', 'both'].includes(courseType)) return courseType;
         return 'academic';
     };
 
@@ -229,6 +230,7 @@ const StudentDashboard = () => {
         const type = normalizeCourseType(course.courseType);
         if (courseType === 'academic') return type === 'academic' || type === 'both';
         if (courseType === 'professional') return type === 'professional' || type === 'both';
+        if (courseType === 'projects') return type === 'projects' || type === 'both';
         return type === 'short-term' || type === 'both';
     };
 

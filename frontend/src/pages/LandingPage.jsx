@@ -34,6 +34,8 @@ import {
   fetchPublicTestimonials,
   fetchPublicTicker,
   fetchPublicStats,
+  fetchSettings,
+  API_BASE,
 } from "../api/api";
 import { fetchPublicProfessors } from "../api/api";
 
@@ -93,6 +95,50 @@ const FALLBACK_TESTIMONIALS = [
   },
 ];
 
+const DEFAULT_SHOWCASE_SLIDES = [
+  {
+    image: "/generated/img1.png",
+    title: "Kickstart Your Engineering Career",
+    subtitle: "Industry-ready learning pathways with guided progress.",
+  },
+  {
+    image: "/generated/img2.png",
+    title: "Learn from Academic Experts",
+    subtitle: "Structured modules designed by experienced faculty.",
+  },
+  {
+    image: "/generated/img3.png",
+    title: "Build Skills That Matter",
+    subtitle: "From foundations to advanced topics, all in one place.",
+  },
+  {
+    image: "/generated/img4.png",
+    title: "Unlock the power of Machine intelligence",
+    subtitle:
+      "Practical pathways for intelligent systems and real-world innovation.",
+  },
+  {
+    image: "/generated/img5.png",
+    title: "Master New Technologies",
+    subtitle: "Stay ahead with cutting-edge curriculum.",
+  },
+  {
+    image: "/generated/img6.jpeg",
+    title: "Expert Guidance",
+    subtitle: "Get mentored by industry professionals.",
+  },
+  {
+    image: "/generated/img7.jpeg",
+    title: "Interactive Learning",
+    subtitle: "Engage with hands-on projects and assignments.",
+  },
+  {
+    image: "/generated/img8.png",
+    title: "Achieve Your Goals",
+    subtitle: "Turn your ambitions into reality with CourseZ.",
+  },
+];
+
 const LandingPage = () => {
   const navigate = useNavigate();
   const [activeSlide, setActiveSlide] = useState(0);
@@ -105,40 +151,19 @@ const LandingPage = () => {
     expertProfessors: null,
   });
 
-  const showcaseSlides = [
-    {
-      image: "/generated/img1.png",
-      title: "Kickstart Your Engineering Career",
-      subtitle: "Industry-ready learning pathways with guided progress.",
-    },
-    {
-      image: "/generated/img2.png",
-      title: "Learn from Academic Experts",
-      subtitle: "Structured modules designed by experienced faculty.",
-    },
-    {
-      image: "/generated/img3.png",
-      title: "Build Skills That Matter",
-      subtitle: "From foundations to advanced topics, all in one place.",
-    },
-    {
-      image: "/generated/img4.png",
-      title: "Unlock the power of Machine intelligence",
-      subtitle:
-        "Practical pathways for intelligent systems and real-world innovation.",
-    },
-  ];
+  const [showcaseSlides, setShowcaseSlides] = useState(DEFAULT_SHOWCASE_SLIDES);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [announcementData, tickerData, stats, testimonials, professors] =
+        const [announcementData, tickerData, stats, testimonials, professors, settingsData] =
           await Promise.all([
             fetchPublicAnnouncements(),
             fetchPublicTicker(),
             fetchPublicStats(),
             fetchPublicTestimonials(12),
             fetchPublicProfessors(),
+            fetchSettings().catch(() => ({})),
           ]);
         setPublicTestimonials(Array.isArray(testimonials) ? testimonials : []);
         // Prefer authoritative count from professors list but fall back to stats endpoint
@@ -179,6 +204,27 @@ const LandingPage = () => {
             .map((item) => item.tickerText || item.title || item.message)
             .filter(Boolean),
         );
+
+        if (settingsData && Array.isArray(settingsData.bannerImages) && settingsData.bannerImages.length > 0) {
+          const resolvedBanners = settingsData.bannerImages
+            .filter(Boolean)
+            .map((p) => {
+              if (p.startsWith('http://') || p.startsWith('https://')) return p;
+              const normalized = p.startsWith('/') ? p : `/${p}`;
+              return `${API_BASE}${normalized}`;
+            });
+
+          const customSlides = resolvedBanners.map((imgUrl, index) => {
+            const fallbackSlide = DEFAULT_SHOWCASE_SLIDES[index % DEFAULT_SHOWCASE_SLIDES.length];
+            return {
+              image: imgUrl,
+              title: fallbackSlide.title,
+              subtitle: fallbackSlide.subtitle,
+            };
+          });
+
+          setShowcaseSlides([...customSlides, ...DEFAULT_SHOWCASE_SLIDES]);
+        }
       } catch (err) {
         console.error("Failed to load landing page data", err);
         setAnnouncements(FALLBACK_ANNOUNCEMENTS);

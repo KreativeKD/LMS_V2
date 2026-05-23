@@ -5,7 +5,7 @@ const courseSchema = new mongoose.Schema({
     description: { type: String },
     courseType: {
         type: String,
-        enum: ['academic', 'professional', 'short-term', 'both'],
+        enum: ['academic', 'professional', 'short-term', 'projects', 'both'],
         default: 'academic'
     },
     descriptionPdf: { type: String }, // Base64 data URL for course description PDF

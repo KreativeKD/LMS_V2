@@ -8,7 +8,20 @@ const systemSettingSchema = new mongoose.Schema({
     },
     value: {
         type: mongoose.Schema.Types.Mixed,
-        required: true
+        required: false,
+        default: null
+    },
+    semesterCompletionDate: {
+        type: String,
+        default: null
+    },
+    maintenanceMode: {
+        type: Boolean,
+        default: false
+    },
+    bannerImages: {
+        type: [String],
+        default: []
     }
 }, { timestamps: true });
 

@@ -39,7 +39,7 @@ const CoursesPage = () => {
     }, []);
 
     const normalizeCourseType = (courseType) => {
-        if (['professional', 'short-term', 'both'].includes(courseType)) return courseType;
+        if (['professional', 'short-term', 'projects', 'both'].includes(courseType)) return courseType;
         return 'academic';
     };
 
@@ -48,6 +48,7 @@ const CoursesPage = () => {
         if (selectedCourseType === 'all') return true;
         if (selectedCourseType === 'academic') return type === 'academic' || type === 'both';
         if (selectedCourseType === 'professional') return type === 'professional' || type === 'both';
+        if (selectedCourseType === 'projects') return type === 'projects' || type === 'both';
         return type === 'short-term' || type === 'both';
     });
 
@@ -75,7 +76,7 @@ const CoursesPage = () => {
                             ? 'All Available Courses'
                             : (selectedCourseType === 'academic'
                                 ? 'Academic Courses'
-                                : (selectedCourseType === 'professional' ? 'Professional Courses' : 'Short Term Courses'))}
+                                : (selectedCourseType === 'professional' ? 'Professional Courses' : (selectedCourseType === 'projects' ? 'Projects' : 'Short Term Courses')))}
                     </h2>
                     <p className="section-subtitle">Choose your learning path and start building expertise</p>
                     <div style={{ display: 'inline-flex', gap: spacing.sm, padding: spacing.xs, background: '#fff', border: `1px solid ${colors.border}`, borderRadius: 999, marginTop: spacing.md }}>
@@ -110,6 +111,14 @@ const CoursesPage = () => {
                             onClick={() => setSelectedCourseType('short-term')}
                         >
                             Short Term
+                        </Button>
+                        <Button
+                            variant={selectedCourseType === 'projects' ? 'primary' : 'ghost'}
+                            size="sm"
+                            style={{ textTransform: 'none' }}
+                            onClick={() => setSelectedCourseType('projects')}
+                        >
+                            Projects
                         </Button>
                     </div>
                 </div>
@@ -193,10 +202,10 @@ const CoursesPage = () => {
                                 const rotationClass = rotations[index % rotations.length];
                                 const courseCategory = normalizeCourseType(course.courseType);
                                 const categoryLabel = courseCategory === 'both'
-                                    ? 'Academic + Professional + Short Term'
+                                    ? 'Academic + Professional + Short Term + Projects'
                                     : (courseCategory === 'professional'
                                         ? 'Professional'
-                                        : (courseCategory === 'short-term' ? 'Short Term' : 'Academic'));
+                                        : (courseCategory === 'short-term' ? 'Short Term' : (courseCategory === 'projects' ? 'Projects' : 'Academic')));
 
                                 return (
                                     <Card key={course._id} className={`${colorClass} ${rotationClass}`} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
