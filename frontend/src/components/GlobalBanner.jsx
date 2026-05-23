@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { fetchSettings } from "../api/api";
+import { fetchSettings, API_BASE } from "../api/api";
 
 const PAGE_TITLES = {
   "/": "Welcome to CourseZ",
@@ -55,7 +55,15 @@ const GlobalBanner = () => {
       try {
         const data = await fetchSettings();
         if (mounted && Array.isArray(data.bannerImages)) {
-          setBanners(data.bannerImages);
+          // Resolve backend-hosted paths to absolute URLs so images load correctly
+          const resolved = data.bannerImages.map((p) => {
+            if (!p) return p;
+            if (p.startsWith('http://') || p.startsWith('https://')) return p;
+            // support both /uploads/... and uploads/...
+            const normalized = p.startsWith('/') ? p : `/${p}`;
+            return `${API_BASE}${normalized}`;
+          });
+          setBanners(resolved);
         }
       } catch (e) {
         // ignore

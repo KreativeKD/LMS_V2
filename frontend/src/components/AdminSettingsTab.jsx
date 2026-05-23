@@ -8,8 +8,11 @@ import {
   fetchAdminAnnouncements,
   createAnnouncement,
   updateAnnouncement,
-  deleteAnnouncement
-  , fetchSettings, uploadBannerImage, deleteBannerImage
+  deleteAnnouncement,
+  fetchSettings,
+  uploadBannerImage,
+  deleteBannerImage,
+  API_BASE
 } from '../api/api';
 import { handleSuccess, handleApiError } from '../utils/toast';
 
@@ -349,14 +352,17 @@ export const AdminSettingsTab = ({ loading }) => {
             </div>
 
             <div style={{ display: 'flex', gap: spacing.sm, marginTop: spacing.md, flexWrap: 'wrap' }}>
-              {bannerImages.map((img) => (
-                <div key={img} style={{ position: 'relative' }}>
-                  <img src={img} alt="banner" style={{ width: 200, height: 90, objectFit: 'cover', borderRadius: 8, border: `1px solid ${colors.border}` }} />
-                  <div style={{ display: 'flex', gap: spacing.sm, marginTop: spacing.xs }}>
-                    <button type="button" className="btn-secondary" onClick={() => handleDeleteBanner(img)}>Delete</button>
+              {bannerImages.map((img) => {
+                const src = img && img.startsWith && img.startsWith('http') ? img : `${API_BASE}${img && img.startsWith && img.startsWith('/') ? '' : '/'}${img}`;
+                return (
+                  <div key={img} style={{ position: 'relative' }}>
+                    <img src={src} alt="banner" style={{ width: 200, height: 90, objectFit: 'cover', borderRadius: 8, border: `1px solid ${colors.border}` }} />
+                    <div style={{ display: 'flex', gap: spacing.sm, marginTop: spacing.xs }}>
+                      <button type="button" className="btn-secondary" onClick={() => handleDeleteBanner(img)}>Delete</button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
           </div>

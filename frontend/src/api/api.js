@@ -27,6 +27,7 @@ const resolveApiUrl = () => {
 };
 
 const API_URL = resolveApiUrl();
+export const API_BASE = API_URL.replace(/\/api\/?$/, '');
 
 const getHeaders = () => {
   const token = localStorage.getItem("token");
