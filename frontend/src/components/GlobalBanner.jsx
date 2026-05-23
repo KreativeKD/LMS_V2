@@ -28,11 +28,28 @@ const GlobalBanner = () => {
         (basePath.startsWith('/quiz/') ? 'Quiz' : null) ||
         'CourseZ';
 
+    const renderTitle = (title) => {
+        if (!title) return null;
+        // Replace occurrences of 'CourseZ' with styled spans matching the logo colors
+        const parts = title.split(/(CourseZ)/g);
+        return parts.map((part, idx) => {
+            if (part === 'CourseZ') {
+                return (
+                    <span key={idx} aria-hidden="true">
+                        <span className="brand-course">Course</span>
+                        <span className="brand-z">Z</span>
+                    </span>
+                );
+            }
+            return <span key={idx}>{part}</span>;
+        });
+    };
+
     return (
         <section className="global-page-banner" aria-label="Page banner">
             <div className="global-page-banner__overlay" />
             <div className="global-page-banner__content">
-                <h2>{dynamicTitle}</h2>
+                <h2>{renderTitle(dynamicTitle)}</h2>
             </div>
         </section>
     );
