@@ -9,6 +9,7 @@ import {
   createAnnouncement,
   updateAnnouncement,
   deleteAnnouncement
+  , fetchSettings, uploadBannerImage, deleteBannerImage
 } from '../api/api';
 import { handleSuccess, handleApiError } from '../utils/toast';
 
@@ -38,8 +39,21 @@ export const AdminSettingsTab = ({ loading }) => {
     }
   };
 
+  const [bannerImages, setBannerImages] = useState([]);
+  const [uploading, setUploading] = useState(false);
+
+  const loadSettings = async () => {
+    try {
+      const data = await fetchSettings();
+      setBannerImages(data.bannerImages || []);
+    } catch (err) {
+      // ignore here; settings may be empty
+    }
+  };
+
   useEffect(() => {
     loadAnnouncements();
+    loadSettings();
   }, []);
 
   const handleSubmit = async (e) => {
@@ -128,6 +142,33 @@ export const AdminSettingsTab = ({ loading }) => {
       handleApiError(err);
     } finally {
       setAnnouncementLoading(false);
+    }
+  };
+
+  const handleUpload = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      await uploadBannerImage(file);
+      handleSuccess('Banner uploaded');
+      await loadSettings();
+    } catch (err) {
+      handleApiError(err);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDeleteBanner = async (imgPath) => {
+    const ok = window.confirm('Delete this banner image?');
+    if (!ok) return;
+    try {
+      await deleteBannerImage(imgPath);
+      handleSuccess('Banner deleted');
+      await loadSettings();
+    } catch (err) {
+      handleApiError(err);
     }
   };
 
@@ -298,6 +339,26 @@ export const AdminSettingsTab = ({ loading }) => {
                 </div>
               ))}
             </div>
+          
+          <div style={{ marginTop: spacing.lg }}>
+            <h3 style={{ ...typography.h4, marginBottom: spacing.xs }}>Banner Images</h3>
+            <p style={{ ...typography.small, color: colors.textMuted }}>Upload images to show in the site banner (admin only). Images are stored on the server.</p>
+            <div style={{ display: 'flex', gap: spacing.md, alignItems: 'center', marginTop: spacing.sm }}>
+              <input type="file" accept="image/*" onChange={handleUpload} disabled={uploading} />
+              {uploading ? <span style={{ ...typography.small }}>Uploading...</span> : null}
+            </div>
+
+            <div style={{ display: 'flex', gap: spacing.sm, marginTop: spacing.md, flexWrap: 'wrap' }}>
+              {bannerImages.map((img) => (
+                <div key={img} style={{ position: 'relative' }}>
+                  <img src={img} alt="banner" style={{ width: 200, height: 90, objectFit: 'cover', borderRadius: 8, border: `1px solid ${colors.border}` }} />
+                  <div style={{ display: 'flex', gap: spacing.sm, marginTop: spacing.xs }}>
+                    <button type="button" className="btn-secondary" onClick={() => handleDeleteBanner(img)}>Delete</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
           </div>
         </div>
       </Card>

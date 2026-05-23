@@ -505,6 +505,41 @@ export const fetchSettings = async () => {
   return response.json();
 };
 
+export const uploadBannerImage = async (file) => {
+  const form = new FormData();
+  form.append('file', file);
+
+  const token = localStorage.getItem('token');
+
+  const response = await fetch(`${API_URL}/auth/admin/banner`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
+  });
+
+  if (!response.ok) {
+    const data = await safeJsonParse(response);
+    throw new Error(data?.error || 'Failed to upload banner image');
+  }
+
+  return response.json();
+};
+
+export const deleteBannerImage = async (imgPath) => {
+  const response = await fetch(`${API_URL}/auth/admin/banner`, {
+    method: 'DELETE',
+    headers: getHeaders(),
+    body: JSON.stringify({ path: imgPath }),
+  });
+
+  if (!response.ok) {
+    const data = await safeJsonParse(response);
+    throw new Error(data?.error || 'Failed to delete banner image');
+  }
+
+  return response.json();
+};
+
 export const updateSettings = async (settings) => {
   const response = await fetch(`${API_URL}/auth/admin/settings`, {
     method: "POST",
