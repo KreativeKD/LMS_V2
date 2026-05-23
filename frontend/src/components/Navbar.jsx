@@ -22,7 +22,7 @@ const Navbar = () => {
     const [scrolled, setScrolled] = useState(false);
     const notificationRef = useRef(null);
 
-    const onPublicPage = ['/', '/professor', '/courses', '/scholarship', '/contact', '/mobile-app'].includes(location.pathname);
+    const onPublicPage = ['/', '/professor', '/courses', '/scholarship', '/contact'].includes(location.pathname);
 
     const handleLogout = () => {
         logout();
@@ -109,7 +109,7 @@ const Navbar = () => {
                     Scholarships
                 </a>
 
-                <Link to="/mobile-app" className={`nav-link ${isPathActive('/mobile-app') ? 'active' : ''}`}>Mobile App</Link>
+                {/* Mobile App link removed */}
 
                 {isAuthenticated && (
                     <>

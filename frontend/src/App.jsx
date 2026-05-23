@@ -29,7 +29,7 @@ const Professor = React.lazy(() => import('./pages/Professor'));
 const CoursesPage = React.lazy(() => import('./pages/CoursesPage'));
 const Scholarship = React.lazy(() => import('./pages/Scholarship'));
 const ContactPage = React.lazy(() => import('./pages/ContactPage'));
-const MobileApp = React.lazy(() => import('./pages/MobileApp'));
+// Mobile app page removed
 
 // Protected route component that's inside the auth context
 const ProtectedRoute = ({ children, roles }) => {
@@ -55,7 +55,6 @@ function AppShell() {
     '/professor',
     '/courses',
     '/scholarship',
-    '/mobile-app',
     '/contact'
   ]);
 
@@ -165,11 +164,7 @@ function AppShell() {
               <Scholarship />
             </Suspense>
           } />
-          <Route path="/mobile-app" element={
-            <Suspense fallback={<RouteLoadingSpinner />}>
-              <MobileApp />
-            </Suspense>
-          } />
+          {/* Mobile app route removed */}
           <Route path="/contact" element={
             <Suspense fallback={<RouteLoadingSpinner />}>
               <ContactPage />
