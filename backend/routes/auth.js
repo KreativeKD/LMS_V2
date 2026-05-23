@@ -5,6 +5,36 @@ const Professor = require("../models/Professor");
 const RegistrationRequest = require("../models/RegistrationRequest");
 const PasswordResetRequest = require("../models/PasswordResetRequest");
 const SystemSetting = require("../models/SystemSetting");
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
+
+// Multer setup for banner uploads
+const bannersDir = path.join(__dirname, '..', 'uploads', 'banners');
+if (!fs.existsSync(bannersDir)) {
+  fs.mkdirSync(bannersDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, bannersDir);
+  },
+  filename: function (req, file, cb) {
+    const safeName = Date.now() + '-' + file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+    cb(null, safeName);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith('image/')) {
+      return cb(new Error('Only image files are allowed'));
+    }
+    cb(null, true);
+  }
+});
 const Course = require("../models/Course");
 const Notification = require("../models/Notification");
 const {
@@ -1338,6 +1368,7 @@ router.get("/settings", async (req, res) => {
     res.send({
       semesterCompletionDate: settings.semesterCompletionDate || null,
       maintenanceMode: settings.maintenanceMode || false,
+      bannerImages: settings.bannerImages || []
     });
   } catch (e) {
     logger.error("Error fetching settings", { error: e.message });
@@ -1362,6 +1393,9 @@ router.post("/admin/settings", auth, authorize("admin"), async (req, res) => {
     if (maintenanceMode !== undefined) {
       settings.maintenanceMode = maintenanceMode;
     }
+    if (req.body.bannerImages !== undefined) {
+      settings.bannerImages = req.body.bannerImages;
+    }
 
     await settings.save();
     logger.info("Settings updated", { updatedBy: req.user._id });
@@ -1378,3 +1412,48 @@ router.post("/admin/settings", auth, authorize("admin"), async (req, res) => {
 });
 
 module.exports = router;
+
+// Admin: upload banner image
+router.post('/admin/banner', auth, authorize('admin'), upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).send({ error: 'No file uploaded' });
+
+    const settings = (await SystemSetting.findOne()) || new SystemSetting({ key: 'system', value: {} });
+    settings.bannerImages = settings.bannerImages || [];
+    const relativePath = `/uploads/banners/${req.file.filename}`;
+    settings.bannerImages.push(relativePath);
+    await settings.save();
+
+    res.send({ message: 'Uploaded', path: relativePath, bannerImages: settings.bannerImages });
+  } catch (e) {
+    logger.error('Error uploading banner', { error: e.message });
+    res.status(500).send({ error: e.message });
+  }
+});
+
+// Admin: delete banner image
+router.delete('/admin/banner', auth, authorize('admin'), async (req, res) => {
+  try {
+    const { path: imgPath } = req.body;
+    if (!imgPath) return res.status(400).send({ error: 'Path required' });
+
+    const settings = await SystemSetting.findOne();
+    if (!settings || !Array.isArray(settings.bannerImages)) {
+      return res.status(404).send({ error: 'No banner images found' });
+    }
+
+    settings.bannerImages = settings.bannerImages.filter((p) => p !== imgPath);
+    await settings.save();
+
+    // remove file from disk
+    const fullPath = path.join(__dirname, '..', imgPath);
+    if (fs.existsSync(fullPath)) {
+      fs.unlinkSync(fullPath);
+    }
+
+    res.send({ message: 'Deleted', bannerImages: settings.bannerImages });
+  } catch (e) {
+    logger.error('Error deleting banner', { error: e.message });
+    res.status(500).send({ error: e.message });
+  }
+});

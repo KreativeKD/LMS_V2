@@ -17,6 +17,7 @@ const { errorHandlerMiddleware } = require("./utils/errorHandler");
 const app = express();
 const PORT = process.env.PORT || 5000;
 let server;
+const path = require('path');
 
 // Validate required environment variables
 if (!process.env.JWT_SECRET) {
@@ -72,6 +73,9 @@ app.use(
   }),
 );
 app.use(express.json({ limit: "50mb" }));
+
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Request logging middleware
 app.use(logger.requestLogger);
