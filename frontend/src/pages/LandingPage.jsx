@@ -117,26 +117,6 @@ const DEFAULT_SHOWCASE_SLIDES = [
     subtitle:
       "Practical pathways for intelligent systems and real-world innovation.",
   },
-  {
-    image: "/generated/img5.png",
-    title: "Master New Technologies",
-    subtitle: "Stay ahead with cutting-edge curriculum.",
-  },
-  {
-    image: "/generated/img6.jpeg",
-    title: "Expert Guidance",
-    subtitle: "Get mentored by industry professionals.",
-  },
-  {
-    image: "/generated/img7.jpeg",
-    title: "Interactive Learning",
-    subtitle: "Engage with hands-on projects and assignments.",
-  },
-  {
-    image: "/generated/img8.png",
-    title: "Achieve Your Goals",
-    subtitle: "Turn your ambitions into reality with CourseZ.",
-  },
 ];
 
 const LandingPage = () => {
@@ -223,7 +203,9 @@ const LandingPage = () => {
             };
           });
 
-          setShowcaseSlides([...customSlides, ...DEFAULT_SHOWCASE_SLIDES]);
+          setShowcaseSlides(
+            [...customSlides, ...DEFAULT_SHOWCASE_SLIDES].slice(0, 4),
+          );
         }
       } catch (err) {
         console.error("Failed to load landing page data", err);
