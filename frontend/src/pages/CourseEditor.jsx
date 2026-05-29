@@ -797,7 +797,7 @@ const CourseEditor = () => {
                 <option value="academic">Academic</option>
                 <option value="professional">Professional</option>
                 <option value="short-term">Short Term</option>
-                <option value="both">Both</option>
+                <option value="projects">Projects</option>
               </select>
             </div>
             <Button
