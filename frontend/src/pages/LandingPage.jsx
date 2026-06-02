@@ -48,7 +48,7 @@ const FALLBACK_ANNOUNCEMENTS = [
   },
   {
     date: "05-Mar-2026",
-    text: "Course access now follows 6-month validity from your enrollment date.",
+    text: "Course access now follows 1-year validity from your enrollment date.",
   },
   {
     date: "01-Mar-2026",
@@ -125,6 +125,36 @@ const LandingPage = () => {
       title: "Unlock the power of Machine intelligence",
       subtitle:
         "Practical pathways for intelligent systems and real-world innovation.",
+    },
+    {
+      image: "/generated/img5.png",
+      title: "Explore the Next Learning Chapter",
+      subtitle:
+        "A fresh showcase image added after the first four banner slides.",
+    },
+    {
+      image: "/generated/img6.jpeg",
+      title: "Discover the Sixth Showcase",
+      subtitle:
+        "An additional front banner image displayed after the first five slides.",
+    },
+    {
+      image: "/generated/img7.jpeg",
+      title: "Continue the Visual Journey",
+      subtitle:
+        "The seventh front banner image appears after the first six slides.",
+    },
+    {
+      image: "/generated/img8.png",
+      title: "A Final Banner Addition",
+      subtitle:
+        "The eighth front banner image now appears after the first seven slides.",
+    },
+    {
+      image: "/generated/img9.png",
+      title: "One More Showcase Frame",
+      subtitle:
+        "The ninth front banner image now appears after the first eight slides.",
     },
   ];
 

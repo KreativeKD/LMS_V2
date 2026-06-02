@@ -4,7 +4,7 @@ const normalizeId = (value) => {
     return String(value);
 };
 
-const COURSE_ACCESS_DURATION_MONTHS = 6;
+const COURSE_ACCESS_DURATION_MONTHS = 12;
 
 const isEnrollmentActive = (enrollment) => {
     if (!enrollment || enrollment.status !== 'approved') return false;

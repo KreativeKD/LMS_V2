@@ -572,7 +572,7 @@ const StudentDashboard = () => {
                     const expiresAt = enrollmentDate && !Number.isNaN(enrollmentDate.getTime())
                         ? (() => {
                             const expiry = new Date(enrollmentDate);
-                            expiry.setMonth(expiry.getMonth() + 6);
+                            expiry.setMonth(expiry.getMonth() + 12);
                             return expiry;
                         })()
                         : null;
