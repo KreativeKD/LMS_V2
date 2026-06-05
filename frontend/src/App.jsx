@@ -38,6 +38,7 @@ const CoursesPage = React.lazy(() => import("./pages/CoursesPage"));
 const Scholarship = React.lazy(() => import("./pages/Scholarship"));
 const ContactPage = React.lazy(() => import("./pages/ContactPage"));
 const PoliciesPage = React.lazy(() => import("./pages/PoliciesPage"));
+const HelpCenterPage = React.lazy(() => import("./pages/HelpCenterPage"));
 // Mobile app page removed
 
 // Protected route component that's inside the auth context
@@ -66,6 +67,7 @@ function AppShell() {
     "/scholarship",
     "/contact",
     "/policies",
+    "/help",
   ]);
 
   const isPublicRoute = publicRoutes.has(location.pathname);
@@ -236,6 +238,14 @@ function AppShell() {
             element={
               <Suspense fallback={<RouteLoadingSpinner />}>
                 <PoliciesPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/help"
+            element={
+              <Suspense fallback={<RouteLoadingSpinner />}>
+                <HelpCenterPage />
               </Suspense>
             }
           />

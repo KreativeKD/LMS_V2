@@ -42,8 +42,7 @@ const PublicFooter = () => {
                             <ul>
                                 <li><a href="https://www.youtube.com/@kirantalele8875" target="_blank" rel="noopener noreferrer">YouTube Channel</a></li>
                                 <li><a href="https://www.talelesir.com" target="_blank" rel="noopener noreferrer">Official Website</a></li>
-                                <li><a href="/#help">Help Center</a></li>
-                                <li><a href="/#blog">Blog & Updates</a></li>
+                                <li><Link to="/help">Help Center</Link></li>
                             </ul>
                         </div>
 

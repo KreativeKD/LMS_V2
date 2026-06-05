@@ -3255,6 +3255,171 @@ input:focus {
   font-weight: 700;
 }
 
+/* Help Center */
+.help-hero {
+  padding: 6rem 2rem 3rem;
+  background: linear-gradient(180deg, rgba(0, 188, 125, 0.08), transparent);
+}
+
+.help-container {
+  width: min(100%, 1050px);
+  margin: 0 auto;
+}
+
+.help-title {
+  margin: 1rem 0;
+  color: var(--text-main);
+  font-size: clamp(2.25rem, 5vw, 4rem);
+  line-height: 1.05;
+}
+
+.help-subtitle {
+  max-width: 760px;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  line-height: 1.7;
+}
+
+.help-section {
+  padding: 1rem 2rem 5rem;
+}
+
+.help-content {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.help-panel,
+.help-topic {
+  padding: 2rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg);
+}
+
+.help-panel-featured {
+  border-color: rgba(225, 29, 72, 0.28);
+  background: linear-gradient(180deg, rgba(225, 29, 72, 0.06), var(--card-bg));
+}
+
+.help-panel-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.help-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background: rgba(0, 188, 125, 0.12);
+  color: var(--accent);
+  flex: 0 0 auto;
+}
+
+.help-icon-danger {
+  background: rgba(225, 29, 72, 0.12);
+  color: #e11d48;
+}
+
+.help-panel h2,
+.help-topic h3,
+.help-contact h3 {
+  margin: 0 0 0.35rem;
+  color: var(--text-main);
+}
+
+.help-panel-header p,
+.help-topic p,
+.help-contact p {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.65;
+}
+
+.help-steps,
+.help-list {
+  margin: 0;
+  padding-left: 1.35rem;
+  color: var(--text-muted);
+  line-height: 1.75;
+}
+
+.help-steps li + li,
+.help-list li + li {
+  margin-top: 0.7rem;
+}
+
+.help-note,
+.help-contact {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(0, 188, 125, 0.35);
+  border-radius: 8px;
+  background: rgba(0, 188, 125, 0.08);
+}
+
+.help-note svg,
+.help-contact svg {
+  color: var(--accent);
+  flex: 0 0 auto;
+}
+
+.help-note p {
+  margin: 0;
+  color: var(--text-main);
+  line-height: 1.6;
+}
+
+.help-note a,
+.help-contact a {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.help-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.help-topic {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.help-faq-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.help-faq-item {
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--glass);
+}
+
+.help-faq-item h3 {
+  margin: 0 0 0.5rem;
+  color: var(--text-main);
+  font-size: 1rem;
+}
+
+.help-faq-item p {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.65;
+}
+
 /* Footer */
 .footer {
   border-top: 1px solid var(--border);
@@ -3651,6 +3816,7 @@ input:focus {
   }
 
   .steps-grid,
+  .help-grid,
   .features-grid,
   .courses-page-grid,
   .courses-grid,

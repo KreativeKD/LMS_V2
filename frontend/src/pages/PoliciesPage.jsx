@@ -46,7 +46,8 @@ const policySections = [
                 items: [
                     'We use reasonable technical and organizational safeguards such as restricted access, authentication controls, and secure hosting practices to protect user information.',
                     'Personal data is retained only as long as needed for account operation, course records, support, legal compliance, dispute resolution, and legitimate academic or administrative purposes.',
-                    'Students may request access, correction, account deletion, or deletion of eligible personal data by emailing talelesir@gmail.com from their registered email address.',
+                    'Students can delete their account directly from the Profile page by using the Delete Account option.',
+                    'If a student cannot access their account, they may request help with account deletion or eligible data deletion by emailing talelesir@gmail.com from their registered email address.',
                     'Some information may be retained where required for legal, security, payment, certification, academic record, or fraud-prevention reasons.',
                     'After a deletion request is verified, CourseZ will take reasonable steps to delete or anonymize eligible personal information within a reasonable period.',
                 ],
@@ -65,7 +66,7 @@ const policySections = [
                     'Privacy contact: talelesir@gmail.com.',
                     'Phone: +91 99870 30881.',
                     'Website: www.talelesir.com.',
-                    'Please include your registered email address and the exact request, such as data access, correction, account deletion, or privacy question.',
+                    'For account deletion, use the Delete Account option in your Profile page. If you cannot log in, include your registered email address and the exact request when contacting support.',
                 ],
             },
         ],
