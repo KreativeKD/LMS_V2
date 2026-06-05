@@ -58,7 +58,7 @@ const ContactPage = () => {
                                     <a href="https://www.linkedin.com/in/k-t-v-talele/" target="_blank" rel="noopener noreferrer" className="social-btn">
                                         <Linkedin size={20} />
                                     </a>
-                                    <a href="https://www.facebook.com/Kiran-Talele-1711929555720263" target="_blank" rel="noopener noreferrer" className="social-btn">
+                                    <a href="https://www.facebook.com/share/18a4zieaXa/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" className="social-btn">
                                         <Facebook size={20} />
                                     </a>
                                     <a href="https://www.youtube.com/@midnight-masterclass" target="_blank" rel="noopener noreferrer" className="social-btn">

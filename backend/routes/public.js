@@ -23,6 +23,14 @@ const getPublicProfessorQuery = () => ({
 const stripRoleSuffix = (username = '') =>
     String(username || '').replace(/@(admin|teacher|student)$/i, '');
 
+const titleCaseCountry = (country = '') =>
+    String(country || '')
+        .trim()
+        .replace(/\s+/g, ' ')
+        .split(' ')
+        .map((part) => part ? `${part[0].toUpperCase()}${part.slice(1).toLowerCase()}` : '')
+        .join(' ');
+
 const serializeGeneralTestimonial = (item) => {
     const fullName = [item.user?.firstName, item.user?.lastName].filter(Boolean).join(' ').trim();
     const fallbackName = item.user?.username ? stripRoleSuffix(item.user.username) : 'Anonymous';
@@ -135,6 +143,53 @@ router.get('/stats', async (req, res) => {
         });
     } catch (err) {
         res.status(500).send({ error: 'Failed to fetch public stats' });
+    }
+});
+
+// Get public, privacy-safe enrolled student country counts for the landing page map
+router.get('/student-locations', async (req, res) => {
+    try {
+        const limit = Math.max(1, Math.min(50, parseInt(req.query.limit, 10) || 20));
+        const locations = await User.aggregate([
+            {
+                $match: {
+                    role: 'student',
+                    'enrolledCourses.status': 'approved'
+                }
+            },
+            {
+                $project: {
+                    country: { $trim: { input: { $ifNull: ['$country', ''] } } },
+                    normalizedCountry: { $toLower: { $trim: { input: { $ifNull: ['$country', ''] } } } }
+                }
+            },
+            {
+                $project: {
+                    country: {
+                        $cond: [{ $eq: ['$normalizedCountry', ''] }, 'India', '$country']
+                    },
+                    normalizedCountry: {
+                        $cond: [{ $eq: ['$normalizedCountry', ''] }, 'india', '$normalizedCountry']
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: '$normalizedCountry',
+                    country: { $first: '$country' },
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { count: -1, country: 1 } },
+            { $limit: limit }
+        ]);
+
+        res.send(locations.map((item) => ({
+            country: titleCaseCountry(item.country),
+            count: item.count
+        })));
+    } catch (err) {
+        res.status(500).send({ error: 'Failed to fetch student locations' });
     }
 });
 

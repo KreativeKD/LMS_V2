@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   BookOpen,
@@ -31,6 +31,7 @@ import PublicFooter from "../components/PublicFooter";
 import StatCard from "../components/StatCard";
 import {
   fetchPublicAnnouncements,
+  fetchPublicStudentLocations,
   fetchPublicTestimonials,
   fetchPublicTicker,
   fetchPublicStats,
@@ -92,12 +93,143 @@ const FALLBACK_TESTIMONIALS = [
     courseTitle: "Digital Signal Processing",
   },
 ];
+
+const COUNTRY_PIN_POSITIONS = {
+  argentina: { x: 30, y: 81 },
+  australia: { x: 85, y: 78 },
+  bangladesh: { x: 71, y: 55 },
+  brazil: { x: 35, y: 68 },
+  canada: { x: 22, y: 30 },
+  china: { x: 78, y: 45 },
+  egypt: { x: 55, y: 50 },
+  france: { x: 49, y: 38 },
+  germany: { x: 51, y: 36 },
+  india: { x: 67, y: 55 },
+  indonesia: { x: 77, y: 66 },
+  italy: { x: 52, y: 43 },
+  japan: { x: 86, y: 43 },
+  malaysia: { x: 74, y: 62 },
+  mexico: { x: 25, y: 53 },
+  nepal: { x: 69, y: 52 },
+  netherlands: { x: 50, y: 35 },
+  oman: { x: 62, y: 55 },
+  pakistan: { x: 66, y: 53 },
+  philippines: { x: 80, y: 60 },
+  qatar: { x: 61, y: 54 },
+  russia: { x: 72, y: 30 },
+  singapore: { x: 74, y: 64 },
+  "south africa": { x: 55, y: 78 },
+  "south korea": { x: 83, y: 45 },
+  spain: { x: 48, y: 43 },
+  "sri lanka": { x: 69, y: 62 },
+  thailand: { x: 74, y: 59 },
+  "united arab emirates": { x: 62, y: 54 },
+  "united kingdom": { x: 49, y: 33 },
+  "united states": { x: 24, y: 43 },
+  vietnam: { x: 75, y: 58 },
+};
+
+const COUNTRY_ALIASES = {
+  america: "united states",
+  "australian": "australia",
+  "england": "united kingdom",
+  "great britain": "united kingdom",
+  "uae": "united arab emirates",
+  "uk": "united kingdom",
+  "united states of america": "united states",
+  "us": "united states",
+  "usa": "united states",
+};
+
+const COUNTRY_DISPLAY_NAMES = {
+  "united arab emirates": "United Arab Emirates",
+  "united kingdom": "United Kingdom",
+  "united states": "United States",
+};
+
+const normalizeCountryName = (country = "") =>
+  String(country || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[.,]/g, "")
+    .replace(/\s+/g, " ");
+
+const resolveMapLocations = (locations = []) => {
+  const locationMap = new Map();
+
+  locations.forEach((location) => {
+      const normalized = normalizeCountryName(location.country);
+      const lookupKey = COUNTRY_ALIASES[normalized] || normalized;
+      const position = COUNTRY_PIN_POSITIONS[lookupKey];
+      if (!position) return;
+
+      const country = COUNTRY_DISPLAY_NAMES[lookupKey] || location.country;
+      const existing = locationMap.get(lookupKey);
+      const count = Number(location.count) || 0;
+
+      locationMap.set(lookupKey, {
+        ...position,
+        country,
+        label: country,
+        count: (existing?.count || 0) + count,
+      });
+    });
+
+  return Array.from(locationMap.values());
+};
+
+const StudentWorldMap = ({ locations = [] }) => (
+  <section className="student-map-section" aria-labelledby="student-map-title">
+    <div className="student-map-container">
+      <div className="section-header">
+        <div className="student-map-kicker">
+          <Globe size={18} />
+          <span>Global Learning Community</span>
+        </div>
+        <h2 id="student-map-title" className="section-title">
+          Students Learning Across The World
+        </h2>
+        <p className="section-subtitle">
+          CourseZ learners are building engineering skills from multiple regions.
+        </p>
+      </div>
+
+      <div
+        className="student-world-map"
+        role="img"
+        aria-label="World map with markers showing where students are from"
+      >
+        <img
+          className="student-world-map__image"
+          src="/student-world-map.png"
+          alt=""
+          aria-hidden="true"
+        />
+        {locations.map((location) => (
+          <span
+            className="student-map-pin"
+            key={location.label}
+            style={{ left: `${location.x}%`, top: `${location.y}%` }}
+            title={`${location.count} student${location.count === 1 ? "" : "s"} from ${location.label}`}
+            aria-label={`${location.count} student${location.count === 1 ? "" : "s"} from ${location.label}`}
+          >
+            <span className="student-map-pin__count">
+              {location.count}
+            </span>
+          </span>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
 const LandingPage = () => {
   const navigate = useNavigate();
   const [activeSlide, setActiveSlide] = useState(0);
   const [announcements, setAnnouncements] = useState([]);
   const [breakingUpdates, setBreakingUpdates] = useState([]);
   const [publicTestimonials, setPublicTestimonials] = useState([]);
+  const [studentLocations, setStudentLocations] = useState([]);
   const [platformStats, setPlatformStats] = useState({
     studentsEnrolled: null,
     coursesPlanned: null,
@@ -122,54 +254,57 @@ const LandingPage = () => {
     },
     {
       image: "/generated/img4.png",
-      title: "Unlock the power of Machine intelligence",
+      title: "Transform Ideas into Smart Solutions with CourseZ",
       subtitle:
-        "Practical pathways for intelligent systems and real-world innovation.",
+        "Gain real-world expertise in intelligent computing, automation, and analytics.",
     },
     {
       image: "/generated/img5.png",
-      title: "Explore the Next Learning Chapter",
+      title: "Master Computer Vision & Deep Learning Through Real-World Innovation",
       subtitle:
-        "A fresh showcase image added after the first four banner slides.",
+        "Build industry-ready AI skills with hands-on modules, immersive labs, and practical projects.",
     },
     {
       image: "/generated/img6.jpeg",
-      title: "Discover the Sixth Showcase",
+      title: "Unlock the Power of Wavelet Transform & Multi-Resolution Analysis",
       subtitle:
-        "An additional front banner image displayed after the first five slides.",
+        "Gain hands-on expertise in advanced signal and image processing through real-world applications and guided projects",
     },
-    {
-      image: "/generated/img7.jpeg",
-      title: "Continue the Visual Journey",
-      subtitle:
-        "The seventh front banner image appears after the first six slides.",
-    },
+    
     {
       image: "/generated/img8.png",
-      title: "A Final Banner Addition",
+      title: "Learn Drone And Robot Design",
       subtitle:
-        "The eighth front banner image now appears after the first seven slides.",
+        "Practical pathways for intelligent autonomous drones and robot design.",
     },
     {
       image: "/generated/img9.png",
-      title: "One More Showcase Frame",
+      title: "Master Machine Learning & Deep Learning with Real-World Projects",
       subtitle:
-        "The ninth front banner image now appears after the first eight slides.",
+        "Learn end-to-end AI workflows, core ML algorithms, and modern neural networks through hands-on practical training.",
     },
   ];
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [announcementData, tickerData, stats, testimonials, professors] =
-          await Promise.all([
+        const [
+          announcementData,
+          tickerData,
+          stats,
+          testimonials,
+          professors,
+          locations,
+        ] = await Promise.all([
             fetchPublicAnnouncements(),
             fetchPublicTicker(),
             fetchPublicStats(),
             fetchPublicTestimonials(12),
             fetchPublicProfessors(),
+            fetchPublicStudentLocations(30),
           ]);
         setPublicTestimonials(Array.isArray(testimonials) ? testimonials : []);
+        setStudentLocations(Array.isArray(locations) ? locations : []);
         // Prefer authoritative count from professors list but fall back to stats endpoint
         const spitProfessorsCount = Array.isArray(professors)
           ? professors.filter((p) =>
@@ -213,6 +348,7 @@ const LandingPage = () => {
         setAnnouncements(FALLBACK_ANNOUNCEMENTS);
         setBreakingUpdates(FALLBACK_BREAKING_UPDATES);
         setPublicTestimonials([]);
+        setStudentLocations([]);
       }
     };
     loadData();
@@ -222,10 +358,13 @@ const LandingPage = () => {
     let pollId = null;
     const pollStats = async () => {
       try {
-        const [stats, professors] = await Promise.all([
+        const [stats, professors, locations] = await Promise.all([
           fetchPublicStats(),
           fetchPublicProfessors(),
+          fetchPublicStudentLocations(30),
         ]);
+
+        setStudentLocations(Array.isArray(locations) ? locations : []);
 
         const spitProfessorsCount = Array.isArray(professors)
           ? professors.filter((p) =>
@@ -283,6 +422,11 @@ const LandingPage = () => {
     return withPlus && value > 0 ? `${value}+` : String(value);
   };
 
+  const resolvedStudentLocations = useMemo(
+    () => resolveMapLocations(studentLocations),
+    [studentLocations],
+  );
+
   return (
     <div className="landing-page">
       {/* Background Gradient Orbs */}
@@ -309,9 +453,14 @@ const LandingPage = () => {
               ))}
               <div className="showcase-overlay">
                 <h1>
-                  {showcaseSlides[activeSlide].title} with{" "}
-                  <span className="brand-course">Course</span>
-                  <span className="brand-z">Z</span>
+                  {showcaseSlides[activeSlide].title}
+                  {!showcaseSlides[activeSlide].noBrand && (
+                    <>
+                      {" "}with{" "}
+                      <span className="brand-course">Course</span>
+                      <span className="brand-z">Z</span>
+                    </>
+                  )}
                 </h1>
                 <p>{showcaseSlides[activeSlide].subtitle}</p>
               </div>
@@ -495,6 +644,8 @@ const LandingPage = () => {
           />
         </div>
       </section>
+
+      <StudentWorldMap locations={resolvedStudentLocations} />
 
       {/* Testimonials Section */}
       <section id="testimonials" className="testimonials-section">

@@ -820,6 +820,14 @@ export const fetchPublicStats = async () => {
   return response.json();
 };
 
+export const fetchPublicStudentLocations = async (limit = 20) => {
+  const response = await fetch(
+    `${API_URL}/public/student-locations?limit=${limit}`,
+  );
+  if (!response.ok) throw new Error("Failed to fetch student locations");
+  return response.json();
+};
+
 export const fetchPublicTestimonials = async (limit = 3) => {
   const response = await fetch(`${API_URL}/public/testimonials?limit=${limit}`);
   if (!response.ok) throw new Error("Failed to fetch testimonials");

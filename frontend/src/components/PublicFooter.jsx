@@ -72,7 +72,7 @@ const PublicFooter = () => {
                                     <Linkedin size={20} />
                                     <span>LinkedIn</span>
                                 </a>
-                                <a href="https://www.facebook.com/Kiran-Talele-1711929555720263" target="_blank" rel="noopener noreferrer" className="social-link-large">
+                                <a href="https://www.facebook.com/share/18a4zieaXa/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" className="social-link-large">
                                     <Facebook size={20} />
                                     <span>Facebook</span>
                                 </a>
@@ -89,11 +89,11 @@ const PublicFooter = () => {
                     <div className="footer-bottom-content">
                         <p>&copy; 2026 <span className="brand-course">Course</span><span className="brand-z">Z</span>. Created by Dr. Kiran TALELE. All rights reserved.</p>
                         <div className="footer-bottom-links">
-                            <a href="/#privacy">Privacy Policy</a>
-                            <span>•</span>
-                            <a href="/#terms">Terms of Service</a>
-                            <span>•</span>
-                            <a href="/#cookies">Cookie Policy</a>
+                            <Link to="/policies#privacy">Privacy Policy</Link>
+                            <span>&middot;</span>
+                            <Link to="/policies#terms">Terms of Service</Link>
+                            <span>&middot;</span>
+                            <Link to="/policies#cookies">Cookie Policy</Link>
                         </div>
                     </div>
                 </div>
