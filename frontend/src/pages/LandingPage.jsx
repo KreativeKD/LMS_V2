@@ -288,14 +288,7 @@ const LandingPage = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [
-          announcementData,
-          tickerData,
-          stats,
-          testimonials,
-          professors,
-          locations,
-        ] = await Promise.all([
+        const results = await Promise.allSettled([
             fetchPublicAnnouncements(),
             fetchPublicTicker(),
             fetchPublicStats(),
@@ -303,8 +296,17 @@ const LandingPage = () => {
             fetchPublicProfessors(),
             fetchPublicStudentLocations(30),
           ]);
+          
+        const announcementData = results[0].status === 'fulfilled' ? results[0].value : null;
+        const tickerData = results[1].status === 'fulfilled' ? results[1].value : null;
+        const stats = results[2].status === 'fulfilled' ? results[2].value : null;
+        const testimonials = results[3].status === 'fulfilled' ? results[3].value : null;
+        const professors = results[4].status === 'fulfilled' ? results[4].value : null;
+        const locations = results[5].status === 'fulfilled' ? results[5].value : null;
+
         setPublicTestimonials(Array.isArray(testimonials) ? testimonials : []);
         setStudentLocations(Array.isArray(locations) ? locations : []);
+        
         // Prefer authoritative count from professors list but fall back to stats endpoint
         const spitProfessorsCount = Array.isArray(professors)
           ? professors.filter((p) =>
@@ -326,29 +328,31 @@ const LandingPage = () => {
                 ? stats.expertProfessors
                 : null,
         });
+        
         setAnnouncements(
-          (announcementData || []).map((item) => ({
-            date: item.createdAt
-              ? new Date(item.createdAt).toLocaleDateString("en-GB", {
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric",
-                })
-              : "Latest",
-            text: item.message,
-          })),
+          announcementData 
+            ? announcementData.map((item) => ({
+                date: item.createdAt
+                  ? new Date(item.createdAt).toLocaleDateString("en-GB", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })
+                  : "Latest",
+                text: item.message,
+              }))
+            : FALLBACK_ANNOUNCEMENTS
         );
+        
         setBreakingUpdates(
-          (tickerData || [])
-            .map((item) => item.tickerText || item.title || item.message)
-            .filter(Boolean),
+          tickerData
+            ? tickerData
+                .map((item) => item.tickerText || item.title || item.message)
+                .filter(Boolean)
+            : FALLBACK_BREAKING_UPDATES
         );
       } catch (err) {
-        console.error("Failed to load landing page data", err);
-        setAnnouncements(FALLBACK_ANNOUNCEMENTS);
-        setBreakingUpdates(FALLBACK_BREAKING_UPDATES);
-        setPublicTestimonials([]);
-        setStudentLocations([]);
+        console.error("Critical failure loading landing page data", err);
       }
     };
     loadData();
@@ -358,11 +362,15 @@ const LandingPage = () => {
     let pollId = null;
     const pollStats = async () => {
       try {
-        const [stats, professors, locations] = await Promise.all([
+        const results = await Promise.allSettled([
           fetchPublicStats(),
           fetchPublicProfessors(),
           fetchPublicStudentLocations(30),
         ]);
+        
+        const stats = results[0].status === 'fulfilled' ? results[0].value : null;
+        const professors = results[1].status === 'fulfilled' ? results[1].value : null;
+        const locations = results[2].status === 'fulfilled' ? results[2].value : null;
 
         setStudentLocations(Array.isArray(locations) ? locations : []);
 

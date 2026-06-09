@@ -50,6 +50,8 @@ const allowedOrigins = [
 
 const localhostDevOriginPattern =
   /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i;
+const vercelOriginPattern = /^https:\/\/.*\.vercel\.app$/i;
+const netlifyOriginPattern = /^https:\/\/.*\.netlify\.app$/i;
 
 app.use(
   cors({
@@ -61,7 +63,9 @@ app.use(
       const normalizedOrigin = normalizeOrigin(origin);
       if (
         allowedOrigins.includes(normalizedOrigin) ||
-        localhostDevOriginPattern.test(normalizedOrigin)
+        localhostDevOriginPattern.test(normalizedOrigin) ||
+        vercelOriginPattern.test(normalizedOrigin) ||
+        netlifyOriginPattern.test(normalizedOrigin)
       ) {
         return callback(null, true);
       }
