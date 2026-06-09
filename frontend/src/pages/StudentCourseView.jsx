@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   createCourseTestimonial,
@@ -43,6 +43,7 @@ const StudentCourseView = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, login } = useAuth();
+  const contentRef = useRef(null);
 
   const [course, setCourse] = useState(null);
   const [selectedUnit, setSelectedUnit] = useState(null);
@@ -678,6 +679,11 @@ const StudentCourseView = () => {
                                 if (unitHidden) return;
                                 setSelectedUnit(unit);
                                 setSelectedChapter(chapter);
+                                if (contentRef.current) {
+                                  const yOffset = -80;
+                                  const y = contentRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                                  window.scrollTo({ top: y, behavior: "smooth" });
+                                }
                               }}
                               style={{
                                 borderLeft: `3px solid ${active ? colors.primary : "transparent"}`,
@@ -998,7 +1004,7 @@ const StudentCourseView = () => {
           </div>
         )}
 
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ flex: 1, minWidth: 0 }} ref={contentRef}>
           <div
             style={{
               display: "flex",
