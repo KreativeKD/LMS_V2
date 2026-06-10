@@ -704,7 +704,7 @@ const StudentCourseView = () => {
                               <div
                                 style={{
                                   display: "flex",
-                                  alignItems: "center",
+                                  alignItems: "flex-start",
                                   gap: "6px",
                                   minWidth: 0,
                                 }}
@@ -718,6 +718,7 @@ const StudentCourseView = () => {
                                     background: colors.primary,
                                     opacity: active ? 0.9 : 0.65,
                                     flexShrink: 0,
+                                    marginTop: "7px",
                                   }}
                                 />
                                 <span
@@ -726,10 +727,10 @@ const StudentCourseView = () => {
                                     textDecoration: unitHidden
                                       ? "line-through"
                                       : "none",
-                                    whiteSpace: "nowrap",
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
+                                    whiteSpace: "normal",
+                                    wordBreak: "break-word",
                                     fontSize: "14px",
+                                    lineHeight: "1.4",
                                   }}
                                 >
                                   {unit.title}
