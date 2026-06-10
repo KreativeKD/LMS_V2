@@ -691,7 +691,7 @@ const StudentCourseView = () => {
                                   ? "rgba(16, 185, 129, 0.08)"
                                   : "transparent",
                                 borderRadius: borderRadius.sm,
-                                padding: "6px 10px",
+                                padding: "4px 8px",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "space-between",
@@ -743,6 +743,7 @@ const StudentCourseView = () => {
                                   handleToggleHide(event, unit._id)
                                 }
                                 title={unitHidden ? "Unhide unit" : "Hide unit"}
+                                style={{ minHeight: "auto", padding: "4px" }}
                               >
                                 {unitHidden ? (
                                   <Eye size={12} />
