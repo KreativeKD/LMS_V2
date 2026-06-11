@@ -951,19 +951,16 @@ input:focus {
 }
 
 .nav-logo img {
-  mix-blend-mode: normal;
+  mix-blend-mode: normal !important;
   filter: contrast(1.08);
-  background: rgba(255, 255, 255, 0.9);
-  padding: 4px 8px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background: #ffffff !important;
+  padding: 6px 12px !important;
+  border-radius: 14px !important;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1) !important;
   transition: all 0.3s ease;
 }
 
-.nav-bar.scrolled .nav-logo img {
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
+
 
 .logo-icon {
   color: var(--primary);
@@ -1045,7 +1042,7 @@ input:focus {
   border-right: none;
   border-top: none;
   border-bottom: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--card-bg);
   backdrop-filter: blur(14px);
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
   z-index: 1000;
@@ -1055,12 +1052,7 @@ input:focus {
   margin-left: 0;
 }
 
-.auth-navbar .nav-logo img {
-  mix-blend-mode: multiply;
-  background: transparent;
-  padding: 0;
-  box-shadow: none;
-}
+
 
 .auth-nav-links {
   margin-left: auto;
@@ -1087,7 +1079,7 @@ input:focus {
   height: 38px;
   border-radius: 50%;
   border: 1px solid var(--border);
-  background: white;
+  background: var(--card-bg);
   color: var(--text-main);
   display: flex;
   align-items: center;
@@ -1130,7 +1122,7 @@ input:focus {
   width: 360px;
   max-height: 440px;
   overflow-y: auto;
-  background: #fff;
+  background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 12px;
   box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
@@ -1572,7 +1564,7 @@ input:focus {
 .coursez-description-section .hero-subtitle:first-child {
   position: relative;
   padding: 2rem;
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--card-bg);
   border-radius: 16px;
   border: 1px solid var(--border);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);

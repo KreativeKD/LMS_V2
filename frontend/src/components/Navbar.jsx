@@ -258,8 +258,8 @@ const Navbar = () => {
                         key={item._id}
                         style={{
                           padding: "0.85rem 0.9rem",
-                          borderBottom: "1px solid #f1f3f5",
-                          background: item.read ? "white" : "#f8fbff",
+                          borderBottom: "1px solid var(--border)",
+                          background: item.read ? "var(--card-bg)" : "var(--glass)",
                         }}
                       >
                         <div
@@ -308,7 +308,8 @@ const Navbar = () => {
                                 style={{
                                   border: "1px solid var(--border)",
                                   borderRadius: 8,
-                                  background: "white",
+                                  background: "var(--card-bg)",
+                                  color: "var(--text-main)",
                                   fontSize: "0.72rem",
                                   padding: "4px 6px",
                                   cursor: "pointer",
@@ -323,7 +324,7 @@ const Navbar = () => {
                               style={{
                                 border: "none",
                                 borderRadius: 8,
-                                background: "#fef2f2",
+                                background: "rgba(239, 68, 68, 0.1)",
                                 color: "#b91c1c",
                                 fontSize: "0.72rem",
                                 padding: "4px 6px",

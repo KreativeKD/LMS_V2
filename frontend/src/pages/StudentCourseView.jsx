@@ -699,6 +699,7 @@ const StudentCourseView = () => {
                                 opacity: unitHidden ? 0.6 : 1,
                                 cursor: unitHidden ? "default" : "pointer",
                                 fontSize: "14px",
+                                color: colors.text,
                               }}
                             >
                               <div
@@ -1106,76 +1107,76 @@ const StudentCourseView = () => {
 
                 {(selectedUnit.type !== "video" ||
                   !selectedUnit.content?.videoUrl) && (
-                  <div style={{ padding: spacing.md }}>
-                    {selectedUnit.type === "text" &&
-                      selectedUnit.content?.text && (
-                        <div
-                          style={{ ...typography.body, whiteSpace: "pre-wrap" }}
-                        >
-                          {selectedUnit.content.text}
-                        </div>
-                      )}
+                    <div style={{ padding: spacing.md }}>
+                      {selectedUnit.type === "text" &&
+                        selectedUnit.content?.text && (
+                          <div
+                            style={{ ...typography.body, whiteSpace: "pre-wrap" }}
+                          >
+                            {selectedUnit.content.text}
+                          </div>
+                        )}
 
-                    {selectedUnit.type === "pdf" &&
-                      selectedUnit.content?.pdfUrl && (
-                        <div
-                          style={{ textAlign: "center", padding: spacing.lg }}
-                        >
-                          <FileText
+                      {selectedUnit.type === "pdf" &&
+                        selectedUnit.content?.pdfUrl && (
+                          <div
+                            style={{ textAlign: "center", padding: spacing.lg }}
+                          >
+                            <FileText
+                              size={56}
+                              color={colors.info}
+                              style={{ marginBottom: spacing.md }}
+                            />
+                            <h3
+                              style={{
+                                ...typography.h4,
+                                marginBottom: spacing.sm,
+                              }}
+                            >
+                              PDF Document Available
+                            </h3>
+                            <Button
+                              onClick={() =>
+                                openPdfDocument(selectedUnit.content.pdfUrl)
+                              }
+                            >
+                              Open PDF Document
+                            </Button>
+                          </div>
+                        )}
+
+                      {selectedUnit.type === "quiz" && (
+                        <div style={{ textAlign: "center", padding: spacing.lg }}>
+                          <HelpCircle
                             size={56}
-                            color={colors.info}
+                            color={colors.accent}
                             style={{ marginBottom: spacing.md }}
                           />
                           <h3
+                            style={{ ...typography.h4, marginBottom: spacing.sm }}
+                          >
+                            Quiz Assessment
+                          </h3>
+                          <p
                             style={{
-                              ...typography.h4,
-                              marginBottom: spacing.sm,
+                              ...typography.bodySmall,
+                              color: colors.textMuted,
+                              marginBottom: spacing.lg,
                             }}
                           >
-                            PDF Document Available
-                          </h3>
+                            Test your knowledge of this section.
+                          </p>
                           <Button
                             onClick={() =>
-                              openPdfDocument(selectedUnit.content.pdfUrl)
+                              navigate(`/quiz/${selectedUnit.content.quiz}`)
                             }
                           >
-                            Open PDF Document
+                            Start Quiz
                           </Button>
                         </div>
                       )}
-
-                    {selectedUnit.type === "quiz" && (
-                      <div style={{ textAlign: "center", padding: spacing.lg }}>
-                        <HelpCircle
-                          size={56}
-                          color={colors.accent}
-                          style={{ marginBottom: spacing.md }}
-                        />
-                        <h3
-                          style={{ ...typography.h4, marginBottom: spacing.sm }}
-                        >
-                          Quiz Assessment
-                        </h3>
-                        <p
-                          style={{
-                            ...typography.bodySmall,
-                            color: colors.textMuted,
-                            marginBottom: spacing.lg,
-                          }}
-                        >
-                          Test your knowledge of this section.
-                        </p>
-                        <Button
-                          onClick={() =>
-                            navigate(`/quiz/${selectedUnit.content.quiz}`)
-                          }
-                        >
-                          Start Quiz
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
+                    </div>
+                  )}
               </Card>
 
               {selectedUnit.type === "video" &&

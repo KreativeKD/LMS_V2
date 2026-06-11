@@ -100,30 +100,30 @@ export const colors = {
   infoLight: '#93c5fd',
   
   // Backgrounds
-  background: '#ffffff',
-  surface: '#f9fafb',
-  surfaceAlt: '#f3f4f6',
-  surfaceHover: '#f3f4f6',
-  surfaceDisabled: '#e5e7eb',
+  background: 'var(--background, #ffffff)',
+  surface: 'var(--card-bg, #f9fafb)',
+  surfaceAlt: 'var(--skeleton-base, #f3f4f6)',
+  surfaceHover: 'var(--skeleton-highlight, #f3f4f6)',
+  surfaceDisabled: 'var(--skeleton-base, #e5e7eb)',
   
   // Text
-  text: '#111827',
-  textSecondary: '#6b7280',
-  textMuted: '#9ca3af',
+  text: 'var(--text-main, #111827)',
+  textSecondary: 'var(--text-muted, #6b7280)',
+  textMuted: 'var(--text-muted, #9ca3af)',
   textInverse: '#ffffff',
   
   // Borders
-  border: '#e5e7eb',
-  borderLight: '#f3f4f6',
-  borderDark: '#d1d5db',
+  border: 'var(--border, #e5e7eb)',
+  borderLight: 'var(--glass, #f3f4f6)',
+  borderDark: 'var(--border, #d1d5db)',
   
   // Glass/Overlay
-  glass: 'rgba(0, 0, 0, 0.05)',
-  glassLight: 'rgba(0, 0, 0, 0.02)',
-  skeleton: 'linear-gradient(90deg, #e5e7eb 0%, #f8fafc 42%, #e5e7eb 78%)',
+  glass: 'var(--glass, rgba(0, 0, 0, 0.05))',
+  glassLight: 'var(--glass, rgba(0, 0, 0, 0.02))',
+  skeleton: 'linear-gradient(90deg, var(--skeleton-base) 0%, var(--skeleton-highlight) 42%, var(--skeleton-base) 78%)',
   
   // Gradients
-  gradient: 'linear-gradient(135deg, #4f46e5 0%, #4338ca 100%)',
+  gradient: 'var(--text-gradient, linear-gradient(135deg, #4f46e5 0%, #4338ca 100%))',
   gradientHover: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
 };
 
