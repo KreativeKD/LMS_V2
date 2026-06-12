@@ -258,19 +258,7 @@ const LandingPage = () => {
       subtitle:
         "Gain real-world expertise in intelligent computing, automation, and analytics.",
     },
-    {
-      image: "/generated/img5.png",
-      title: "Master Computer Vision & Deep Learning Through Real-World Innovation",
-      subtitle:
-        "Build industry-ready AI skills with hands-on modules, immersive labs, and practical projects.",
-    },
-    {
-      image: "/generated/img6.jpeg",
-      title: "Unlock the Power of Wavelet Transform & Multi-Resolution Analysis",
-      subtitle:
-        "Gain hands-on expertise in advanced signal and image processing through real-world applications and guided projects",
-    },
-    
+
     {
       image: "/generated/img8.png",
       title: "Learn Drone And Robot Design",

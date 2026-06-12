@@ -688,8 +688,8 @@ input:focus {
 }
 
 .home-announcements-panel {
-  background: linear-gradient(160deg, #0f172a 0%, #0b2548 52%, #0f172a 100%);
-  border: 1px solid rgba(59, 130, 246, 0.25);
+  background: #2d3748;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 18px;
   box-shadow: 0 12px 30px rgba(2, 6, 23, 0.35);
   padding: 1rem;
@@ -722,7 +722,7 @@ input:focus {
 
 .announcement-item {
   border-left: 3px solid #facc15;
-  background: rgba(15, 23, 42, 0.62);
+  background: rgba(0, 0, 0, 0.15);
   border-radius: 10px;
   padding: 0.75rem 0.85rem;
 }
@@ -758,8 +758,8 @@ input:focus {
   max-width: 1600px;
   width: calc(100% - 4rem);
   border-radius: 14px;
-  border: 1px solid #27272a;
-  background: linear-gradient(90deg, #0b0b0c 0%, #111827 45%, #0b0b0c 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #2d3748;
   box-shadow: 0 10px 24px rgba(2, 6, 23, 0.24);
   overflow: hidden;
   display: flex;
@@ -919,14 +919,14 @@ input:focus {
   justify-content: space-between;
   align-items: center;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  background: rgba(15, 23, 42, 0.1);
+  background: #2d3748;
   backdrop-filter: blur(10px);
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .nav-bar.scrolled {
-  background: rgba(15, 23, 42, 0.85);
+  background: #2d3748;
   backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding: 0.5rem 1.5rem;
@@ -973,7 +973,7 @@ input:focus {
 }
 
 .nav-link {
-  color: var(--text-muted);
+  color: #f1f5f9;
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 500;
