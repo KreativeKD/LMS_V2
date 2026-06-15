@@ -1048,6 +1048,20 @@ input:focus {
   z-index: 1000;
 }
 
+.auth-navbar .nav-link {
+  color: var(--text-muted);
+}
+
+.auth-navbar .nav-link:hover {
+  color: var(--primary);
+  text-shadow: none;
+}
+
+.auth-navbar .nav-link.active {
+  color: var(--primary);
+}
+
+
 .auth-navbar .nav-logo {
   margin-left: 0;
 }
