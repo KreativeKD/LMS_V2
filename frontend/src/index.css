@@ -976,7 +976,7 @@ input:focus {
   color: #f1f5f9;
   text-decoration: none;
   font-size: 0.95rem;
-  font-weight: 500;
+  font-weight: 700;
   transition: all 0.3s ease;
   position: relative;
 }
@@ -1177,6 +1177,7 @@ input:focus {
 
 .auth-profile-name {
   font-size: 0.9rem;
+  font-weight: 700;
   max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1193,7 +1194,7 @@ input:focus {
 
 .public-navbar .nav-link {
   color: rgba(248, 250, 252, 0.92);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .public-navbar .nav-link.active {
