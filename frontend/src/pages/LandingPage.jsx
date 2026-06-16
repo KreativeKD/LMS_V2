@@ -564,19 +564,7 @@ const LandingPage = () => {
             practical skills, enhance professional competence, and advance their
             careers with confidence.
           </p>
-          <p
-            className="hero-subtitle"
-            style={{
-              fontStyle: "italic",
-              marginTop: "1.25rem",
-              color: "var(--primary)",
-              fontWeight: "600",
-              fontSize: "1.02rem",
-            }}
-          >
-            Don't just study engineering—become the engineer companies fight to
-            hire.
-          </p>
+
         </div>
       </section>
 

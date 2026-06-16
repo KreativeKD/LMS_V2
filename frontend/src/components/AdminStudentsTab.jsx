@@ -237,6 +237,18 @@ export const AdminStudentsTab = ({ students, semesterDate, onStudentsUpdate, loa
       </div>
 
       {/* Student Grid */}
+      <style>{`
+        .student-card-uniform {
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+        }
+        .student-card-uniform > div {
+          flex: 1;
+          display: flex;
+          align-items: stretch !important;
+        }
+      `}</style>
       <div
         style={{
           display: 'grid',
@@ -255,6 +267,7 @@ export const AdminStudentsTab = ({ students, semesterDate, onStudentsUpdate, loa
           return (
             <Card
               key={student._id}
+              className="student-card-uniform"
               style={{
                 transition: 'all 0.2s ease',
                 border: `1px solid ${isFrozen ? colors.dangerLight : colors.border}`,
@@ -266,8 +279,10 @@ export const AdminStudentsTab = ({ students, semesterDate, onStudentsUpdate, loa
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
+                  justifyContent: 'space-between',
                   gap: spacing.md,
-                  width: '100%'
+                  width: '100%',
+                  height: '100%'
                 }}
               >
                 <div
@@ -311,19 +326,28 @@ export const AdminStudentsTab = ({ students, semesterDate, onStudentsUpdate, loa
                           textOverflow: 'ellipsis'
                         }}
                       >
-                        {displayName}
+                        {student.firstName || student.lastName ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : displayName}
                       </h3>
 
                       <p
                         style={{
                           ...typography.bodySmall,
                           color: colors.textMuted,
-                          margin: 0,
+                          margin: '2px 0 0',
                           wordBreak: 'break-word'
                         }}
                       >
                         {student.username}
                       </p>
+
+                      <div style={{ marginTop: spacing.xs, ...typography.xsmall, color: colors.textMuted }}>
+                        <div style={{ marginBottom: 2 }}>
+                          <span style={{ fontWeight: 600 }}>Country:</span> {student.country || 'Not specified'}
+                        </div>
+                        <div>
+                          <span style={{ fontWeight: 600 }}>Joined:</span> {student.createdAt ? new Date(student.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Unknown'}
+                        </div>
+                      </div>
                     </div>
                   </div>
 
