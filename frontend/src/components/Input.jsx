@@ -112,24 +112,56 @@ export const Input = React.forwardRef(({
 
   return (
     <div style={containerStyle}>
-      {label && <label style={labelStyle}>{label}</label>}
+      {label && (
+        <label style={labelStyle}>
+          {label}
+          {props.required && <span style={{ color: colors.danger, marginLeft: '4px' }}>*</span>}
+        </label>
+      )}
       <div style={inputContainerStyle}>
         {icon && <span style={iconStyle}>{icon}</span>}
-        <input
-          ref={ref}
-          type={type}
-          placeholder={placeholder}
-          disabled={disabled}
-          value={value}
-          onChange={onChange}
-          style={inputStyle}
-          className={className}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          aria-invalid={!!error}
-          aria-describedby={error ? `${props.id}-error` : undefined}
-          {...props}
-        />
+        {type === 'select' ? (
+          <select
+            ref={ref}
+            disabled={disabled}
+            value={value}
+            onChange={onChange}
+            style={inputStyle}
+            className={className}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            aria-invalid={!!error}
+            aria-describedby={error ? `${props.id}-error` : undefined}
+            {...props}
+          >
+            <option value="" disabled hidden>{placeholder || 'Select an option'}</option>
+            {props.options && props.options.map((opt, idx) => {
+              const optValue = typeof opt === 'object' ? opt.value : opt;
+              const optLabel = typeof opt === 'object' ? opt.label : opt;
+              return (
+                <option key={idx} value={optValue}>
+                  {optLabel}
+                </option>
+              );
+            })}
+          </select>
+        ) : (
+          <input
+            ref={ref}
+            type={type}
+            placeholder={placeholder}
+            disabled={disabled}
+            value={value}
+            onChange={onChange}
+            style={inputStyle}
+            className={className}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            aria-invalid={!!error}
+            aria-describedby={error ? `${props.id}-error` : undefined}
+            {...props}
+          />
+        )}
       </div>
       {error && (
         <span

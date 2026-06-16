@@ -5,6 +5,7 @@ import { registerStudent } from '../api/api';
 import { useAuth } from '../context/AuthContext';
 import { Button, Card, Input } from '../components';
 import { colors, spacing, typography, shadows } from '../theme';
+import { COUNTRIES } from '../constants/countries';
 
 const StudentRegistrationForm = () => {
   const navigate = useNavigate();
@@ -31,6 +32,14 @@ const StudentRegistrationForm = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
+
+    const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'city', 'country', 'username', 'password', 'confirmPassword'];
+    const missingFields = requiredFields.filter(field => !form[field] || !form[field].trim());
+
+    if (missingFields.length > 0) {
+      setError('Please fill in all compulsory fields.');
+      return;
+    }
 
     if (form.password !== form.confirmPassword) {
       setError('Passwords do not match.');
@@ -146,9 +155,12 @@ const StudentRegistrationForm = () => {
               />
               <Input
                 fullWidth
+                type="select"
                 label="Country"
                 value={form.country}
                 onChange={(event) => updateField('country', event.target.value)}
+                placeholder="Select your country"
+                options={COUNTRIES}
                 required
               />
               <div style={{ gridColumn: '1 / -1' }}>

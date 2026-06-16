@@ -206,7 +206,8 @@ const UserProfile = () => {
         </div>
 
         <Card>
-          {/* Header Section */}
+          <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+            {/* Header Section */}
           <div style={{ display: 'block', width: '100%', marginBottom: spacing.xl * 2, paddingBottom: spacing.xl, borderBottom: `1px solid ${colors.border}` }}>
             <div
               style={{
@@ -497,14 +498,15 @@ const UserProfile = () => {
             </div>
           )}
 
-          {/* Hidden file input for photo upload */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handlePhotoChange}
-            style={{ display: 'none' }}
-          />
+            {/* Hidden file input for photo upload */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoChange}
+              style={{ display: 'none' }}
+            />
+          </div>
         </Card>
       </div>
     </PageLayout>
