@@ -130,7 +130,7 @@ router.get('/ticker', async (req, res) => {
 router.get('/stats', async (req, res) => {
     try {
         const [studentsEnrolled, liveCoursesCount, academicCoursesCount, expertProfessors] = await Promise.all([
-            User.countDocuments({ role: 'student', 'enrolledCourses.status': 'approved' }),
+            User.countDocuments({ role: 'student' }),
             Course.countDocuments({}),
             AcademicCourse.countDocuments({}),
             Professor.countDocuments(getPublicProfessorQuery())
@@ -153,8 +153,7 @@ router.get('/student-locations', async (req, res) => {
         const locations = await User.aggregate([
             {
                 $match: {
-                    role: 'student',
-                    'enrolledCourses.status': 'approved'
+                    role: 'student'
                 }
             },
             {

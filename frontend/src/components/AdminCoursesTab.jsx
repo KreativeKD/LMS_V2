@@ -657,11 +657,16 @@ export const AdminCoursesTab = ({ courses, teachers, onCoursesUpdate, loading, e
                       </div>
                       <div style={{ minWidth: 0 }}>
                         <p style={{ margin: 0, fontSize: '16px', lineHeight: 1.25, fontWeight: 600, color: colors.text }}>
-                          {stripRoleSuffix(student.username)}
+                          {student.firstName || student.lastName ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : stripRoleSuffix(student.username)}
                         </p>
                         <p style={{ margin: '4px 0 0 0', fontSize: '13px', lineHeight: 1.25, color: colors.textMuted }}>
                           {student.username}
                         </p>
+                        {(student.city || student.country) && (
+                          <p style={{ margin: '4px 0 0 0', fontSize: '13px', lineHeight: 1.25, color: colors.textMuted }}>
+                            {[student.city, student.country].filter(Boolean).join(', ')}
+                          </p>
+                        )}
                       </div>
                     </div>
                   ))}

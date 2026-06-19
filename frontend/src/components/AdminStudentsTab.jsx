@@ -342,7 +342,7 @@ export const AdminStudentsTab = ({ students, semesterDate, onStudentsUpdate, loa
 
                       <div style={{ marginTop: spacing.xs, ...typography.xsmall, color: colors.textMuted }}>
                         <div style={{ marginBottom: 2 }}>
-                          <span style={{ fontWeight: 600 }}>Country:</span> {student.country || 'Not specified'}
+                          <span style={{ fontWeight: 600 }}>Location:</span> {[student.city, student.country].filter(Boolean).join(', ') || 'Not specified'}
                         </div>
                         <div>
                           <span style={{ fontWeight: 600 }}>Joined:</span> {student.createdAt ? new Date(student.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Unknown'}

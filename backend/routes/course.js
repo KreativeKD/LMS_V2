@@ -1354,7 +1354,7 @@ router.get(
     try {
       const course = await Course.findById(req.params.courseId)
         .select("students instructor assignedTeachers")
-        .populate("students", "username");
+        .populate("students", "username firstName lastName city country");
       if (!course) return res.status(404).send({ error: "Course not found" });
       if (!canManageCourse(course, req.user)) {
         return res.status(403).send({ error: "Access denied" });
