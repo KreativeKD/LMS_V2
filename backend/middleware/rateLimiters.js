@@ -13,10 +13,10 @@ const authLimiter = rateLimit({
   skipSuccessfulRequests: false, // Count successful requests
 });
 
-// Rate limiter for registration - 3 attempts per hour
+// Rate limiter for registration - 10 attempts per hour
 const registrationLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 3,
+  max: 10,
   message: {
     error:
       "Too many registration attempts from this IP, please try again after an hour",
