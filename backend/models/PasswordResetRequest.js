@@ -12,28 +12,27 @@ const passwordResetRequestSchema = new mongoose.Schema({
     },
     userId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
+        ref: 'User',
+        required: true
     },
     status: {
         type: String,
-        enum: ['pending', 'approved', 'rejected', 'completed'],
+        enum: ['pending', 'completed', 'expired'],
         default: 'pending'
-    },
-    approvedAt: {
-        type: Date
     },
     expiresAt: {
         type: Date
     },
     resetToken: {
-        type: String
+        type: String,
+        required: true
     }
 }, { timestamps: true });
 
-// Automatically set expiration when approved (24 hours)
+// Automatically set expiration to 1 hour from creation
 passwordResetRequestSchema.pre('save', function() {
-    if (this.isModified('status') && this.status === 'approved' && !this.expiresAt) {
-        this.expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    if (this.isNew && !this.expiresAt) {
+        this.expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
     }
 });
 

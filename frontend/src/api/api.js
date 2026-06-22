@@ -1095,30 +1095,11 @@ export const requestPasswordReset = async (username) => {
   return data;
 };
 
-export const fetchPasswordResetStatusByUsername = async (username) => {
-  const response = await fetch(
-    `${API_URL}/auth/password-reset-status/${encodeURIComponent(username)}`,
-  );
-
-  const data = await safeJsonParse(response);
-  if (!response.ok) {
-    const error = new Error(data?.error || "Failed to check status");
-    error.response = { status: response.status, data };
-    throw error;
-  }
-
-  return data;
-};
-
-export const submitPasswordReset = async ({
-  username,
-  newPassword,
-  requestId,
-}) => {
-  const response = await fetch(`${API_URL}/auth/reset-password`, {
+export const resetPasswordWithToken = async (token, newPassword) => {
+  const response = await fetch(`${API_URL}/auth/reset-password-with-token`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, newPassword, requestId }),
+    body: JSON.stringify({ token, newPassword }),
   });
 
   const data = await safeJsonParse(response);

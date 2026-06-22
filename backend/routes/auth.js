@@ -8,6 +8,8 @@ const SystemSetting = require("../models/SystemSetting");
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
+const { sendPasswordResetEmail } = require('../utils/email');
 
 // Multer setup for banner uploads
 const bannersDir = path.join(__dirname, '..', 'uploads', 'banners');
@@ -1039,7 +1041,7 @@ router.post("/forgot-password", authLimiter, async (req, res) => {
       // Don't reveal if user exists or not for security
       return res.status(200).send({
         message:
-          "If your account exists, a password reset request has been submitted to the admin.",
+          "If an account exists for that username, a reset link has been sent to the associated email address.",
       });
     }
 
@@ -1050,57 +1052,30 @@ router.post("/forgot-password", authLimiter, async (req, res) => {
       });
     }
 
-    // Check if there's already a pending request
-    const existingRequest = await PasswordResetRequest.findOne({
-      userId: user._id,
-      status: { $in: ["pending", "approved"] },
-    });
+    // Generate a secure token
+    const resetToken = crypto.randomBytes(32).toString('hex');
 
-    if (existingRequest) {
-      if (existingRequest.status === "pending") {
-        return res.status(400).send({
-          error:
-            "You already have a pending password reset request. Please wait for admin approval.",
-        });
-      }
-      if (
-        existingRequest.status === "approved" &&
-        existingRequest.expiresAt > new Date()
-      ) {
-        return res.status(200).send({
-          message:
-            "Your password reset request is already approved. You can reset your password now.",
-          approved: true,
-          requestId: existingRequest._id,
-        });
-      }
-    }
-
-    // Create new password reset request
+    // Create new password reset request with token
     const resetRequest = new PasswordResetRequest({
       username: user.username,
       email: user.email || "",
       userId: user._id,
       status: "pending",
+      resetToken: resetToken
     });
 
     await resetRequest.save();
 
-    const admins = await User.find({ role: "admin" }).select("_id").lean();
-    await createNotificationsForRecipients({
-      recipientIds: admins.map((admin) => admin._id),
-      actorId: user._id,
-      type: "password_reset_requested",
-      title: "Password Reset Requested",
-      message: `${user.username} requested a password reset.`,
-      link: "/admin",
-      metadata: { requestId: resetRequest._id, username: user.username },
-    });
+    // Send the email with the reset token
+    try {
+      await sendPasswordResetEmail(user.email || 'mock@coursez.in', user.username, resetToken);
+    } catch (emailError) {
+      logger.error("Failed to send reset email", { error: emailError.message, stack: emailError.stack });
+    }
 
-    res.status(201).send({
+    res.status(200).send({
       message:
-        "Password reset request submitted successfully. Please wait for admin approval.",
-      requestId: resetRequest._id,
+        "If an account exists for that username, a reset link has been sent to the associated email address.",
     });
   } catch (e) {
     logger.error("Forgot password error", { error: e.message, stack: e.stack });
@@ -1108,160 +1083,15 @@ router.post("/forgot-password", authLimiter, async (req, res) => {
   }
 });
 
-// Get all password reset requests - Admin only
-router.get(
-  "/admin/password-reset-requests",
-  auth,
-  authorize("admin"),
-  async (req, res) => {
-    try {
-      const requests = await PasswordResetRequest.find()
-        .populate("userId", "username firstName lastName email role")
-        .sort({ createdAt: -1 });
-      res.send(requests);
-    } catch (e) {
-      res.status(500).send({ error: e.message });
-    }
-  },
-);
-
-// Approve password reset request - Admin only
-router.patch(
-  "/admin/password-reset-requests/:id/approve",
-  auth,
-  authorize("admin"),
-  async (req, res) => {
-    try {
-      const request = await PasswordResetRequest.findById(req.params.id);
-
-      if (!request) {
-        return res
-          .status(404)
-          .send({ error: "Password reset request not found" });
-      }
-
-      if (request.status !== "pending") {
-        return res
-          .status(400)
-          .send({ error: "Request has already been processed" });
-      }
-
-      request.status = "approved";
-      request.approvedAt = new Date();
-      // expiresAt will be set by the pre-save hook (24 hours)
-
-      await request.save();
-
-      await createNotification({
-        recipientId: request.userId,
-        actorId: req.user._id,
-        type: "password_reset_approved",
-        title: "Password Reset Approved",
-        message:
-          "Your password reset request was approved. You can reset your password now.",
-        link: "/forgot-password",
-        metadata: { requestId: request._id },
-      });
-
-      res.send({
-        message:
-          "Password reset request approved. User can now reset their password.",
-        request,
-      });
-    } catch (e) {
-      res.status(500).send({ error: e.message });
-    }
-  },
-);
-
-// Reject password reset request - Admin only
-router.patch(
-  "/admin/password-reset-requests/:id/reject",
-  auth,
-  authorize("admin"),
-  async (req, res) => {
-    try {
-      const request = await PasswordResetRequest.findById(req.params.id);
-
-      if (!request) {
-        return res
-          .status(404)
-          .send({ error: "Password reset request not found" });
-      }
-
-      if (request.status !== "pending") {
-        return res
-          .status(400)
-          .send({ error: "Request has already been processed" });
-      }
-
-      request.status = "rejected";
-      await request.save();
-
-      await createNotification({
-        recipientId: request.userId,
-        actorId: req.user._id,
-        type: "password_reset_rejected",
-        title: "Password Reset Rejected",
-        message:
-          "Your password reset request was rejected. Please contact support if needed.",
-        link: "/forgot-password",
-        metadata: { requestId: request._id },
-      });
-
-      res.send({
-        message: "Password reset request rejected.",
-        request,
-      });
-    } catch (e) {
-      res.status(500).send({ error: e.message });
-    }
-  },
-);
-
-// Check password reset status - User checks if their request is approved
-router.get(
-  "/password-reset-status/:username",
-  authLimiter,
-  async (req, res) => {
-    try {
-      const { username } = req.params;
-
-      const user = await findUserByUsernameAlias(username);
-      if (!user) {
-        return res.status(404).send({ error: "User not found" });
-      }
-
-      const request = await PasswordResetRequest.findOne({
-        userId: user._id,
-        status: "approved",
-        expiresAt: { $gt: new Date() },
-      });
-
-      if (!request) {
-        return res.send({ approved: false });
-      }
-
-      res.send({
-        approved: true,
-        requestId: request._id,
-        expiresAt: request.expiresAt,
-      });
-    } catch (e) {
-      res.status(500).send({ error: e.message });
-    }
-  },
-);
-
-// Reset password - User resets password after admin approval
-router.post("/reset-password", authLimiter, async (req, res) => {
+// Reset password with token
+router.post("/reset-password-with-token", authLimiter, async (req, res) => {
   try {
-    const { username, newPassword, requestId } = req.body;
+    const { token, newPassword } = req.body;
 
-    if (!username || !newPassword || !requestId) {
+    if (!token || !newPassword) {
       return res
         .status(400)
-        .send({ error: "Username, new password, and request ID are required" });
+        .send({ error: "Token and new password are required" });
     }
 
     if (newPassword.length < 6) {
@@ -1270,10 +1100,19 @@ router.post("/reset-password", authLimiter, async (req, res) => {
         .send({ error: "Password must be at least 6 characters long" });
     }
 
-    const user = await findUserByUsernameAlias(username);
-    if (!user) {
-      return res.status(404).send({ error: "User not found" });
+    const request = await PasswordResetRequest.findOne({
+      resetToken: token,
+      status: "pending",
+      expiresAt: { $gt: new Date() }
+    }).populate('userId');
+
+    if (!request || !request.userId) {
+      return res
+        .status(400)
+        .send({ error: "Invalid or expired password reset token" });
     }
+
+    const user = request.userId;
 
     if (user.isFrozen) {
       return res.status(403).send({
@@ -1282,46 +1121,19 @@ router.post("/reset-password", authLimiter, async (req, res) => {
       });
     }
 
-    const request = await PasswordResetRequest.findOne({
-      _id: requestId,
-      userId: user._id,
-      status: "approved",
-    });
-
-    if (!request) {
-      return res
-        .status(404)
-        .send({ error: "No approved password reset request found" });
-    }
-
-    if (request.expiresAt < new Date()) {
-      request.status = "rejected";
-      await request.save();
-      return res
-        .status(400)
-        .send({
-          error:
-            "Password reset request has expired. Please submit a new request.",
-        });
-    }
-
     // Update password
     user.password = newPassword;
-    await user.save(); // Password hashing happens in User model's pre-save hook
+    await user.save();
 
     // Mark request as completed
     request.status = "completed";
     await request.save();
 
-    await createNotification({
-      recipientId: user._id,
-      actorId: user._id,
-      type: "password_reset_completed",
-      title: "Password Updated",
-      message: "Your password was reset successfully.",
-      link: "/login",
-      metadata: { requestId: request._id },
-    });
+    // Expire any other pending requests for this user
+    await PasswordResetRequest.updateMany(
+      { userId: user._id, status: "pending" },
+      { $set: { status: "expired" } }
+    );
 
     res.send({
       message:
@@ -1333,30 +1145,6 @@ router.post("/reset-password", authLimiter, async (req, res) => {
     res.status(500).send({ error: "Failed to reset password" });
   }
 });
-
-// Delete password reset request - Admin only
-router.delete(
-  "/admin/password-reset-requests/:id",
-  auth,
-  authorize("admin"),
-  async (req, res) => {
-    try {
-      const request = await PasswordResetRequest.findByIdAndDelete(
-        req.params.id,
-      );
-
-      if (!request) {
-        return res
-          .status(404)
-          .send({ error: "Password reset request not found" });
-      }
-
-      res.send({ message: "Password reset request deleted successfully" });
-    } catch (e) {
-      res.status(500).send({ error: e.message });
-    }
-  },
-);
 
 // Get system settings
 router.get("/settings", async (req, res) => {

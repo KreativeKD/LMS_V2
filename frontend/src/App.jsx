@@ -17,6 +17,7 @@ import GlobalBanner from "./components/GlobalBanner";
 // Eagerly loaded pages (small, frequently accessed)
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import LandingPage from "./pages/LandingPage";
 import RequestAccess from "./pages/RequestAccess";
 import CompleteSetup from "./pages/CompleteSetup";
@@ -59,6 +60,7 @@ function AppShell() {
     "/",
     "/login",
     "/forgot-password",
+    "/reset-password",
     "/request-access",
     "/complete-setup",
     "/student-registration",
@@ -74,6 +76,7 @@ function AppShell() {
   const hideNavbarRoutes = new Set([
     "/login",
     "/forgot-password",
+    "/reset-password",
     "/request-access",
     "/complete-setup",
     "/student-registration",
@@ -94,6 +97,7 @@ function AppShell() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/request-access" element={<RequestAccess />} />
           <Route path="/complete-setup" element={<CompleteSetup />} />
           <Route
