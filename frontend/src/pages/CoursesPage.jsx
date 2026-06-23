@@ -39,7 +39,7 @@ const CoursesPage = () => {
     }, []);
 
     const normalizeCourseType = (courseType) => {
-        if (['professional', 'short-term', 'projects'].includes(courseType)) return courseType;
+        if (['professional', 'short-term'].includes(courseType)) return courseType;
         return 'academic';
     };
 
@@ -48,7 +48,6 @@ const CoursesPage = () => {
         if (selectedCourseType === 'all') return true;
         if (selectedCourseType === 'academic') return type === 'academic';
         if (selectedCourseType === 'professional') return type === 'professional';
-        if (selectedCourseType === 'projects') return type === 'projects';
         return type === 'short-term';
     });
 
@@ -78,7 +77,7 @@ const CoursesPage = () => {
                                 ? 'Academic Courses'
                                 : (selectedCourseType === 'professional'
                                     ? 'Professional Courses'
-                                    : (selectedCourseType === 'projects' ? 'Projects' : 'Short Term Courses')))}
+                                    : 'Short Term Courses'))}
                     </h2>
                     <p className="section-subtitle">Choose your learning path and start building expertise</p>
                     <div style={{ display: 'inline-flex', gap: spacing.sm, padding: spacing.xs, background: '#fff', border: `1px solid ${colors.border}`, borderRadius: 999, marginTop: spacing.md }}>
@@ -105,14 +104,6 @@ const CoursesPage = () => {
                             onClick={() => setSelectedCourseType('professional')}
                         >
                             Professional
-                        </Button>
-                        <Button
-                            variant={selectedCourseType === 'projects' ? 'primary' : 'ghost'}
-                            size="sm"
-                            style={{ textTransform: 'none' }}
-                            onClick={() => setSelectedCourseType('projects')}
-                        >
-                            Projects
                         </Button>
                         <Button
                             variant={selectedCourseType === 'short-term' ? 'primary' : 'ghost'}
@@ -203,9 +194,7 @@ const CoursesPage = () => {
                                 const colorClass = colors[index % colors.length];
                                 const rotationClass = rotations[index % rotations.length];
                                 const courseCategory = normalizeCourseType(course.courseType);
-                                const categoryLabel = courseCategory === 'projects'
-                                    ? 'Projects'
-                                    : (courseCategory === 'professional'
+                                const categoryLabel = courseCategory === 'professional'
                                         ? 'Professional'
                                         : (courseCategory === 'short-term' ? 'Short Term' : 'Academic'));
 
