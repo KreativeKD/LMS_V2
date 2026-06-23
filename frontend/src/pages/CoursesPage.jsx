@@ -196,7 +196,7 @@ const CoursesPage = () => {
                                 const courseCategory = normalizeCourseType(course.courseType);
                                 const categoryLabel = courseCategory === 'professional'
                                         ? 'Professional'
-                                        : (courseCategory === 'short-term' ? 'Short Term' : 'Academic'));
+                                        : (courseCategory === 'short-term' ? 'Short Term' : 'Academic');
 
                                 return (
                                     <Card key={course._id} className={`${colorClass} ${rotationClass}`} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
