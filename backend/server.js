@@ -80,6 +80,12 @@ app.use(
 );
 app.use(express.json({ limit: "50mb" }));
 
+// Prevent browser caching of API responses
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
+
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 

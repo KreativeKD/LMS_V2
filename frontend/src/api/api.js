@@ -354,6 +354,7 @@ export const deleteUnit = async (unitId) => {
 export const fetchEnrolledStudents = async (courseId) => {
   const response = await fetch(`${API_URL}/courses/${courseId}/students`, {
     headers: getHeaders(),
+    cache: "no-store",
   });
   if (!response.ok) throw new Error("Failed to fetch enrolled students");
   return response.json();
